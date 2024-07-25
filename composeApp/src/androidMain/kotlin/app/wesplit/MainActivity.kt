@@ -1,4 +1,4 @@
-package com.split
+package app.wesplit
 
 import App
 import android.os.Bundle

@@ -1,4 +1,4 @@
-package com.split.plugins
+package app.wesplit.plugins
 
 import Greeting
 import io.ktor.http.HttpStatusCode

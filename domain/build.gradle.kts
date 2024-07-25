@@ -45,7 +45,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.split.domain"
+    namespace = "app.wesplit.domain"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

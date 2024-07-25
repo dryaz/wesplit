@@ -4,10 +4,10 @@ plugins {
     application
 }
 
-group = "com.split"
+group = "app.wesplit"
 version = "1.0.0"
 application {
-    mainClass.set("com.split.ApplicationKt")
+    mainClass.set("app.wesplit.ApplicationKt")
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
 }
 
