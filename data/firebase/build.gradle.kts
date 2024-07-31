@@ -14,9 +14,11 @@ kotlin {
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
+        moduleName = "model"
         browser {
             val projectDirPath = project.projectDir.path
             commonWebpackConfig {
+                outputFileName = "data_firebase.js"
                 devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
                     static = (static ?: mutableListOf()).apply {
                         // Serve sources to debug inside browser
@@ -25,6 +27,7 @@ kotlin {
                 }
             }
         }
+        binaries.executable()
     }
 
     androidTarget {
@@ -44,7 +47,7 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-//            implementation(projects.domain.model)
+                implementation(projects.domain.model)
 
                 implementation(libs.koin.core)
                 implementation(libs.koin.annotations)
@@ -54,7 +57,7 @@ kotlin {
 }
 
 android {
-    namespace = "app.wesplit.domain"
+    namespace = "app.wesplit.data.firebase"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

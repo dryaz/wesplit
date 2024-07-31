@@ -1,5 +1,5 @@
 [versions]
-agp = "8.2.2"
+agp = "8.4.1"
 android-compileSdk = "34"
 android-minSdk = "24"
 android-targetSdk = "34"
@@ -15,6 +15,12 @@ junit = "4.13.2"
 kotlin = "2.0.0"
 ktor = "2.3.12"
 logback = "1.5.6"
+ksp-google = "2.0.0-1.0.24"
+# ksp-google = "1.9.24-1.0.20"
+
+# wasmJs support
+koin = "4.0.0-RC1"
+koin-ksp = "1.4.0-RC3"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -28,10 +34,17 @@ androidx-material = { group = "com.google.android.material", name = "material", 
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "ktor" }
 ktor-server-tests = { module = "io.ktor:ktor-server-tests-jvm", version.ref = "ktor" }
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
+
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
+koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koin-ksp" }
+koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koin-ksp" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -41,3 +54,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp-google" }

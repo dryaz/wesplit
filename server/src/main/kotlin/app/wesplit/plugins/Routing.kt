@@ -1,6 +1,5 @@
 package app.wesplit.plugins
 
-import Greeting
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
@@ -24,7 +23,7 @@ fun Application.configureRouting() {
     }
     routing {
         get("/") {
-            call.respondText("Ktor: ${Greeting().greet()}")
+            call.respondText("Ktor: HEY")
         }
 
         staticResources("/static", "static") {

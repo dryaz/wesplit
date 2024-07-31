@@ -12,7 +12,7 @@ application {
 }
 
 dependencies {
-    implementation(projects.domain)
+    implementation(projects.domain) 
     implementation(libs.logback)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)

@@ -9,9 +9,12 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.google.devtools.ksp)
 }
 
 kotlin {
+    task("testClasses")
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "composeApp"
@@ -56,19 +59,34 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.koin.android)
         }
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(projects.domain)
+        commonMain {
+            kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
+            dependencies {
+                implementation(projects.domain)
+                implementation(projects.domain.model)
+                implementation(projects.data.firebase)
+
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
+
+                implementation(libs.koin.core)
+                implementation(libs.koin.compose)
+                implementation(libs.koin.annotations)
+            }
+            desktopMain.dependencies {
+                implementation(compose.desktop.currentOs)
+            }
         }
-        desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
-        }
+    }
+
+    ksp {
+        arg("USE_COMPOSE_VIEWMODEL","true")
     }
 }
 
@@ -120,3 +138,27 @@ compose.desktop {
         }
     }
 }
+
+dependencies {
+    add("kspCommonMainMetadata", libs.koin.ksp.compiler)
+    // DO NOT add bellow dependencies
+    add("kspAndroid", libs.koin.ksp.compiler)
+//    add("kspIosX64", Deps.Koin.kspCompiler)
+//    add("kspIosArm64", Deps.Koin.kspCompiler)
+//    add("kspIosSimulatorArm64", Deps.Koin.kspCompiler)
+}
+
+// WORKAROUND: ADD this dependsOn("kspCommonMainKotlinMetadata") instead of above dependencies
+//tasks.withType<KotlinCompile<*>>().configureEach {
+//    if (name != "kspCommonMainKotlinMetadata") {
+//        dependsOn("kspCommonMainKotlinMetadata")
+//    }
+//}
+//afterEvaluate {
+//    tasks.filter {
+//        it.name.contains("SourcesJar", true)
+//    }?.forEach {
+//        println("SourceJarTask====>${it.name}")
+//        it.dependsOn("kspCommonMainKotlinMetadata")
+//    }
+//}

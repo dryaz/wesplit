@@ -31,3 +31,5 @@ dependencyResolutionManagement {
 include(":composeApp")
 include(":server")
 include(":domain")
+include(":domain:model")
+include(":data:firebase")
