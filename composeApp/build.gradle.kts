@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.ktlint)
 }
 
 kotlin {
@@ -143,6 +144,7 @@ dependencies {
     add("kspCommonMainMetadata", libs.koin.ksp.compiler)
     // DO NOT add bellow dependencies
     add("kspAndroid", libs.koin.ksp.compiler)
+    // TODO: IOS fails, maybe 'cause of kotlin 2.0.0
 //    add("kspIosX64", Deps.Koin.kspCompiler)
 //    add("kspIosArm64", Deps.Koin.kspCompiler)
 //    add("kspIosSimulatorArm64", Deps.Koin.kspCompiler)

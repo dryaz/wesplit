@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.ktlint)
 }
 
 kotlin {

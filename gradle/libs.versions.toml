@@ -17,6 +17,7 @@ ktor = "2.3.12"
 logback = "1.5.6"
 ksp-google = "2.0.0-1.0.24"
 # ksp-google = "1.9.24-1.0.20"
+ktlint = "12.1.1"
 
 # wasmJs support
 koin = "4.0.0-RC1"
@@ -55,3 +56,4 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp-google" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }

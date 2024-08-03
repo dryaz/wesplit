@@ -12,9 +12,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import app.wesplit.domain.model.UserRepository
+import app.wesplit.data.firebase.domainModule
+import app.wesplit.data.firebase.firebaseDataModule
+import app.wesplit.domain.model.account.AccountRepository
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.KoinApplication
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.compose_multiplatform
@@ -22,19 +25,25 @@ import split.composeapp.generated.resources.compose_multiplatform
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        val userRepo = koinInject<UserRepository>()
+    KoinApplication(application = {
+        modules(domainModule() + firebaseDataModule())
+    }) {
+        MaterialTheme {
+            var showContent by remember { mutableStateOf(false) }
+            val userRepo = koinInject<AccountRepository>()
 
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { "Hey" }
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: ${userRepo.get()}")
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(onClick = { showContent = !showContent }) {
+                    Text("Click me!")
+                }
+                AnimatedVisibility(showContent) {
+                    val greeting = remember { "Hey" }
+                    Column(
+                        Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Image(painterResource(Res.drawable.compose_multiplatform), null)
+                        Text("Compose: ${userRepo.get()}")
+                    }
                 }
             }
         }
