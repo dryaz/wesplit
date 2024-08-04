@@ -23,26 +23,28 @@ kotlin {
             val projectDirPath = project.projectDir.path
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(projectDirPath)
+                devServer =
+                    (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                        static =
+                            (static ?: mutableListOf()).apply {
+                                // Serve sources to debug inside browser
+                                add(projectDirPath)
+                            }
                     }
-                }
             }
         }
         binaries.executable()
     }
-    
+
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     jvm("desktop")
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -53,10 +55,10 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         val desktopMain by getting
-        
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
@@ -87,7 +89,7 @@ kotlin {
     }
 
     ksp {
-        arg("USE_COMPOSE_VIEWMODEL","true")
+        arg("USE_COMPOSE_VIEWMODEL", "true")
     }
 }
 
@@ -151,16 +153,16 @@ dependencies {
 }
 
 // WORKAROUND: ADD this dependsOn("kspCommonMainKotlinMetadata") instead of above dependencies
-//tasks.withType<KotlinCompile<*>>().configureEach {
+// tasks.withType<KotlinCompile<*>>().configureEach {
 //    if (name != "kspCommonMainKotlinMetadata") {
 //        dependsOn("kspCommonMainKotlinMetadata")
 //    }
-//}
-//afterEvaluate {
+// }
+// afterEvaluate {
 //    tasks.filter {
 //        it.name.contains("SourcesJar", true)
 //    }?.forEach {
 //        println("SourceJarTask====>${it.name}")
 //        it.dependsOn("kspCommonMainKotlinMetadata")
 //    }
-//}
+// }

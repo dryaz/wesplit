@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.ktlint)
 }
 
 kotlin {
@@ -34,7 +35,7 @@ kotlin {
         }
         binaries.executable()
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -48,7 +49,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            //put your multiplatform dependencies here
+            // put your multiplatform dependencies here
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

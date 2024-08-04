@@ -82,6 +82,11 @@ tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().configureEach
     }
 }
 
+tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask>().configureEach {
+    println("Add dependency from :${this.name}")
+    dependsOn("kspCommonMainKotlinMetadata")
+}
+
 afterEvaluate {
     tasks.filter {
         it.name.contains("SourcesJar", true)

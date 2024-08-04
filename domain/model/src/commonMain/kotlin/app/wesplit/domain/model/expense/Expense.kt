@@ -10,12 +10,9 @@ data class Expense(
     val title: String,
     val amount: Amount,
     val splitType: SplitType,
-    val type: ExpenseType,
-    // TODO: Itemization 
+    val type: ExpenseType
+    // TODO: Itemization
     // TODO: Comments
 )
 
-data class Participant(
-    val account: Account,
-    val amount: Amount
-)
+data class Participant(val account: Account, val amount: Amount)
