@@ -76,9 +76,13 @@ kotlin {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
                 implementation(compose.material)
+                implementation(compose.material3)
                 implementation(compose.ui)
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
+
+                implementation("dev.chrisbanes.material3:material3-window-size-class-multiplatform:0.5.0")
+                implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
 
                 implementation(libs.koin.core)
                 implementation(libs.koin.compose)
@@ -87,7 +91,6 @@ kotlin {
                 implementation(libs.coil)
                 implementation(libs.coil.compose)
                 implementation(libs.coil.network.ktor)
-
             }
 
             desktopMain.dependencies {
