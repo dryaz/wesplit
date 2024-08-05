@@ -63,7 +63,9 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+            implementation(libs.coil.network.okhttp)
         }
+
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
@@ -81,9 +83,25 @@ kotlin {
                 implementation(libs.koin.core)
                 implementation(libs.koin.compose)
                 implementation(libs.koin.annotations)
+
+                implementation(libs.coil)
+                implementation(libs.coil.compose)
+                implementation(libs.coil.network.ktor)
+
             }
+
             desktopMain.dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(libs.kotlinx.coroutines.swing)
+                implementation(libs.coil.network.okhttp)
+            }
+
+            iosMain.dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
+
+            wasmJsMain.dependencies {
+                implementation(libs.ktor.client.js)
             }
         }
     }

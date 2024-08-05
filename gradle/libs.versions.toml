@@ -10,20 +10,28 @@ androidx-core-ktx = "1.13.1"
 androidx-espresso-core = "3.6.1"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
+coil = "3.0.0-alpha06"
 compose-plugin = "1.6.11"
 junit = "4.13.2"
 kotlin = "2.0.0"
-ktor = "2.3.12"
+ktor = "3.0.0-beta-2"
+ktor-client = "3.0.0-beta-2"
+ktorClientWasm = "3.0.0-wasm2"
 logback = "1.5.6"
 ksp-google = "2.0.0-1.0.24"
 # ksp-google = "1.9.24-1.0.20"
 ktlint = "12.1.1"
+images-kamael = "0.9.5"
 
 # wasmJs support
 koin = "4.0.0-RC1"
 koin-ksp = "1.4.0-RC3"
 
 [libraries]
+coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -34,6 +42,9 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 androidx-material = { group = "com.google.android.material", name = "material", version.ref = "androidx-material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorClientWasm" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientWasm" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
@@ -41,11 +52,16 @@ ktor-server-netty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "k
 ktor-server-tests = { module = "io.ktor:ktor-server-tests-jvm", version.ref = "ktor" }
 ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
 
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor-client" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor-client" }
+
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koin-ksp" }
 koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koin-ksp" }
+
+images-kamael = { group = "media.kamel", name = "kamel-image", version.ref = "images-kamael"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
