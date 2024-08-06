@@ -81,16 +81,20 @@ kotlin {
                 implementation(compose.components.resources)
                 implementation(compose.components.uiToolingPreview)
 
-                implementation("dev.chrisbanes.material3:material3-window-size-class-multiplatform:0.5.0")
-                implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
+                implementation(libs.window.multiplatform)
+                implementation(libs.navigation.compose)
 
                 implementation(libs.koin.core)
                 implementation(libs.koin.compose)
+                implementation(libs.koin.compose.viewmodel)
                 implementation(libs.koin.annotations)
 
                 implementation(libs.coil)
                 implementation(libs.coil.compose)
                 implementation(libs.coil.network.ktor)
+
+                implementation(libs.decompose)
+                implementation(libs.decompose.extensions.compose)
             }
 
             desktopMain.dependencies {

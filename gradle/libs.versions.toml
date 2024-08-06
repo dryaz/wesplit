@@ -11,12 +11,14 @@ androidx-espresso-core = "3.6.1"
 androidx-material = "1.12.0"
 androidx-test-junit = "1.2.1"
 coil = "3.0.0-alpha06"
-compose-plugin = "1.6.11"
+compose-plugin = "1.7.0-alpha02"
+decompose = "3.1.0"
 junit = "4.13.2"
 kotlin = "2.0.0"
 ktor = "3.0.0-beta-2"
 ktor-client = "3.0.0-beta-2"
 ktorClientWasm = "3.0.0-wasm2"
+lifecycleViewmodelCompose = "2.8.0"
 logback = "1.5.6"
 ksp-google = "2.0.0-1.0.24"
 # ksp-google = "1.9.24-1.0.20"
@@ -26,12 +28,16 @@ images-kamael = "0.9.5"
 # wasmJs support
 koin = "4.0.0-RC1"
 koin-ksp = "1.4.0-RC3"
+material3WindowSizeClassMultiplatform = "0.5.0"
+navigationCompose = "2.8.0-alpha08"
 
 [libraries]
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
+decompose-extensions-compose = { module = "com.arkivanov.decompose:extensions-compose", version.ref = "decompose" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -45,6 +51,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorClientWasm" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientWasm" }
+#lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
@@ -57,11 +64,14 @@ ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "k
 
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koin-ksp" }
 koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koin-ksp" }
 
 images-kamael = { group = "media.kamel", name = "kamel-image", version.ref = "images-kamael"}
+window-multiplatform = { module = "dev.chrisbanes.material3:material3-window-size-class-multiplatform", version.ref = "material3WindowSizeClassMultiplatform" }
+navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
