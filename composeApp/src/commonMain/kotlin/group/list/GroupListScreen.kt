@@ -21,9 +21,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.Group
-import org.koin.compose.viewmodel.koinViewModel
+import app.wesplit.domain.model.group.GroupRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import org.koin.compose.koinInject
 
 sealed class GroupItemAction {
     abstract val group: Group
@@ -32,12 +36,24 @@ sealed class GroupItemAction {
 }
 
 @Composable
-fun GroupListScreen(modifier: Modifier = Modifier, viewModel: GroupListViewModel = koinViewModel(), onAction: (GroupItemAction) -> Unit) {
-    println("c1")
+fun GroupListScreen(
+    modifier: Modifier = Modifier,
+    onAction: (GroupItemAction) -> Unit
+) {
+    val accountRepository: AccountRepository = koinInject()
+    val groupRepository: GroupRepository = koinInject()
+    val ioDispatcher: CoroutineDispatcher = koinInject()
+
+    val viewModel: GroupListViewModel = viewModel {
+        GroupListViewModel(
+            accountRepository,
+            groupRepository,
+            ioDispatcher
+        )
+    }
+
     val dataState = viewModel.dataState.collectAsState()
-    println("c2")
     val accountState = viewModel.accountState.collectAsState()
-    println("c3")
 
     Screen(
         modifier = modifier,

@@ -18,8 +18,8 @@ class GroupListViewModel(
     private val accountRepository: AccountRepository,
     private val groupRepository: GroupRepository,
     private val ioDispatcher: CoroutineDispatcher
-) : ViewModel(),
-    KoinComponent {
+) : ViewModel(), KoinComponent {
+
     val dataState: StateFlow<State>
         get() = _dataState
 

@@ -86,15 +86,11 @@ kotlin {
 
                 implementation(libs.koin.core)
                 implementation(libs.koin.compose)
-                implementation(libs.koin.compose.viewmodel)
                 implementation(libs.koin.annotations)
 
                 implementation(libs.coil)
                 implementation(libs.coil.compose)
                 implementation(libs.coil.network.ktor)
-
-                implementation(libs.decompose)
-                implementation(libs.decompose.extensions.compose)
 
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.io)
