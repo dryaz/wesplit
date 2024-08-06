@@ -61,6 +61,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation(compose.preview)
+            implementation(compose.uiTooling)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.coil.network.okhttp)
@@ -75,7 +76,6 @@ kotlin {
 
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation(compose.material)
                 implementation(compose.material3)
                 implementation(compose.ui)
                 implementation(compose.components.resources)
@@ -95,9 +95,14 @@ kotlin {
 
                 implementation(libs.decompose)
                 implementation(libs.decompose.extensions.compose)
+
+                implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.kotlinx.io)
             }
 
             desktopMain.dependencies {
+                implementation(compose.preview)
+                implementation(compose.uiTooling)
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
                 implementation(libs.coil.network.okhttp)
@@ -108,6 +113,7 @@ kotlin {
             }
 
             wasmJsMain.dependencies {
+                implementation(libs.kotlinx.coroutines.wasmjs)
                 implementation(libs.ktor.client.js)
             }
         }

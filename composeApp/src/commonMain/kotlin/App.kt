@@ -6,15 +6,6 @@ import di.appModule
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication
 
-enum class LeftPaneScreens(val title: String) {
-    First("First"),
-    Second("Second"),
-    Third("Third"),
-    Fourth("Fourth"),
-    Fifth("Fifth"),
-    Six("Six")
-}
-
 @Composable
 @Preview
 fun App() {

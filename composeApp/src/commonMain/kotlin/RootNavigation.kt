@@ -1,24 +1,9 @@
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.core.bundle.Bundle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
@@ -26,7 +11,22 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import group.GroupListScreen
+import group.detailed.GroupInfoAction
+import group.detailed.GroupInfoScreen
+import group.detailed.NoGroupScreen
+import group.list.GroupItemAction
+import group.list.GroupListScreen
+
+sealed class PaneNavigation(val route: String)
+
+sealed class LeftPane(route: String) : PaneNavigation(route) {
+    data object GroupList : LeftPane("groups")
+}
+
+sealed class RightPane(route: String) : PaneNavigation(route) {
+    data object Empty : RightPane("empty")
+    data object Group : RightPane("group")
+}
 
 @Composable
 fun RootNavigation() {
@@ -47,21 +47,16 @@ fun RootNavigation() {
         secondNavhostEmpty = secondNahControllerEmpty,
         firstNavhost = { modifier ->
             NavHost(
-                modifier = modifier.verticalScroll(rememberScrollState()),
+                modifier = modifier,
                 navController = firstPaneNavController,
-                startDestination = LeftPaneScreens.First.name
+                startDestination = LeftPane.GroupList.route
             ) {
-                composable(route = LeftPaneScreens.First.name) {
-                    Screen("Screen 1") { firstPaneNavController.navigate(LeftPaneScreens.Second.name) }
-                }
-                composable(route = LeftPaneScreens.Second.name) {
-                    Screen("Screen 2") {
-                        firstPaneNavController.navigate(LeftPaneScreens.Third.name)
-                        secondPaneNavController.navigate(LeftPaneScreens.Fifth.name)
+                composable(route = LeftPane.GroupList.route) {
+                    GroupListScreen { action ->
+                        when (action) {
+                            is GroupItemAction.Select -> secondPaneNavController.navigate(RightPane.Group.route)
+                        }
                     }
-                }
-                composable(route = LeftPaneScreens.Third.name) {
-                    Screen("Screen 3") { firstPaneNavController.navigateUp() }
                 }
             }
         },
@@ -69,49 +64,19 @@ fun RootNavigation() {
             NavHost(
                 modifier = modifier,
                 navController = secondPaneNavController,
-                startDestination = LeftPaneScreens.Fourth.name
+                startDestination = RightPane.Empty.route
             ) {
-                composable(route = LeftPaneScreens.Fourth.name) {
-                    GroupListScreen()
+                composable(route = RightPane.Empty.route) {
+                    NoGroupScreen()
                 }
-                composable(route = LeftPaneScreens.Fifth.name) {
-                    RichScreen("Screen 5") { secondPaneNavController.navigateUp() }
-                }
-                composable(route = LeftPaneScreens.Six.name) {
-                    RichScreen("Screen 6") { secondPaneNavController.navigateUp() }
+                composable(route = RightPane.Group.route) {
+                    GroupInfoScreen { action ->
+                        when (action) {
+                            GroupInfoAction.Back -> secondPaneNavController.navigateUp()
+                        }
+                    }
                 }
             }
         }
     )
-}
-
-@Composable
-fun Screen(title: String, onClick: () -> Unit) {
-    Text(
-        modifier = Modifier.fillMaxSize(1f).background(Color.Cyan).clickable {
-            onClick()
-        },
-        text = title
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun RichScreen(title: String, onClick: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(title)
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onClick() }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
-            }
-        }
-    ) { innerPadding ->
-        Text("Rich screen: $title")
-    }
 }
