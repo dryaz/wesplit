@@ -1,33 +1,35 @@
 package group.list
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import coil3.compose.AsyncImage
 import kotlinx.coroutines.CoroutineDispatcher
 import org.koin.compose.koinInject
+import kotlin.random.Random
 
 sealed class GroupItemAction {
     abstract val group: Group
@@ -111,19 +113,22 @@ private fun GroupList(modifier: Modifier = Modifier, groups: List<Group>, onActi
         state = lazyColumnListState
     ) {
         items(items = groups, key = { it.id }) { group ->
-            Column(
+            ListItem(
                 modifier = Modifier.clickable {
                     onAction(GroupItemAction.Select(group))
-                }.padding(start = 16.dp)
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(group.title)
-                Text("Number of users: ${group.users.size}")
-                Spacer(modifier = Modifier.height(8.dp))
-                Spacer(
-                    modifier = Modifier.background(MaterialTheme.colorScheme.outline).height(1.dp).fillMaxWidth(1f).padding(start = 16.dp)
-                )
-            }
+                },
+                headlineContent = { Text("${group.title}") },
+                supportingContent = { Text("Users: ${group.users.size}") },
+                trailingContent = { Text("${group.id}") },
+                leadingContent = {
+                    AsyncImage(
+                        modifier = Modifier.size(48.dp).clip(CircleShape),
+                        model = "https://xsgames.co/randomusers/assets/avatars/male/${Random.nextInt(1,50)}.jpg",
+                        contentDescription = ""
+                    )
+                }
+            )
+            HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
         }
     }
 }
