@@ -21,7 +21,7 @@ import group.detailed.GroupInfoAction
 import group.detailed.GroupInfoScreen
 import group.detailed.GroupInfoViewModel
 import group.detailed.NoGroupScreen
-import group.list.GroupItemAction
+import group.list.GroupListAction
 import group.list.GroupListRoute
 import kotlinx.coroutines.CoroutineDispatcher
 import org.koin.compose.koinInject
@@ -88,7 +88,7 @@ fun RootNavigation() {
                 composable(route = LeftPane.GroupList.route) {
                     GroupListRoute { action ->
                         when (action) {
-                            is GroupItemAction.Select ->
+                            is GroupListAction.Select ->
                                 secondPaneNavController.navigate(
                                     RightPane.Group.destination(action.group.id),
                                     navOptions =
@@ -96,6 +96,10 @@ fun RootNavigation() {
                                             launchSingleTop = true
                                         },
                                 )
+
+                            GroupListAction.Login -> {
+                                // TODO: Implement
+                            }
                         }
                     }
                 }

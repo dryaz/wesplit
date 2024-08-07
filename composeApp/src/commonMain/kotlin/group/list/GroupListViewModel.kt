@@ -33,7 +33,7 @@ class GroupListViewModel(
         refresh()
     }
 
-    fun refresh() =
+    fun refresh() {
         viewModelScope.launch {
             withContext(ioDispatcher) {
                 val groups = groupRepository.get()
@@ -46,6 +46,13 @@ class GroupListViewModel(
                 }
             }
         }
+
+        viewModelScope.launch {
+            withContext(ioDispatcher) {
+                _accountState.update { accountRepository.get() }
+            }
+        }
+    }
 
     sealed interface State {
         data object Empty : State

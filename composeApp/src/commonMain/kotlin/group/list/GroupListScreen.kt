@@ -1,19 +1,25 @@
 package group.list
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,18 +50,16 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_split_money
 import split.composeapp.generated.resources.no_image_group_cd
 
-sealed class GroupItemAction {
-    abstract val group: Group
+sealed interface GroupListAction {
+    data class Select(val group: Group) : GroupListAction
 
-    data class Select(
-        override val group: Group,
-    ) : GroupItemAction()
+    data object Login : GroupListAction
 }
 
 @Composable
 fun GroupListRoute(
     modifier: Modifier = Modifier,
-    onAction: (GroupItemAction) -> Unit,
+    onAction: (GroupListAction) -> Unit,
 ) {
     val accountRepository: AccountRepository = koinInject()
     val groupRepository: GroupRepository = koinInject()
@@ -88,22 +92,40 @@ fun GroupListScreen(
     modifier: Modifier = Modifier,
     dataState: GroupListViewModel.State,
     accountState: Account,
-    onAction: (GroupItemAction) -> Unit,
+    onAction: (GroupListAction) -> Unit,
 ) {
-    Scaffold(modifier = modifier, topBar = {
-        TopAppBar(title = {
-            Text(
-                when (val state = accountState) {
-                    is Account.Authorized -> state.name
-                    Account.Unknown -> "Loading"
-                    Account.Unregistered -> "Unauthorized"
-                },
-            )
-        })
-    }) { paddings ->
+    Scaffold(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surface,
+        topBar = {
+            TopAppBar(title = {
+                Text("Groups")
+            }, actions = {
+                Box(
+                    modifier =
+                        Modifier.size(48.dp).clickable {
+                            onAction(GroupListAction.Login)
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.ExitToApp,
+                        modifier =
+                            Modifier.clickable {
+                                onAction(GroupListAction.Login)
+                            },
+                        contentDescription = "Login",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            })
+        },
+    ) { paddings ->
         when (dataState) {
-            GroupListViewModel.State.Empty -> EmptyGroupList(modifier)
-            // TODO: Group list
+            GroupListViewModel.State.Empty -> {
+                EmptyGroupList(modifier, accountState, onAction)
+            }
+
             is GroupListViewModel.State.Groups ->
                 GroupList(
                     modifier = Modifier.padding(paddings),
@@ -115,12 +137,23 @@ fun GroupListScreen(
 }
 
 @Composable
-private fun EmptyGroupList(modifier: Modifier = Modifier) {
+private fun EmptyGroupList(
+    modifier: Modifier = Modifier,
+    accountState: Account,
+    onAction: (GroupListAction) -> Unit,
+) {
     Column(
         modifier = modifier.fillMaxSize(1f),
         verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("No groups yet created")
+        Spacer(modifier = Modifier.height(16.dp))
+        AnimatedVisibility(visible = accountState is Account.Unregistered) {
+            Button(onClick = { onAction(GroupListAction.Login) }) {
+                Text("Login")
+            }
+        }
     }
 }
 
@@ -128,7 +161,7 @@ private fun EmptyGroupList(modifier: Modifier = Modifier) {
 private fun GroupList(
     modifier: Modifier = Modifier,
     groups: List<Group>,
-    onAction: (GroupItemAction) -> Unit,
+    onAction: (GroupListAction) -> Unit,
 ) {
     val lazyColumnListState = rememberLazyListState()
 
@@ -140,7 +173,7 @@ private fun GroupList(
             ListItem(
                 modifier =
                     Modifier.clickable {
-                        onAction(GroupItemAction.Select(group))
+                        onAction(GroupListAction.Select(group))
                     },
                 headlineContent = { Text("${group.title}") },
                 supportingContent = { Text("Users: ${group.users.size}") },
@@ -151,19 +184,11 @@ private fun GroupList(
                             painter = painter,
                             contentScale = ContentScale.Fit,
                             contentDescription = group.title,
-                            modifier =
-                                Modifier
-                                    .size(42.dp)
-                                    .clip(CircleShape)
-                                    .aspectRatio(1f),
+                            modifier = Modifier.size(42.dp).clip(CircleShape).aspectRatio(1f),
                         )
                         if (painter.state !is AsyncImagePainter.State.Success) {
                             Box(
-                                modifier =
-                                    Modifier
-                                        .size(42.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                                modifier = Modifier.size(42.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainer),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
