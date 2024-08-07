@@ -31,6 +31,9 @@ fun DoublePaneNavigation(
         Row(modifier = Modifier.fillMaxHeight(1f)) {
             firstNavhost(Modifier.weight(1f).fillMaxHeight(1f))
             Spacer(modifier = Modifier.fillMaxHeight(1f).width(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
+            // TODO: Calculate weight based on current width, if width is that it will be collapsed -> weight already should be 1.
+            //  So it should be from 1 until 2 based on scnreen width. calculateWindowSizeClass() doesn't provide value :(
+            //  https://github.com/dryaz/wesplit/issues/15
             secondNavhost(Modifier.weight(2f).fillMaxHeight(1f))
         }
     } else {
