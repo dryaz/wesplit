@@ -15,6 +15,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
@@ -25,7 +26,9 @@ sealed interface GroupInfoAction {
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun GroupInfoScreen(modifier: Modifier = Modifier, onAction: (GroupInfoAction) -> Unit) {
+fun GroupInfoScreen(modifier: Modifier = Modifier, viewModel: GroupInfoViewModel, onAction: (GroupInfoAction) -> Unit) {
+    val data = viewModel.dataState.collectAsState()
+
     val windowSizeClass = calculateWindowSizeClass()
 
     Scaffold(modifier = modifier, topBar = {
@@ -47,8 +50,10 @@ fun GroupInfoScreen(modifier: Modifier = Modifier, onAction: (GroupInfoAction) -
             modifier = Modifier.padding(paddings).fillMaxSize(1f),
             contentAlignment = Alignment.Center
         ) {
-            // TODO: Test navigation args.
-            Text("Group selected")
+            when (val state = data.value) {
+                is GroupInfoViewModel.State.GroupInfo -> Text("Group selected: ${state.group.title}")
+                GroupInfoViewModel.State.Loading -> Text("Loading")
+            }
         }
     }
 }

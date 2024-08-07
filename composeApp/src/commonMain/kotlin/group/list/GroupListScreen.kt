@@ -36,10 +36,7 @@ sealed class GroupItemAction {
 }
 
 @Composable
-fun GroupListScreen(
-    modifier: Modifier = Modifier,
-    onAction: (GroupItemAction) -> Unit
-) {
+fun GroupListScreen(modifier: Modifier = Modifier, onAction: (GroupItemAction) -> Unit) {
     val accountRepository: AccountRepository = koinInject()
     val groupRepository: GroupRepository = koinInject()
     val ioDispatcher: CoroutineDispatcher = koinInject()
@@ -72,7 +69,6 @@ private fun Screen(
     accountState: Account,
     onAction: (GroupItemAction) -> Unit
 ) {
-    println("d1")
     Scaffold(modifier = modifier, topBar = {
         TopAppBar(title = {
             Text(

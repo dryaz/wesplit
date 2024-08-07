@@ -14,4 +14,11 @@ class GroupFirebaseRepository : GroupRepository {
         Group("4", "Awesome group 4", null, emptyList()),
         Group("5", "Awesome group 5", null, emptyList())
     )
+
+    override suspend fun get(groupId: String): Group = Group(
+        groupId,
+        "Group with id: $groupId",
+        null,
+        emptyList()
+    )
 }

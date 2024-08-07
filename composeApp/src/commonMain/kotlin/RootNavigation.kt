@@ -5,19 +5,30 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.bundle.Bundle
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import androidx.navigation.navOptions
+import app.wesplit.domain.model.group.GroupRepository
 import group.detailed.GroupInfoAction
 import group.detailed.GroupInfoScreen
+import group.detailed.GroupInfoViewModel
 import group.detailed.NoGroupScreen
 import group.list.GroupItemAction
 import group.list.GroupListScreen
+import kotlinx.coroutines.CoroutineDispatcher
+import org.koin.compose.koinInject
 
-sealed class PaneNavigation(val route: String)
+sealed class PaneNavigation(val route: String) {
+    open fun destination(): String = route
+}
 
 sealed class LeftPane(route: String) : PaneNavigation(route) {
     data object GroupList : LeftPane("groups")
@@ -25,7 +36,15 @@ sealed class LeftPane(route: String) : PaneNavigation(route) {
 
 sealed class RightPane(route: String) : PaneNavigation(route) {
     data object Empty : RightPane("empty")
-    data object Group : RightPane("group")
+    data object Group : RightPane("group/{${Param.GROUP_ID.paramName}}") {
+        enum class Param(val paramName: String) {
+            GROUP_ID("group_id")
+        }
+
+        fun destination(groupId: String): String = "group/$groupId"
+
+        override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId: String) instead")
+    }
 }
 
 @Composable
@@ -54,7 +73,12 @@ fun RootNavigation() {
                 composable(route = LeftPane.GroupList.route) {
                     GroupListScreen { action ->
                         when (action) {
-                            is GroupItemAction.Select -> secondPaneNavController.navigate(RightPane.Group.route)
+                            is GroupItemAction.Select -> secondPaneNavController.navigate(
+                                RightPane.Group.destination(action.group.id),
+                                navOptions = navOptions {
+                                    launchSingleTop = true
+                                }
+                            )
                         }
                     }
                 }
@@ -69,8 +93,30 @@ fun RootNavigation() {
                 composable(route = RightPane.Empty.route) {
                     NoGroupScreen()
                 }
-                composable(route = RightPane.Group.route) {
-                    GroupInfoScreen { action ->
+                composable(
+                    route = RightPane.Group.route,
+                    arguments = listOf(
+                        navArgument(RightPane.Group.Param.GROUP_ID.paramName) {
+                            type = NavType.StringType
+                        }
+                    )
+                ) {
+                    val groupRepository: GroupRepository = koinInject()
+                    val ioDispatcher: CoroutineDispatcher = koinInject()
+
+                    val viewModel: GroupInfoViewModel = viewModel(
+                        key = it.arguments.toString()
+                    ) {
+                        GroupInfoViewModel(
+                            SavedStateHandle.createHandle(null, it.arguments),
+                            groupRepository,
+                            ioDispatcher
+                        )
+                    }
+
+                    GroupInfoScreen(
+                        viewModel = viewModel
+                    ) { action ->
                         when (action) {
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
                         }

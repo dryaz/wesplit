@@ -1,9 +1,9 @@
-package group.list
+package group.detailed
 
+import RightPane
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.wesplit.domain.model.account.Account
-import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,8 +14,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 
-class GroupListViewModel(
-    private val accountRepository: AccountRepository,
+class GroupInfoViewModel(
+    savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
     private val ioDispatcher: CoroutineDispatcher
 ) : ViewModel(),
@@ -24,11 +24,8 @@ class GroupListViewModel(
     val dataState: StateFlow<State>
         get() = _dataState
 
-    val accountState: StateFlow<Account>
-        get() = _accountState
-
-    private val _dataState = MutableStateFlow<State>(State.Empty)
-    private val _accountState = MutableStateFlow<Account>(Account.Unknown)
+    private val groupId: String = checkNotNull(savedStateHandle[RightPane.Group.Param.GROUP_ID.paramName])
+    private val _dataState = MutableStateFlow<State>(State.Loading)
 
     init {
         refresh()
@@ -36,19 +33,15 @@ class GroupListViewModel(
 
     fun refresh() = viewModelScope.launch {
         withContext(ioDispatcher) {
-            val groups = groupRepository.get()
+            val group = groupRepository.get(groupId)
             _dataState.update {
-                if (groups.isEmpty()) {
-                    State.Empty
-                } else {
-                    State.Groups(groups)
-                }
+                State.GroupInfo(group)
             }
         }
     }
 
     sealed interface State {
-        data object Empty : State
-        data class Groups(val groups: List<Group>) : State
+        data object Loading : State
+        data class GroupInfo(val group: Group) : State
     }
 }
