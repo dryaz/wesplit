@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WeSplit</string>
+    <string name="no_image_group_cd">No image for group %s</string>
+</resources>

@@ -7,14 +7,19 @@ import app.wesplit.MainApplication
 import org.koin.core.annotation.Single
 
 @Single
-class ActivityProvider(private val application: MainApplication) {
+class ActivityProvider(
+    private val application: MainApplication,
+) {
     var activeActivity: Activity? = null
 
     init {
         application.registerActivityLifecycleCallbacks(
             object :
                 Application.ActivityLifecycleCallbacks {
-                override fun onActivityCreated(activity: Activity, p1: Bundle?) {
+                override fun onActivityCreated(
+                    activity: Activity,
+                    p1: Bundle?,
+                ) {
                     // Nothing
                 }
 
@@ -34,14 +39,17 @@ class ActivityProvider(private val application: MainApplication) {
                     // Nothing
                 }
 
-                override fun onActivitySaveInstanceState(activity: Activity, p1: Bundle) {
+                override fun onActivitySaveInstanceState(
+                    activity: Activity,
+                    p1: Bundle,
+                ) {
                     // Nothing
                 }
 
                 override fun onActivityDestroyed(activity: Activity) {
                     // Nothing
                 }
-            }
+            },
         )
     }
 }

@@ -23,25 +23,25 @@ import androidx.compose.ui.unit.dp
 fun DoublePaneNavigation(
     secondNavhostEmpty: Boolean,
     firstNavhost: @Composable (Modifier) -> Unit,
-    secondNavhost: @Composable (Modifier) -> Unit
+    secondNavhost: @Composable (Modifier) -> Unit,
 ) {
     val windowSizeClass = calculateWindowSizeClass()
 
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(modifier = Modifier.fillMaxHeight(1f)) {
-            firstNavhost(Modifier.weight(1f).fillMaxHeight(1f))
+            firstNavhost(Modifier.width(300.dp).fillMaxHeight(1f))
             Spacer(modifier = Modifier.fillMaxHeight(1f).width(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
             // TODO: Calculate weight based on current width, if width is that it will be collapsed -> weight already should be 1.
             //  So it should be from 1 until 2 based on scnreen width. calculateWindowSizeClass() doesn't provide value :(
             //  https://github.com/dryaz/wesplit/issues/15
-            secondNavhost(Modifier.weight(2f).fillMaxHeight(1f))
+            secondNavhost(Modifier.weight(1f).fillMaxHeight(1f))
         }
     } else {
         Box(modifier = Modifier.fillMaxSize(1f)) {
             AnimatedVisibility(
                 visible = secondNavhostEmpty,
                 enter = fadeIn(),
-                exit = fadeOut()
+                exit = fadeOut(),
             ) {
                 firstNavhost(Modifier.fillMaxSize(1f))
             }
@@ -49,7 +49,7 @@ fun DoublePaneNavigation(
             AnimatedVisibility(
                 visible = !secondNavhostEmpty,
                 enter = slideInHorizontally { width -> width * 2 },
-                exit = slideOutHorizontally { width -> width * 2 }
+                exit = slideOutHorizontally { width -> width * 2 },
             ) {
                 secondNavhost(Modifier.fillMaxSize(1f))
             }

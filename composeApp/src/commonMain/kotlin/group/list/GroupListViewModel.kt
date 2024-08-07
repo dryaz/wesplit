@@ -17,10 +17,9 @@ import org.koin.core.component.KoinComponent
 class GroupListViewModel(
     private val accountRepository: AccountRepository,
     private val groupRepository: GroupRepository,
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel(),
     KoinComponent {
-
     val dataState: StateFlow<State>
         get() = _dataState
 
@@ -34,21 +33,25 @@ class GroupListViewModel(
         refresh()
     }
 
-    fun refresh() = viewModelScope.launch {
-        withContext(ioDispatcher) {
-            val groups = groupRepository.get()
-            _dataState.update {
-                if (groups.isEmpty()) {
-                    State.Empty
-                } else {
-                    State.Groups(groups)
+    fun refresh() =
+        viewModelScope.launch {
+            withContext(ioDispatcher) {
+                val groups = groupRepository.get()
+                _dataState.update {
+                    if (groups.isEmpty()) {
+                        State.Empty
+                    } else {
+                        State.Groups(groups)
+                    }
                 }
             }
         }
-    }
 
     sealed interface State {
         data object Empty : State
-        data class Groups(val groups: List<Group>) : State
+
+        data class Groups(
+            val groups: List<Group>,
+        ) : State
     }
 }

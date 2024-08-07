@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 fun NoGroupScreen() {
     Box(
         modifier = Modifier.fillMaxSize(1f),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Text("No group selected")
     }

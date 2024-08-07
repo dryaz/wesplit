@@ -26,19 +26,28 @@ import group.list.GroupListScreen
 import kotlinx.coroutines.CoroutineDispatcher
 import org.koin.compose.koinInject
 
-sealed class PaneNavigation(val route: String) {
+sealed class PaneNavigation(
+    val route: String,
+) {
     open fun destination(): String = route
 }
 
-sealed class LeftPane(route: String) : PaneNavigation(route) {
+sealed class LeftPane(
+    route: String,
+) : PaneNavigation(route) {
     data object GroupList : LeftPane("groups")
 }
 
-sealed class RightPane(route: String) : PaneNavigation(route) {
+sealed class RightPane(
+    route: String,
+) : PaneNavigation(route) {
     data object Empty : RightPane("empty")
+
     data object Group : RightPane("group/{${Param.GROUP_ID.paramName}}") {
-        enum class Param(val paramName: String) {
-            GROUP_ID("group_id")
+        enum class Param(
+            val paramName: String,
+        ) {
+            GROUP_ID("group_id"),
         }
 
         fun destination(groupId: String): String = "group/$groupId"
@@ -55,11 +64,17 @@ fun RootNavigation() {
     var secondNahControllerEmpty by remember { mutableStateOf(false) }
 
     LaunchedEffect(secondPaneNavController) {
-        secondPaneNavController.addOnDestinationChangedListener(object : NavController.OnDestinationChangedListener {
-            override fun onDestinationChanged(controller: NavController, destination: NavDestination, arguments: Bundle?) {
-                secondNahControllerEmpty = controller.previousBackStackEntry == null
-            }
-        })
+        secondPaneNavController.addOnDestinationChangedListener(
+            object : NavController.OnDestinationChangedListener {
+                override fun onDestinationChanged(
+                    controller: NavController,
+                    destination: NavDestination,
+                    arguments: Bundle?,
+                ) {
+                    secondNahControllerEmpty = controller.previousBackStackEntry == null
+                }
+            },
+        )
     }
 
     DoublePaneNavigation(
@@ -68,17 +83,19 @@ fun RootNavigation() {
             NavHost(
                 modifier = modifier,
                 navController = firstPaneNavController,
-                startDestination = LeftPane.GroupList.route
+                startDestination = LeftPane.GroupList.route,
             ) {
                 composable(route = LeftPane.GroupList.route) {
                     GroupListScreen { action ->
                         when (action) {
-                            is GroupItemAction.Select -> secondPaneNavController.navigate(
-                                RightPane.Group.destination(action.group.id),
-                                navOptions = navOptions {
-                                    launchSingleTop = true
-                                }
-                            )
+                            is GroupItemAction.Select ->
+                                secondPaneNavController.navigate(
+                                    RightPane.Group.destination(action.group.id),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                        },
+                                )
                         }
                     }
                 }
@@ -88,34 +105,36 @@ fun RootNavigation() {
             NavHost(
                 modifier = modifier,
                 navController = secondPaneNavController,
-                startDestination = RightPane.Empty.route
+                startDestination = RightPane.Empty.route,
             ) {
                 composable(route = RightPane.Empty.route) {
                     NoGroupScreen()
                 }
                 composable(
                     route = RightPane.Group.route,
-                    arguments = listOf(
-                        navArgument(RightPane.Group.Param.GROUP_ID.paramName) {
-                            type = NavType.StringType
-                        }
-                    )
+                    arguments =
+                        listOf(
+                            navArgument(RightPane.Group.Param.GROUP_ID.paramName) {
+                                type = NavType.StringType
+                            },
+                        ),
                 ) {
                     val groupRepository: GroupRepository = koinInject()
                     val ioDispatcher: CoroutineDispatcher = koinInject()
 
-                    val viewModel: GroupInfoViewModel = viewModel(
-                        key = it.arguments.toString()
-                    ) {
-                        GroupInfoViewModel(
-                            SavedStateHandle.createHandle(null, it.arguments),
-                            groupRepository,
-                            ioDispatcher
-                        )
-                    }
+                    val viewModel: GroupInfoViewModel =
+                        viewModel(
+                            key = it.arguments.toString(),
+                        ) {
+                            GroupInfoViewModel(
+                                SavedStateHandle.createHandle(null, it.arguments),
+                                groupRepository,
+                                ioDispatcher,
+                            )
+                        }
 
                     GroupInfoScreen(
-                        viewModel = viewModel
+                        viewModel = viewModel,
                     ) { action ->
                         when (action) {
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
@@ -123,6 +142,6 @@ fun RootNavigation() {
                     }
                 }
             }
-        }
+        },
     )
 }

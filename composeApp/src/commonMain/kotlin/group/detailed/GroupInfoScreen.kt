@@ -20,13 +20,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 sealed interface GroupInfoAction {
-
     data object Back : GroupInfoAction
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun GroupInfoScreen(modifier: Modifier = Modifier, viewModel: GroupInfoViewModel, onAction: (GroupInfoAction) -> Unit) {
+fun GroupInfoScreen(
+    modifier: Modifier = Modifier,
+    viewModel: GroupInfoViewModel,
+    onAction: (GroupInfoAction) -> Unit,
+) {
     val data = viewModel.dataState.collectAsState()
 
     val windowSizeClass = calculateWindowSizeClass()
@@ -39,16 +42,16 @@ fun GroupInfoScreen(modifier: Modifier = Modifier, viewModel: GroupInfoViewModel
                     IconButton(onClick = { onAction(GroupInfoAction.Back) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Go back"
+                            contentDescription = "Go back",
                         )
                     }
-                }
+                },
             )
         }
     }) { paddings ->
         Box(
             modifier = Modifier.padding(paddings).fillMaxSize(1f),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             when (val state = data.value) {
                 is GroupInfoViewModel.State.GroupInfo -> Text("Group selected: ${state.group.title}")
