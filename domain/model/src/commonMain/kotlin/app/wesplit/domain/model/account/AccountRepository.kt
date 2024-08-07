@@ -1,5 +1,5 @@
 package app.wesplit.domain.model.account
 
 interface AccountRepository {
-    fun get(): String
+    suspend fun get(): Account
 }

@@ -53,7 +53,7 @@ sealed class GroupItemAction {
 }
 
 @Composable
-fun GroupListScreen(
+fun GroupListRoute(
     modifier: Modifier = Modifier,
     onAction: (GroupItemAction) -> Unit,
 ) {
@@ -73,7 +73,7 @@ fun GroupListScreen(
     val dataState = viewModel.dataState.collectAsState()
     val accountState = viewModel.accountState.collectAsState()
 
-    Screen(
+    GroupListScreen(
         modifier = modifier,
         dataState = dataState.value,
         accountState = accountState.value,
@@ -84,7 +84,7 @@ fun GroupListScreen(
 // TODO: Check recomposition and probably postpone account retrivial?
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Screen(
+fun GroupListScreen(
     modifier: Modifier = Modifier,
     dataState: GroupListViewModel.State,
     accountState: Account,
