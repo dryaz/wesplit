@@ -6,6 +6,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.stringResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.group_detailed_empty_description
 
 /**
  * Right pane state for expanded UI when no group selected.
@@ -16,6 +19,6 @@ fun NoGroupScreen() {
         modifier = Modifier.fillMaxSize(1f),
         contentAlignment = Alignment.Center,
     ) {
-        Text("No group selected")
+        Text(stringResource(Res.string.group_detailed_empty_description))
     }
 }

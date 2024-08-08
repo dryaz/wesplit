@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navOptions
+import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.GroupRepository
 import group.detailed.GroupInfoAction
 import group.detailed.GroupInfoScreen
@@ -86,6 +87,9 @@ fun RootNavigation() {
                 startDestination = LeftPane.GroupList.route,
             ) {
                 composable(route = LeftPane.GroupList.route) {
+                    val accountRepository: AccountRepository = koinInject()
+                    val groupRepository: GroupRepository = koinInject()
+
                     GroupListRoute { action ->
                         when (action) {
                             is GroupListAction.Select ->
@@ -98,7 +102,13 @@ fun RootNavigation() {
                                 )
 
                             GroupListAction.Login -> {
-                                // TODO: Implement
+                                // TODO: Proper login via firebase and check who and how should notify repo
+                                accountRepository.login()
+                            }
+
+                            GroupListAction.CreateNewGroup -> {
+                                // TODO: Flow for creating new group? Should it autocreate or be savable?
+                                groupRepository.create()
                             }
                         }
                     }

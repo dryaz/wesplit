@@ -42,9 +42,10 @@ class GroupInfoViewModel(
     fun refresh() =
         viewModelScope.launch {
             withContext(ioDispatcher) {
-                val group = groupRepository.get(groupId)
-                _dataState.update {
-                    State.GroupInfo(group)
+                groupRepository.get(groupId)?.let { group ->
+                    _dataState.update {
+                        State.GroupInfo(group)
+                    }
                 }
             }
         }

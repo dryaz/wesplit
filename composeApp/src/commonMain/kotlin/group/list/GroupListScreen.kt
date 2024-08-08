@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -47,11 +47,17 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.group_list_empty_description
+import split.composeapp.generated.resources.group_list_title
 import split.composeapp.generated.resources.ic_split_money
+import split.composeapp.generated.resources.login
+import split.composeapp.generated.resources.login_button_cd
 import split.composeapp.generated.resources.no_image_group_cd
 
 sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction
+
+    data object CreateNewGroup : GroupListAction
 
     data object Login : GroupListAction
 }
@@ -99,22 +105,22 @@ fun GroupListScreen(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             TopAppBar(title = {
-                Text("Groups")
+                Text(stringResource(Res.string.group_list_title))
             }, actions = {
                 Box(
                     modifier =
                         Modifier.size(48.dp).clickable {
-                            onAction(GroupListAction.Login)
+                            onAction(GroupListAction.CreateNewGroup)
                         },
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Outlined.ExitToApp,
+                        Icons.Default.AddCircle,
                         modifier =
                             Modifier.clickable {
-                                onAction(GroupListAction.Login)
+                                onAction(GroupListAction.CreateNewGroup)
                             },
-                        contentDescription = "Login",
+                        contentDescription = stringResource(Res.string.login_button_cd),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -147,11 +153,11 @@ private fun EmptyGroupList(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("No groups yet created")
+        Text(stringResource(Res.string.group_list_empty_description))
         Spacer(modifier = Modifier.height(16.dp))
         AnimatedVisibility(visible = accountState is Account.Unregistered) {
             Button(onClick = { onAction(GroupListAction.Login) }) {
-                Text("Login")
+                Text(stringResource(Res.string.login))
             }
         }
     }
@@ -175,6 +181,7 @@ private fun GroupList(
                     Modifier.clickable {
                         onAction(GroupListAction.Select(group))
                     },
+                // TODO: Define View for group item
                 headlineContent = { Text("${group.title}") },
                 supportingContent = { Text("Users: ${group.users.size}") },
                 leadingContent = {

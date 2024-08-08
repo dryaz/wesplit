@@ -18,6 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.stringResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.back_btn_cd
+import split.composeapp.generated.resources.loading
 
 sealed interface GroupInfoAction {
     data object Back : GroupInfoAction
@@ -42,7 +46,7 @@ fun GroupInfoScreen(
                     IconButton(onClick = { onAction(GroupInfoAction.Back) }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Go back",
+                            contentDescription = stringResource(Res.string.back_btn_cd),
                         )
                     }
                 },
@@ -54,8 +58,9 @@ fun GroupInfoScreen(
             contentAlignment = Alignment.Center,
         ) {
             when (val state = data.value) {
+                // TODO: Proper view for group
                 is GroupInfoViewModel.State.GroupInfo -> Text("Group selected: ${state.group.title}")
-                GroupInfoViewModel.State.Loading -> Text("Loading")
+                GroupInfoViewModel.State.Loading -> Text(stringResource(Res.string.loading))
             }
         }
     }

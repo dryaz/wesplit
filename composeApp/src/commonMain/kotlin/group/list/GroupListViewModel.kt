@@ -9,9 +9,9 @@ import app.wesplit.domain.model.group.GroupRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 
 class GroupListViewModel(
@@ -24,10 +24,9 @@ class GroupListViewModel(
         get() = _dataState
 
     val accountState: StateFlow<Account>
-        get() = _accountState
+        get() = accountRepository.get()
 
     private val _dataState = MutableStateFlow<State>(State.Empty)
-    private val _accountState = MutableStateFlow<Account>(Account.Unknown)
 
     init {
         refresh()
@@ -35,8 +34,7 @@ class GroupListViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            withContext(ioDispatcher) {
-                val groups = groupRepository.get()
+            groupRepository.get().collectLatest { groups ->
                 _dataState.update {
                     if (groups.isEmpty()) {
                         State.Empty
@@ -44,12 +42,6 @@ class GroupListViewModel(
                         State.Groups(groups)
                     }
                 }
-            }
-        }
-
-        viewModelScope.launch {
-            withContext(ioDispatcher) {
-                _accountState.update { accountRepository.get() }
             }
         }
     }

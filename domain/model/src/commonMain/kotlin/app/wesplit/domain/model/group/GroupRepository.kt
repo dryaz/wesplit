@@ -1,7 +1,11 @@
 package app.wesplit.domain.model.group
 
-interface GroupRepository {
-    suspend fun get(): List<Group>
+import kotlinx.coroutines.flow.StateFlow
 
-    suspend fun get(groupId: String): Group
+interface GroupRepository {
+    fun get(): StateFlow<List<Group>>
+
+    suspend fun get(groupId: String): Group?
+
+    fun create()
 }

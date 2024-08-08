@@ -1,5 +1,9 @@
 package app.wesplit.domain.model.account
 
+import kotlinx.coroutines.flow.StateFlow
+
 interface AccountRepository {
-    suspend fun get(): Account
+    fun get(): StateFlow<Account>
+
+    fun login()
 }
