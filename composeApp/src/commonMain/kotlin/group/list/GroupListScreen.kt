@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,14 +21,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -53,6 +52,7 @@ import split.composeapp.generated.resources.ic_split_money
 import split.composeapp.generated.resources.login
 import split.composeapp.generated.resources.login_button_cd
 import split.composeapp.generated.resources.no_image_group_cd
+import ui.AdaptiveTopAppBar
 
 sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction
@@ -92,7 +92,6 @@ fun GroupListRoute(
 }
 
 // TODO: Check recomposition and probably postpone account retrivial?
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupListScreen(
     modifier: Modifier = Modifier,
@@ -104,7 +103,7 @@ fun GroupListScreen(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            TopAppBar(title = {
+            AdaptiveTopAppBar(title = {
                 Text(stringResource(Res.string.group_list_title))
             }, actions = {
                 Box(
@@ -133,6 +132,7 @@ fun GroupListScreen(
                     modifier = Modifier.padding(paddings),
                     groups = dataState.groups,
                     onAction = { onAction(it) },
+                    accountState = accountState,
                 )
         }
     }
@@ -163,49 +163,62 @@ private fun EmptyGroupList(
 private fun GroupList(
     modifier: Modifier = Modifier,
     groups: List<Group>,
+    accountState: Account,
     onAction: (GroupListAction) -> Unit,
 ) {
     val lazyColumnListState = rememberLazyListState()
 
-    LazyColumn(
-        modifier = modifier,
-        state = lazyColumnListState,
-    ) {
-        items(items = groups, key = { it.id }) { group ->
-            ListItem(
-                modifier =
+    Column(modifier.fillMaxSize()) {
+        // TODO: No yet scrollbars: https://developer.android.com/jetpack/androidx/compose-roadmap
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            state = lazyColumnListState,
+        ) {
+            items(items = groups, key = { it.id }) { group ->
+                ListItem(
+                    modifier =
                     Modifier.clickable {
                         onAction(GroupListAction.Select(group))
                     },
-                // TODO: Define View for group item
-                headlineContent = { Text("${group.title}") },
-                supportingContent = { Text("Users: ${group.users.size}") },
-                leadingContent = {
-                    Box(contentAlignment = Alignment.Center) {
-                        val painter = rememberAsyncImagePainter(model = group.imageUrl)
-                        Image(
-                            painter = painter,
-                            contentScale = ContentScale.Fit,
-                            contentDescription = group.title,
-                            modifier = Modifier.size(42.dp).clip(CircleShape).aspectRatio(1f),
-                        )
-                        if (painter.state !is AsyncImagePainter.State.Success) {
-                            Box(
-                                modifier = Modifier.size(42.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainer),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    painter = painterResource(Res.drawable.ic_split_money),
-                                    contentDescription = stringResource(Res.string.no_image_group_cd, group.title),
-                                    modifier = Modifier.size(24.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
+                    // TODO: Define View for group item
+                    headlineContent = { Text("${group.title}") },
+                    supportingContent = { Text("Users: ${group.users.size}") },
+                    leadingContent = {
+                        Box(contentAlignment = Alignment.Center) {
+                            val painter = rememberAsyncImagePainter(model = group.imageUrl)
+                            Image(
+                                painter = painter,
+                                contentScale = ContentScale.Fit,
+                                contentDescription = group.title,
+                                modifier = Modifier.size(42.dp).clip(CircleShape).aspectRatio(1f),
+                            )
+                            if (painter.state !is AsyncImagePainter.State.Success) {
+                                Box(
+                                    modifier = Modifier.size(42.dp).clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        painter = painterResource(Res.drawable.ic_split_money),
+                                        contentDescription = stringResource(Res.string.no_image_group_cd, group.title),
+                                        modifier = Modifier.size(24.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
                             }
                         }
-                    }
-                },
-            )
-            HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+                    },
+                )
+                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+            }
+        }
+        AnimatedVisibility(visible = accountState is Account.Unregistered) {
+            Button(
+                modifier = Modifier.fillMaxWidth(1f),
+                onClick = { onAction(GroupListAction.Login) }
+            ) {
+                Text(stringResource(Res.string.login))
+            }
         }
     }
 }

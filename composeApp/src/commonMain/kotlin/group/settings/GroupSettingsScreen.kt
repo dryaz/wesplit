@@ -2,18 +2,12 @@ package group.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -21,13 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
-import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.create
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_group
 import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.settings
+import ui.AdaptiveTopAppBar
 
 sealed interface GroupSettingsAction {
     data object Back : GroupSettingsAction
@@ -74,14 +68,13 @@ fun GroupSettingsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopAppBareByState(
     state: GroupSettingsViewModel.State,
     onAction: (GroupSettingsAction) -> Unit,
     onToolbarAction: (GroupSettingTollbarAction) -> Unit,
 ) {
-    TopAppBar(
+    AdaptiveTopAppBar(
         title = {
             Text(
                 stringResource(
@@ -98,24 +91,16 @@ private fun TopAppBareByState(
                 ),
             )
         },
-        navigationIcon = {
-            IconButton(onClick = { onAction(GroupSettingsAction.Back) }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(Res.string.back_btn_cd),
-                )
-            }
-        },
+        onBack = { onAction(GroupSettingsAction.Back) },
         actions = {
             Box(
-                modifier =
-                    Modifier.size(48.dp).clickable {
-                        when (state) {
-                            is GroupSettingsViewModel.State.Error -> onToolbarAction(GroupSettingTollbarAction.Reload)
-                            is GroupSettingsViewModel.State.Group -> onToolbarAction(GroupSettingTollbarAction.Commit)
-                            GroupSettingsViewModel.State.Loading -> {}
-                        }
-                    },
+                modifier = Modifier.fillMaxHeight(1f).clickable {
+                    when (state) {
+                        is GroupSettingsViewModel.State.Error -> onToolbarAction(GroupSettingTollbarAction.Reload)
+                        is GroupSettingsViewModel.State.Group -> onToolbarAction(GroupSettingTollbarAction.Commit)
+                        GroupSettingsViewModel.State.Loading -> {}
+                    }
+                }.padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 when (state) {
