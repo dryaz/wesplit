@@ -53,7 +53,7 @@ class GroupFirebaseRepository(
         groups.getAndUpdate { existingGroups ->
             // TODO: Support updating for internal memory impl
             val randItn = Random.nextInt()
-            existingGroups + Group(randItn.toString(), "$title $randItn", users)
+            existingGroups + Group(randItn.toString(), "$title", users)
         }
     }
 }

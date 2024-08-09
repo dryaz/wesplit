@@ -1,21 +1,37 @@
 package group.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.create
+import split.composeapp.generated.resources.group_name
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_group
 import split.composeapp.generated.resources.retry
@@ -40,6 +56,7 @@ fun GroupSettingsScreen(
     onAction: (GroupSettingsAction) -> Unit,
 ) {
     val state = viewModel.state.collectAsState()
+    var groupTitle by remember { mutableStateOf("") }
 
     Scaffold(
         modifier = modifier,
@@ -61,11 +78,58 @@ fun GroupSettingsScreen(
             )
         },
     ) { paddings ->
-        Text(
-            modifier = Modifier.padding(paddings),
-            text = "Here group info",
-        )
+        when (val groupState = state.value) {
+            is GroupSettingsViewModel.State.Error -> Text("Error")
+            is GroupSettingsViewModel.State.Group -> GroupSettingsView(
+                modifier = Modifier.fillMaxSize(1f).padding(paddings),
+                group = groupState,
+            ) { group ->
+                viewModel.update(group)
+            }
+            // TODO: Shimmer?
+            GroupSettingsViewModel.State.Loading -> Text("Loading")
+        }
     }
+}
+
+@Composable
+private fun GroupSettingsView(
+    modifier: Modifier = Modifier,
+    group: GroupSettingsViewModel.State.Group,
+    onUpdated: (GroupSettingsViewModel.State.Group) -> Unit
+) {
+    Box(
+        modifier = modifier.padding(top = 16.dp),
+        contentAlignment = Alignment.TopCenter
+    ) {
+        Card(
+            modifier = Modifier
+                .widthIn(max = 450.dp)
+                .fillMaxWidth(1f)
+                .padding(horizontal = 16.dp)
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(Color.Red)
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                OutlinedTextField(
+                    // TODO: Prefil later when select paritipatns if empty
+                    value = group.title,
+                    onValueChange = { onUpdated(group.copy(title = it)) },
+                    label = {
+                        Text(stringResource(Res.string.group_name))
+                    }
+                )
+            }
+        }
+    }
+
 }
 
 @Composable
