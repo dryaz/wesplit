@@ -24,7 +24,9 @@ import group.detailed.GroupInfoViewModel
 import group.detailed.NoGroupScreen
 import group.list.GroupListAction
 import group.list.GroupListRoute
-import kotlinx.coroutines.CoroutineDispatcher
+import group.settings.GroupSettingsAction
+import group.settings.GroupSettingsScreen
+import group.settings.GroupSettingsViewModel
 import org.koin.compose.koinInject
 
 sealed class PaneNavigation(
@@ -55,6 +57,8 @@ sealed class RightPane(
 
         override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId: String) instead")
     }
+
+    data object NewGroup : RightPane("newGroup")
 }
 
 @Composable
@@ -88,7 +92,6 @@ fun RootNavigation() {
             ) {
                 composable(route = LeftPane.GroupList.route) {
                     val accountRepository: AccountRepository = koinInject()
-                    val groupRepository: GroupRepository = koinInject()
 
                     GroupListRoute { action ->
                         when (action) {
@@ -107,8 +110,13 @@ fun RootNavigation() {
                             }
 
                             GroupListAction.CreateNewGroup -> {
-                                // TODO: Flow for creating new group? Should it autocreate or be savable?
-                                groupRepository.create()
+                                secondPaneNavController.navigate(
+                                    RightPane.NewGroup.destination(),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                        },
+                                )
                             }
                         }
                     }
@@ -134,7 +142,6 @@ fun RootNavigation() {
                         ),
                 ) {
                     val groupRepository: GroupRepository = koinInject()
-                    val ioDispatcher: CoroutineDispatcher = koinInject()
 
                     val viewModel: GroupInfoViewModel =
                         viewModel(
@@ -143,7 +150,6 @@ fun RootNavigation() {
                             GroupInfoViewModel(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
-                                ioDispatcher,
                             )
                         }
 
@@ -152,6 +158,23 @@ fun RootNavigation() {
                     ) { action ->
                         when (action) {
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
+                        }
+                    }
+                }
+                composable(route = RightPane.NewGroup.route) {
+                    val groupRepository: GroupRepository = koinInject()
+
+                    val viewModel: GroupSettingsViewModel =
+                        viewModel {
+                            GroupSettingsViewModel(
+                                SavedStateHandle.createHandle(null, null),
+                                groupRepository,
+                            )
+                        }
+
+                    GroupSettingsScreen(viewModel = viewModel) { action ->
+                        when (action) {
+                            GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
                         }
                     }
                 }

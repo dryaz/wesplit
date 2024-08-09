@@ -10,5 +10,5 @@ fun appModule() =
     listOf(
         // TODO: Correct dispatcher for IO
         module { single<CoroutineDispatcher> { Dispatchers.Main } },
-        module { single<AnalyticsManager> { CommonAnalyticsManager() } }
+        module { single<AnalyticsManager> { CommonAnalyticsManager() } },
     )

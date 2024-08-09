@@ -1,14 +1,14 @@
 package app.wesplit.domain.model.account
 
+import app.wesplit.domain.model.user.User
+
 sealed interface Account {
     data object Unknown : Account
 
     data object Unregistered : Account
 
     data class Authorized(
-        val id: String,
-        val name: String,
-        val contacts: List<Contact> = emptyList(),
+        val user: User,
     ) : Account
 }
 

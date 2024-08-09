@@ -3,6 +3,7 @@ package app.wesplit.data.firebase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.user.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -12,7 +13,7 @@ private const val LOGIN_EVENT = "login"
 
 @Single
 class AccountFirebaseRepository(
-    private val analyticsManager: AnalyticsManager
+    private val analyticsManager: AnalyticsManager,
 ) : AccountRepository {
     private val accountState = MutableStateFlow<Account>(Account.Unregistered)
 
@@ -22,9 +23,10 @@ class AccountFirebaseRepository(
         analyticsManager.track(LOGIN_EVENT)
         accountState.update {
             Account.Authorized(
-                "userId",
-                "Dima",
-                emptyList(),
+                User(
+                    "userId",
+                    "Dima",
+                ),
             )
         }
     }

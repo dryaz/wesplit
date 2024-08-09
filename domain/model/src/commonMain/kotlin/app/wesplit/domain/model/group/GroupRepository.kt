@@ -1,11 +1,32 @@
 package app.wesplit.domain.model.group
 
+import app.wesplit.domain.model.user.User
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface GroupRepository {
     fun get(): StateFlow<List<Group>>
 
-    suspend fun get(groupId: String): Group?
+    // TODO: Flow? Cause first cached thing could be returned.
 
-    fun create()
+    /**
+     * Get group by id. First cached result could be returned.
+     * Also try to retrieve group from cloud and Result could be unsuccessfull in case of
+     * e.g. network error or current user is not authorized to access the group.
+     */
+    fun get(groupId: String): Flow<Result<Group>>
+
+    // TODO: Support image
+    // TODO: Define if current user must be in the users list
+
+    /**
+     * Persist data in service.
+     *
+     * @param id if null passed new group will be created.
+     */
+    fun commit(
+        id: String?,
+        title: String,
+        users: List<User>,
+    )
 }

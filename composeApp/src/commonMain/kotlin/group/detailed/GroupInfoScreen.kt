@@ -61,6 +61,8 @@ fun GroupInfoScreen(
                 // TODO: Proper view for group
                 is GroupInfoViewModel.State.GroupInfo -> Text("Group selected: ${state.group.title}")
                 GroupInfoViewModel.State.Loading -> Text(stringResource(Res.string.loading))
+                // TODO: Error state
+                is GroupInfoViewModel.State.Error -> Text("Error")
             }
         }
     }

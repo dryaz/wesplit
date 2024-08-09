@@ -116,10 +116,6 @@ fun GroupListScreen(
                 ) {
                     Icon(
                         Icons.Default.AddCircle,
-                        modifier =
-                            Modifier.clickable {
-                                onAction(GroupListAction.CreateNewGroup)
-                            },
                         contentDescription = stringResource(Res.string.login_button_cd),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

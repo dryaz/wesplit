@@ -6,7 +6,13 @@
     <string name="group_list_title">Groups</string>
     <string name="group_list_empty_description">No groups yet created</string>
     <string name="group_detailed_empty_description">Select group to see info here</string>
+    <string name="back">Back</string>
     <string name="back_btn_cd">Go back</string>
     <string name="loading">Loading</string>
+    <string name="create">Create</string>
+    <string name="save">Save</string>
+    <string name="new_group">New group</string>
+    <string name="settings">Settings</string>
+    <string name="retry">Retry</string>
 <!--    <string name=""></string>-->
 </resources>

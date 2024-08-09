@@ -7,7 +7,11 @@ class CommonAnalyticsManager : AnalyticsManager {
         exception.printStackTrace()
     }
 
-    override fun log(msg: String, logLevel: LogLevel, tag: String) {
+    override fun log(
+        msg: String,
+        logLevel: LogLevel,
+        tag: String,
+    ) {
         println("Tag: $tag | Leve:$logLevel | $msg")
     }
 
@@ -15,7 +19,10 @@ class CommonAnalyticsManager : AnalyticsManager {
         println("Event: $event")
     }
 
-    override fun track(event: String, params: Map<String, String>) {
+    override fun track(
+        event: String,
+        params: Map<String, String>,
+    ) {
         println("Event: $event | ${params.map { "${it.key} : ${it.value}" }}")
     }
 
@@ -23,7 +30,10 @@ class CommonAnalyticsManager : AnalyticsManager {
         println("Set user ID to $userId")
     }
 
-    override fun setParam(key: String, value: String) {
+    override fun setParam(
+        key: String,
+        value: String,
+    ) {
         println("Set param: $key | $value")
     }
 }
