@@ -15,6 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
  */
 @Composable
 @Preview(showSystemUi = true, widthDp = 900)
-fun Playground() = MaterialTheme {
-
-}
+fun Playground() =
+    MaterialTheme {
+    }

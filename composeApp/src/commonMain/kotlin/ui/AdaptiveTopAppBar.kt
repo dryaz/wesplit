@@ -52,7 +52,7 @@ fun AdaptiveTopAppBar(
                     }
                 }
             },
-            actions = actions
+            actions = actions,
         )
     } else {
         CenterAlignedTopAppBar(
@@ -61,9 +61,10 @@ fun AdaptiveTopAppBar(
             navigationIcon = {
                 onBack?.let { backAction ->
                     Row(
-                        modifier = Modifier.fillMaxHeight(1f).clickable {
-                            backAction()
-                        }.padding(horizontal = 16.dp),
+                        modifier =
+                            Modifier.fillMaxHeight(1f).clickable {
+                                backAction()
+                            }.padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
@@ -78,8 +79,7 @@ fun AdaptiveTopAppBar(
                     }
                 }
             },
-            actions = actions
+            actions = actions,
         )
     }
-
 }

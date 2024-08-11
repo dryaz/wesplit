@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -80,12 +81,13 @@ fun GroupSettingsScreen(
     ) { paddings ->
         when (val groupState = state.value) {
             is GroupSettingsViewModel.State.Error -> Text("Error")
-            is GroupSettingsViewModel.State.Group -> GroupSettingsView(
-                modifier = Modifier.fillMaxSize(1f).padding(paddings),
-                group = groupState,
-            ) { group ->
-                viewModel.update(group)
-            }
+            is GroupSettingsViewModel.State.Group ->
+                GroupSettingsView(
+                    modifier = Modifier.fillMaxSize(1f).padding(paddings),
+                    group = groupState,
+                ) { group ->
+                    viewModel.update(group)
+                }
             // TODO: Shimmer?
             GroupSettingsViewModel.State.Loading -> Text("Loading")
         }
@@ -96,26 +98,32 @@ fun GroupSettingsScreen(
 private fun GroupSettingsView(
     modifier: Modifier = Modifier,
     group: GroupSettingsViewModel.State.Group,
-    onUpdated: (GroupSettingsViewModel.State.Group) -> Unit
+    onUpdated: (GroupSettingsViewModel.State.Group) -> Unit,
 ) {
     Box(
         modifier = modifier.padding(top = 16.dp),
-        contentAlignment = Alignment.TopCenter
+        contentAlignment = Alignment.TopCenter,
     ) {
         Card(
-            modifier = Modifier
-                .widthIn(max = 450.dp)
-                .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp)
+            modifier =
+                Modifier
+                    .widthIn(max = 450.dp)
+                    .fillMaxWidth(1f)
+                    .padding(horizontal = 16.dp),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(Color.Red)
+                    modifier =
+                        Modifier
+                            .size(64.dp)
+                            .background(Color.Red),
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedTextField(
@@ -124,12 +132,11 @@ private fun GroupSettingsView(
                     onValueChange = { onUpdated(group.copy(title = it)) },
                     label = {
                         Text(stringResource(Res.string.group_name))
-                    }
+                    },
                 )
             }
         }
     }
-
 }
 
 @Composable
@@ -158,13 +165,14 @@ private fun TopAppBareByState(
         onBack = { onAction(GroupSettingsAction.Back) },
         actions = {
             Box(
-                modifier = Modifier.fillMaxHeight(1f).clickable {
-                    when (state) {
-                        is GroupSettingsViewModel.State.Error -> onToolbarAction(GroupSettingTollbarAction.Reload)
-                        is GroupSettingsViewModel.State.Group -> onToolbarAction(GroupSettingTollbarAction.Commit)
-                        GroupSettingsViewModel.State.Loading -> {}
-                    }
-                }.padding(horizontal = 16.dp),
+                modifier =
+                    Modifier.fillMaxHeight(1f).clickable {
+                        when (state) {
+                            is GroupSettingsViewModel.State.Error -> onToolbarAction(GroupSettingTollbarAction.Reload)
+                            is GroupSettingsViewModel.State.Group -> onToolbarAction(GroupSettingTollbarAction.Commit)
+                            GroupSettingsViewModel.State.Loading -> {}
+                        }
+                    }.padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 when (state) {

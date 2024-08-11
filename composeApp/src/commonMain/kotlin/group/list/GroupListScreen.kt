@@ -177,9 +177,9 @@ private fun GroupList(
             items(items = groups, key = { it.id }) { group ->
                 ListItem(
                     modifier =
-                    Modifier.clickable {
-                        onAction(GroupListAction.Select(group))
-                    },
+                        Modifier.clickable {
+                            onAction(GroupListAction.Select(group))
+                        },
                     // TODO: Define View for group item
                     headlineContent = { Text("${group.title}") },
                     supportingContent = { Text("Users: ${group.users.size}") },
@@ -194,8 +194,9 @@ private fun GroupList(
                             )
                             if (painter.state !is AsyncImagePainter.State.Success) {
                                 Box(
-                                    modifier = Modifier.size(42.dp).clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                                    modifier =
+                                        Modifier.size(42.dp).clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.surfaceContainer),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     Icon(
@@ -215,7 +216,7 @@ private fun GroupList(
         AnimatedVisibility(visible = accountState is Account.Unregistered) {
             Button(
                 modifier = Modifier.fillMaxWidth(1f),
-                onClick = { onAction(GroupListAction.Login) }
+                onClick = { onAction(GroupListAction.Login) },
             ) {
                 Text(stringResource(Res.string.login))
             }

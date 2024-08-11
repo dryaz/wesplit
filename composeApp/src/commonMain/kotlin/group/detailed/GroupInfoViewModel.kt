@@ -39,22 +39,24 @@ class GroupInfoViewModel(
         refresh()
     }
 
-    fun refresh() = viewModelScope.launch {
-        groupRepository.get(groupId).collectLatest { groupResult ->
-            val exception = groupResult.exceptionOrNull()
-            _dataState.update {
-                when (exception) {
-                    is UnauthorizeAcceessException -> GroupInfoViewModel.State.Error(GroupInfoViewModel.State.Error.Type.UNAUTHORIZED)
-                    is NullPointerException -> GroupInfoViewModel.State.Error(GroupInfoViewModel.State.Error.Type.NOT_EXISTS)
-                    else -> if (exception != null) {
-                        GroupInfoViewModel.State.Error(GroupInfoViewModel.State.Error.Type.FETCH_ERROR)
-                    } else {
-                        GroupInfoViewModel.State.GroupInfo(groupResult.getOrThrow())
+    fun refresh() =
+        viewModelScope.launch {
+            groupRepository.get(groupId).collectLatest { groupResult ->
+                val exception = groupResult.exceptionOrNull()
+                _dataState.update {
+                    when (exception) {
+                        is UnauthorizeAcceessException -> GroupInfoViewModel.State.Error(GroupInfoViewModel.State.Error.Type.UNAUTHORIZED)
+                        is NullPointerException -> GroupInfoViewModel.State.Error(GroupInfoViewModel.State.Error.Type.NOT_EXISTS)
+                        else ->
+                            if (exception != null) {
+                                GroupInfoViewModel.State.Error(GroupInfoViewModel.State.Error.Type.FETCH_ERROR)
+                            } else {
+                                GroupInfoViewModel.State.GroupInfo(groupResult.getOrThrow())
+                            }
                     }
                 }
             }
         }
-    }
 
     sealed interface State {
         data object Loading : State

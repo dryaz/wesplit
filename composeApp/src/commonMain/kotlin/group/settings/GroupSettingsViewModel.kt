@@ -37,9 +37,10 @@ class GroupSettingsViewModel(
 
     // TODO: Possible error/info state that if you create gropu without yourself you won't be able to see it
     // TODO: TBD if it possible to create a group and not to be part of it (probably not)
-    fun commit() = with(state.value as State.Group) {
-        groupRepository.commit(id, title, users)
-    }
+    fun commit() =
+        with(state.value as State.Group) {
+            groupRepository.commit(id, title, users)
+        }
 
     fun update(group: State.Group) = _state.update { group }
 
@@ -48,28 +49,30 @@ class GroupSettingsViewModel(
         if (groupId == null) throw IllegalStateException("Can't reload group without ID")
 
         loadJob?.cancel()
-        loadJob = viewModelScope.launch {
-            groupRepository.get(groupId).collectLatest { groupResult ->
-                val exception = groupResult.exceptionOrNull()
-                _state.update {
-                    when (exception) {
-                        is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)
-                        is NullPointerException -> State.Error(State.Error.Type.NOT_EXISTS)
-                        else -> if (exception != null) {
-                            State.Error(State.Error.Type.FETCH_ERROR)
-                        } else {
-                            with(groupResult.getOrThrow()) {
-                                State.Group(
-                                    id = this.id,
-                                    title = this.title,
-                                    users = this.users
-                                )
-                            }
+        loadJob =
+            viewModelScope.launch {
+                groupRepository.get(groupId).collectLatest { groupResult ->
+                    val exception = groupResult.exceptionOrNull()
+                    _state.update {
+                        when (exception) {
+                            is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)
+                            is NullPointerException -> State.Error(State.Error.Type.NOT_EXISTS)
+                            else ->
+                                if (exception != null) {
+                                    State.Error(State.Error.Type.FETCH_ERROR)
+                                } else {
+                                    with(groupResult.getOrThrow()) {
+                                        State.Group(
+                                            id = this.id,
+                                            title = this.title,
+                                            users = this.users,
+                                        )
+                                    }
+                                }
                         }
                     }
                 }
             }
-        }
     }
 
     private fun emptyGroupState() =
