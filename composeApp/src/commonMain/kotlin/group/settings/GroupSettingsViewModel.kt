@@ -80,7 +80,10 @@ class GroupSettingsViewModel(
             id = null,
             title = "",
             // TODO: Should we have current user in group by default? Probably yes.
-            users = emptyList(),
+            users =
+                (0..50).map {
+                    User("$it", "User #$it")
+                },
         )
 
     sealed interface State {

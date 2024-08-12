@@ -15,5 +15,6 @@
     <string name="settings">Settings</string>
     <string name="retry">Retry</string>
     <string name="group_name">Group name</string>
+    <string name="add_user_to_group">Add new user to group</string>
 <!--    <string name=""></string>-->
 </resources>
