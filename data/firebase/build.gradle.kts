@@ -1,10 +1,9 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.serialization)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.ktlint)
@@ -13,25 +12,29 @@ plugins {
 kotlin {
     task("testClasses")
 
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        moduleName = "model"
-        browser {
-            val projectDirPath = project.projectDir.path
-            commonWebpackConfig {
-                outputFileName = "data_firebase.js"
-                devServer =
-                    (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                        static =
-                            (static ?: mutableListOf()).apply {
-                                // Serve sources to debug inside browser
-                                add(projectDirPath)
-                            }
-                    }
-            }
-        }
-        binaries.executable()
+    js(IR) {
+        browser {}
     }
+
+//    @OptIn(ExperimentalWasmDsl::class)
+//    wasmJs {
+//        moduleName = "model"
+//        browser {
+//            val projectDirPath = project.projectDir.path
+//            commonWebpackConfig {
+//                outputFileName = "data_firebase.js"
+//                devServer =
+//                    (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+//                        static =
+//                            (static ?: mutableListOf()).apply {
+//                                // Serve sources to debug inside browser
+//                                add(projectDirPath)
+//                            }
+//                    }
+//            }
+//        }
+//        binaries.executable()
+//    }
 
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -56,6 +59,10 @@ kotlin {
                 implementation(libs.koin.annotations)
 
                 implementation(libs.kotlinx.coroutines.core)
+
+                implementation(libs.firebase.common.auth)
+                implementation(libs.firebase.common.analytics)
+                implementation(libs.firebase.common.firestore)
             }
         }
     }

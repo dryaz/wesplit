@@ -10,6 +10,10 @@ plugins {
 kotlin {
     task("testClasses")
 
+    js(IR) {
+        browser {}
+    }
+
     androidTarget {
         compilations.all {
             kotlinOptions {

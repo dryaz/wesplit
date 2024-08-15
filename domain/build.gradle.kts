@@ -13,6 +13,10 @@ plugins {
 kotlin {
     task("testClasses")
 
+    js(IR) {
+        browser {}
+    }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser {

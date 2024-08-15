@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.kotlinJvm) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.serialization) apply false
     alias(libs.plugins.google.devtools.ksp) apply false
     alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.google.services) apply false
 }

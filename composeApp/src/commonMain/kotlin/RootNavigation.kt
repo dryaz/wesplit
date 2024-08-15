@@ -18,6 +18,9 @@ import androidx.navigation.navArgument
 import androidx.navigation.navOptions
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.GroupRepository
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.firestore.firestore
+import dev.gitlive.firebase.options
 import group.detailed.GroupInfoAction
 import group.detailed.GroupInfoScreen
 import group.detailed.GroupInfoViewModel
@@ -27,6 +30,8 @@ import group.list.GroupListRoute
 import group.settings.GroupSettingsAction
 import group.settings.GroupSettingsScreen
 import group.settings.GroupSettingsViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 sealed class PaneNavigation(
@@ -106,7 +111,16 @@ fun RootNavigation() {
 
                             GroupListAction.Login -> {
                                 // TODO: Proper login via firebase and check who and how should notify repo
-                                accountRepository.login()
+//                                accountRepository.login()
+                                GlobalScope.launch {
+                                    println("Apikey: ${Firebase.options.apiKey}")
+//                                    val auth = Firebase.auth.signInAnonymously()
+//                                    println("$auth")
+//                                    println("${auth.user}")
+                                    println("HOST: ${Firebase.firestore.settings}")
+
+                                    println(Firebase.firestore.collection("offers").get().documents.size)
+                                }
                             }
 
                             GroupListAction.CreateNewGroup -> {
