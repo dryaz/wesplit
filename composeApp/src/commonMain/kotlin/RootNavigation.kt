@@ -20,7 +20,6 @@ import androidx.navigation.navOptions
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.GroupRepository
-import dev.gitlive.firebase.auth.FirebaseUser
 import group.detailed.GroupInfoAction
 import group.detailed.GroupInfoScreen
 import group.detailed.GroupInfoViewModel
@@ -79,6 +78,7 @@ fun RootNavigation() {
     var secondNahControllerEmpty by remember { mutableStateOf(false) }
     val analytics: AnalyticsManager = koinInject()
     val accountRepository: AccountRepository = koinInject()
+    val loginDelegate: LoginDelegate = koinInject()
 
     LaunchedEffect(secondPaneNavController) {
         secondPaneNavController.addOnDestinationChangedListener(
@@ -120,7 +120,7 @@ fun RootNavigation() {
                                 val loginType = LoginType.GOOGLE
                                 val providerParam = mapOf(LOGIN_PROVIDER_PARAM to loginType.toString())
                                 analytics.track(LOGIN_ATTEMPT_EVENT, providerParam)
-                                login(LoginType.GOOGLE) { result ->
+                                loginDelegate.login(LoginType.GOOGLE) { result ->
                                     if (result.isSuccess) {
                                         analytics.track(LOGIN_SUCCEED_EVENT, providerParam)
                                         println(result.getOrThrow().email)
@@ -207,13 +207,4 @@ fun RootNavigation() {
             }
         },
     )
-}
-
-expect fun login(
-    type: LoginType,
-    onLogin: (Result<FirebaseUser>) -> Unit,
-)
-
-enum class LoginType {
-    GOOGLE,
 }

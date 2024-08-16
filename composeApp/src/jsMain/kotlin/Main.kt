@@ -4,6 +4,7 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
 import org.jetbrains.skiko.wasm.onWasmReady
+import org.koin.dsl.module
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
@@ -19,7 +20,9 @@ fun main() {
         Firebase.initialize(null, options)
 
         CanvasBasedWindow("composeApp") {
-            App()
+            App(module {
+                single<LoginDelegate> { LoginJsDelegate() }
+            })
         }
     }
 }
