@@ -2,6 +2,7 @@
     <string name="app_name">WeSplit</string>
     <string name="no_image_group_cd">No image for group %s</string>
     <string name="login">Login</string>
+    <string name="logout">Logout</string>
     <string name="login_button_cd">Login</string>
     <string name="group_list_title">Groups</string>
     <string name="group_list_empty_description">No groups yet created</string>

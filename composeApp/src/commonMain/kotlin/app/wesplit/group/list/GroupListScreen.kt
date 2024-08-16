@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,24 +35,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.account.Account
-import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.Group
-import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.ui.AdaptiveTopAppBar
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
-import kotlinx.coroutines.CoroutineDispatcher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.group_list_empty_description
 import split.composeapp.generated.resources.group_list_title
 import split.composeapp.generated.resources.ic_split_money
 import split.composeapp.generated.resources.login
 import split.composeapp.generated.resources.login_button_cd
+import split.composeapp.generated.resources.logout
 import split.composeapp.generated.resources.no_image_group_cd
 
 sealed interface GroupListAction {
@@ -60,26 +57,16 @@ sealed interface GroupListAction {
     data object CreateNewGroup : GroupListAction
 
     data object Login : GroupListAction
+
+    data object Logout : GroupListAction
 }
 
 @Composable
 fun GroupListRoute(
     modifier: Modifier = Modifier,
+    viewModel: GroupListViewModel,
     onAction: (GroupListAction) -> Unit,
 ) {
-    val accountRepository: AccountRepository = koinInject()
-    val groupRepository: GroupRepository = koinInject()
-    val ioDispatcher: CoroutineDispatcher = koinInject()
-
-    val viewModel: GroupListViewModel =
-        viewModel {
-            GroupListViewModel(
-                accountRepository,
-                groupRepository,
-                ioDispatcher,
-            )
-        }
-
     val dataState = viewModel.dataState.collectAsState()
     val accountState = viewModel.accountState.collectAsState()
 
@@ -151,9 +138,21 @@ private fun EmptyGroupList(
     ) {
         Text(stringResource(Res.string.group_list_empty_description))
         Spacer(modifier = Modifier.height(16.dp))
-        AnimatedVisibility(visible = accountState is Account.Unregistered) {
-            Button(onClick = { onAction(GroupListAction.Login) }) {
-                Text(stringResource(Res.string.login))
+        Button(
+            modifier = Modifier.defaultMinSize(minWidth = 120.dp),
+            onClick = {
+                when (accountState) {
+                    is Account.Authorized -> onAction(GroupListAction.Logout)
+                    Account.Unknown,
+                    Account.Unregistered,
+                    -> onAction(GroupListAction.Login)
+                }
+            },
+        ) {
+            when (accountState) {
+                Account.Unknown,
+                Account.Unregistered -> Text(stringResource(Res.string.login))
+                is Account.Authorized -> Text(stringResource(Res.string.logout))
             }
         }
     }

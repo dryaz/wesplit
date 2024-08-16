@@ -1,6 +1,6 @@
 package app.wesplit.domain.model.account
 
-import app.wesplit.domain.model.user.User
+import dev.gitlive.firebase.auth.FirebaseUser
 
 sealed interface Account {
     data object Unknown : Account
@@ -8,8 +8,7 @@ sealed interface Account {
     data object Unregistered : Account
 
     data class Authorized(
-        val user: User,
-        val token: String,
+        val user: FirebaseUser,
     ) : Account
 }
 

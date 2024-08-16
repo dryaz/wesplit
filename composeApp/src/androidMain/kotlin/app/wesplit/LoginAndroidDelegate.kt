@@ -10,7 +10,10 @@ import app.wesplit.domain.model.AnalyticsManager
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
+import dev.gitlive.firebase.auth.GoogleAuthProvider
+import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,14 +52,15 @@ class LoginAndroidDelegate(
                         request = request,
                         context = activity,
                     )
-                handleSignIn(result)
+                onLogin(handleSignIn(result))
             } catch (e: GetCredentialException) {
                 analyticsManager.log(e)
+                onLogin(Result.failure(e))
             }
         }
     }
 
-    fun handleSignIn(result: GetCredentialResponse) {
+    suspend fun handleSignIn(result: GetCredentialResponse): Result<FirebaseUser> {
         // Handle the successfully returned credential.
         val credential = result.credential
 
@@ -66,9 +70,19 @@ class LoginAndroidDelegate(
                     try {
                         // Use googleIdTokenCredential and extract id to validate and
                         // authenticate on your server.
-                        val googleIdTokenCredential =
-                            GoogleIdTokenCredential
-                                .createFrom(credential.data)
+                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                        val signinResult =
+                            Firebase.auth.signInWithCredential(
+                                GoogleAuthProvider.credential(googleIdTokenCredential.idToken, null),
+                            )
+                        val fbUser = signinResult.user
+                        if (fbUser != null) {
+                            return Result.success(fbUser)
+                        } else {
+                            return Result.failure(IllegalAccessException("Can't get firebase user"))
+                        }
+                        // TODO: Continue with firebase
+                        //  https://firebase.google.com/docs/auth/android/google-signin
                     } catch (e: GoogleIdTokenParsingException) {
                         analyticsManager.log(e)
                     }
@@ -83,5 +97,7 @@ class LoginAndroidDelegate(
                 analyticsManager.log(IllegalArgumentException("Unexpected type of credential"))
             }
         }
+
+        return Result.failure(IllegalAccessException("Can't get firebase user"))
     }
 }

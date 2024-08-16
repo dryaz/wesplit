@@ -163,9 +163,19 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        create("release") {
+            storeFile = file("android-keystore")
+            keyAlias = System.getenv("WS_ALIAS")
+            storePassword = System.getenv("WS_KEYSTORE_PWD")
+            keyPassword = System.getenv("WS_KEY_PWD")
+        }
+    }
     buildTypes {
         getByName("release") {
+            // TODO: Add proguard
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {

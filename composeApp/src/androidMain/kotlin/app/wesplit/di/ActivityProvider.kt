@@ -3,7 +3,6 @@ package app.wesplit.di
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import android.util.Log
 import app.wesplit.MainApplication
 
 class ActivityProvider(
@@ -12,7 +11,6 @@ class ActivityProvider(
     var activeActivity: Activity? = null
 
     init {
-        Log.e("!@#", "Provider | application: $application")
         application.registerActivityLifecycleCallbacks(
             object :
                 Application.ActivityLifecycleCallbacks {

@@ -6,6 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.core.bundle.Bundle
 import androidx.lifecycle.SavedStateHandle
@@ -28,9 +29,14 @@ import app.wesplit.group.detailed.GroupInfoViewModel
 import app.wesplit.group.detailed.NoGroupScreen
 import app.wesplit.group.list.GroupListAction
 import app.wesplit.group.list.GroupListRoute
+import app.wesplit.group.list.GroupListViewModel
 import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 private const val LOGIN_ATTEMPT_EVENT = "login_attempt"
@@ -81,6 +87,7 @@ fun RootNavigation() {
     val analytics: AnalyticsManager = koinInject()
     val accountRepository: AccountRepository = koinInject()
     val loginDelegate: LoginDelegate = koinInject()
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(secondPaneNavController) {
         secondPaneNavController.addOnDestinationChangedListener(
@@ -105,49 +112,74 @@ fun RootNavigation() {
                 startDestination = LeftPane.GroupList.route,
             ) {
                 composable(route = LeftPane.GroupList.route) {
-                    GroupListRoute { action ->
-                        when (action) {
-                            is GroupListAction.Select ->
-                                secondPaneNavController.navigate(
-                                    RightPane.Group.destination(action.group.id),
-                                    navOptions =
-                                        navOptions {
-                                            launchSingleTop = true
-                                        },
-                                )
+                    val callback: (GroupListAction) -> Unit =
+                        remember {
+                            { action ->
+                                when (action) {
+                                    is GroupListAction.Select ->
+                                        secondPaneNavController.navigate(
+                                            RightPane.Group.destination(action.group.id),
+                                            navOptions =
+                                                navOptions {
+                                                    launchSingleTop = true
+                                                },
+                                        )
 
-                            GroupListAction.Login -> {
-                                // TODO: Proper login via firebase and check who and how should notify repo
-                                // accountRepository.login()
-                                val loginType = LoginType.GOOGLE
-                                val providerParam = mapOf(LOGIN_PROVIDER_PARAM to loginType.toString())
-                                analytics.track(LOGIN_ATTEMPT_EVENT, providerParam)
-                                loginDelegate.login(LoginType.GOOGLE) { result ->
-                                    if (result.isSuccess) {
-                                        analytics.track(LOGIN_SUCCEED_EVENT, providerParam)
-                                        println(result.getOrThrow().email)
-                                        println(result.getOrThrow().photoURL)
-                                        // TODO: Login via repo
-                                    } else {
-                                        analytics.track(LOGIN_FAILED_EVENT, providerParam)
-                                        result.exceptionOrNull()?.let {
-                                            analytics.log(it)
+                                    GroupListAction.Login -> {
+                                        // TODO: Proper login via firebase and check who and how should notify repo
+                                        val loginType = LoginType.GOOGLE
+                                        val providerParam = mapOf(LOGIN_PROVIDER_PARAM to loginType.toString())
+                                        analytics.track(LOGIN_ATTEMPT_EVENT, providerParam)
+                                        loginDelegate.login(LoginType.GOOGLE) { result ->
+                                            if (result.isSuccess) {
+                                                analytics.track(LOGIN_SUCCEED_EVENT, providerParam)
+                                                println(result.getOrThrow().email)
+                                                println(result.getOrThrow().photoURL)
+                                                // TODO: Login via repo
+                                            } else {
+                                                analytics.track(LOGIN_FAILED_EVENT, providerParam)
+                                                result.exceptionOrNull()?.let {
+                                                    analytics.log(it)
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    GroupListAction.CreateNewGroup -> {
+                                        secondPaneNavController.navigate(
+                                            RightPane.NewGroup.destination(),
+                                            navOptions =
+                                                navOptions {
+                                                    launchSingleTop = true
+                                                },
+                                        )
+                                    }
+
+                                    GroupListAction.Logout -> {
+                                        coroutineScope.launch {
+                                            Firebase.auth.signOut()
                                         }
                                     }
                                 }
                             }
-
-                            GroupListAction.CreateNewGroup -> {
-                                secondPaneNavController.navigate(
-                                    RightPane.NewGroup.destination(),
-                                    navOptions =
-                                        navOptions {
-                                            launchSingleTop = true
-                                        },
-                                )
-                            }
                         }
-                    }
+
+                    val groupRepository: GroupRepository = koinInject()
+                    val ioDispatcher: CoroutineDispatcher = koinInject()
+
+                    val viewModel: GroupListViewModel =
+                        viewModel {
+                            GroupListViewModel(
+                                accountRepository,
+                                groupRepository,
+                                ioDispatcher,
+                            )
+                        }
+
+                    GroupListRoute(
+                        viewModel = viewModel,
+                        onAction = callback,
+                    )
                 }
             }
         },
