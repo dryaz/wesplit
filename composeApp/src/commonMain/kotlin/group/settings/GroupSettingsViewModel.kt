@@ -82,7 +82,7 @@ class GroupSettingsViewModel(
             // TODO: Should we have current user in group by default? Probably yes.
             users =
                 (0..50).map {
-                    User("$it", "User #$it")
+                    User("$it", "User #$it", "photoUrl")
                 },
         )
 

@@ -1,3 +1,4 @@
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,11 +17,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navOptions
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.GroupRepository
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.firestore.firestore
-import dev.gitlive.firebase.options
+import dev.gitlive.firebase.auth.FirebaseUser
 import group.detailed.GroupInfoAction
 import group.detailed.GroupInfoScreen
 import group.detailed.GroupInfoViewModel
@@ -30,9 +30,13 @@ import group.list.GroupListRoute
 import group.settings.GroupSettingsAction
 import group.settings.GroupSettingsScreen
 import group.settings.GroupSettingsViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+
+private const val LOGIN_ATTEMPT_EVENT = "login_attempt"
+private const val LOGIN_SUCCEED_EVENT = "login_succeed"
+private const val LOGIN_FAILED_EVENT = "login_failed"
+
+private const val LOGIN_PROVIDER_PARAM = "provider"
 
 sealed class PaneNavigation(
     val route: String,
@@ -66,12 +70,15 @@ sealed class RightPane(
     data object NewGroup : RightPane("newGroup")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootNavigation() {
     val firstPaneNavController: NavHostController = rememberNavController()
     val secondPaneNavController: NavHostController = rememberNavController()
 
     var secondNahControllerEmpty by remember { mutableStateOf(false) }
+    val analytics: AnalyticsManager = koinInject()
+    val accountRepository: AccountRepository = koinInject()
 
     LaunchedEffect(secondPaneNavController) {
         secondPaneNavController.addOnDestinationChangedListener(
@@ -96,8 +103,6 @@ fun RootNavigation() {
                 startDestination = LeftPane.GroupList.route,
             ) {
                 composable(route = LeftPane.GroupList.route) {
-                    val accountRepository: AccountRepository = koinInject()
-
                     GroupListRoute { action ->
                         when (action) {
                             is GroupListAction.Select ->
@@ -111,15 +116,22 @@ fun RootNavigation() {
 
                             GroupListAction.Login -> {
                                 // TODO: Proper login via firebase and check who and how should notify repo
-//                                accountRepository.login()
-                                GlobalScope.launch {
-                                    println("Apikey: ${Firebase.options.apiKey}")
-//                                    val auth = Firebase.auth.signInAnonymously()
-//                                    println("$auth")
-//                                    println("${auth.user}")
-                                    println("HOST: ${Firebase.firestore.settings}")
-
-                                    println(Firebase.firestore.collection("offers").get().documents.size)
+                                // accountRepository.login()
+                                val loginType = LoginType.GOOGLE
+                                val providerParam = mapOf(LOGIN_PROVIDER_PARAM to loginType.toString())
+                                analytics.track(LOGIN_ATTEMPT_EVENT, providerParam)
+                                login(LoginType.GOOGLE) { result ->
+                                    if (result.isSuccess) {
+                                        analytics.track(LOGIN_SUCCEED_EVENT, providerParam)
+                                        println(result.getOrThrow().email)
+                                        println(result.getOrThrow().photoURL)
+                                        // TODO: Login via repo
+                                    } else {
+                                        analytics.track(LOGIN_FAILED_EVENT, providerParam)
+                                        result.exceptionOrNull()?.let {
+                                            analytics.log(it)
+                                        }
+                                    }
                                 }
                             }
 
@@ -195,4 +207,13 @@ fun RootNavigation() {
             }
         },
     )
+}
+
+expect fun login(
+    type: LoginType,
+    onLogin: (Result<FirebaseUser>) -> Unit,
+)
+
+enum class LoginType {
+    GOOGLE,
 }

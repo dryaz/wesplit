@@ -1,7 +1,7 @@
 package app.wesplit.domain.model
 
 interface AnalyticsManager {
-    fun log(exception: Exception)
+    fun log(throwable: Throwable)
 
     fun log(
         msg: String,

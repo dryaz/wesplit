@@ -3,8 +3,8 @@ import app.wesplit.domain.model.LogLevel
 
 // TODO: Integrate crashlytics/Amplitude/Firebase analytics
 class CommonAnalyticsManager : AnalyticsManager {
-    override fun log(exception: Exception) {
-        exception.printStackTrace()
+    override fun log(throwable: Throwable) {
+        throwable.printStackTrace()
     }
 
     override fun log(

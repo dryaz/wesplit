@@ -3,10 +3,8 @@ package app.wesplit.data.firebase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
-import app.wesplit.domain.model.user.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import org.koin.core.annotation.Single
 
 private const val LOGIN_EVENT = "login"
@@ -19,15 +17,7 @@ class AccountFirebaseRepository(
 
     override fun get(): StateFlow<Account> = accountState
 
-    override fun login() {
-        analyticsManager.track(LOGIN_EVENT)
-        accountState.update {
-            Account.Authorized(
-                User(
-                    "userId",
-                    "Dima",
-                ),
-            )
-        }
+    override fun update(account: Account) {
+        TODO("Not yet implemented")
     }
 }

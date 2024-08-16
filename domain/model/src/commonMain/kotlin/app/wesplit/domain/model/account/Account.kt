@@ -9,6 +9,7 @@ sealed interface Account {
 
     data class Authorized(
         val user: User,
+        val token: String,
     ) : Account
 }
 

@@ -128,6 +128,7 @@ kotlin {
 
             jsMain.dependencies {
                 implementation(libs.ktor.client.js)
+                implementation(libs.koin.js)
             }
         }
     }
