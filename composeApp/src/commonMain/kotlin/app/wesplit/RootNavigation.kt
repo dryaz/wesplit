@@ -1,3 +1,5 @@
+package app.wesplit
+
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,15 +22,15 @@ import androidx.navigation.navOptions
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.GroupRepository
-import group.detailed.GroupInfoAction
-import group.detailed.GroupInfoScreen
-import group.detailed.GroupInfoViewModel
-import group.detailed.NoGroupScreen
-import group.list.GroupListAction
-import group.list.GroupListRoute
-import group.settings.GroupSettingsAction
-import group.settings.GroupSettingsScreen
-import group.settings.GroupSettingsViewModel
+import app.wesplit.group.detailed.GroupInfoAction
+import app.wesplit.group.detailed.GroupInfoScreen
+import app.wesplit.group.detailed.GroupInfoViewModel
+import app.wesplit.group.detailed.NoGroupScreen
+import app.wesplit.group.list.GroupListAction
+import app.wesplit.group.list.GroupListRoute
+import app.wesplit.group.settings.GroupSettingsAction
+import app.wesplit.group.settings.GroupSettingsScreen
+import app.wesplit.group.settings.GroupSettingsViewModel
 import org.koin.compose.koinInject
 
 private const val LOGIN_ATTEMPT_EVENT = "login_attempt"

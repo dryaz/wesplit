@@ -1,54 +1,64 @@
 package app.wesplit
 
-import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
 import app.wesplit.di.ActivityProvider
+import app.wesplit.domain.model.AnalyticsManager
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import dev.gitlive.firebase.auth.FirebaseUser
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
-// TODO https://developer.android.com/identity/sign-in/credential-manager-siwg
+// https://developer.android.com/identity/sign-in/credential-manager-siwg
+// TODO: Add SHA1 for debug/release certs to enable google sign in in android
 @Single
 class LoginAndroidDelegate(
     private val activityProvider: ActivityProvider,
+    private val analyticsManager: AnalyticsManager,
 ) : LoginDelegate {
-    override fun login(type: LoginType, onLogin: (Result<FirebaseUser>) -> Unit) {
-        val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(
-            "548791587175-k0hhfmjvk6utruqmq7d5d9but53ods4n.apps.googleusercontent.com"
-        ).setNonce("wtf dunno yet").build()
+    override fun login(
+        type: LoginType,
+        onLogin: (Result<FirebaseUser>) -> Unit,
+    ) {
+        val signInWithGoogleOption: GetSignInWithGoogleOption =
+            GetSignInWithGoogleOption.Builder(
+                "548791587175-k0hhfmjvk6utruqmq7d5d9but53ods4n.apps.googleusercontent.com",
+            ).setNonce("wtf dunno yet").build()
 
-        val request: GetCredentialRequest = GetCredentialRequest.Builder()
-            .addCredentialOption(signInWithGoogleOption)
-            .build()
+        val request: GetCredentialRequest =
+            GetCredentialRequest.Builder()
+                .addCredentialOption(signInWithGoogleOption)
+                .build()
         val activity = activityProvider.activeActivity ?: throw IllegalStateException("Can't find acitvity")
 
-        val credentialManager = CredentialManager.create(activityProvider.activeActivity ?: throw IllegalStateException("Can't find acitvity"))
-        GlobalScope.launch {
+        val credentialManager =
+            CredentialManager.create(
+                activityProvider.activeActivity ?: throw IllegalStateException("Can't find acitvity"),
+            )
+        CoroutineScope(Dispatchers.Main).launch {
             try {
-                val result = credentialManager.getCredential(
-                    request = request,
-                    context = activity,
-                )
+                val result =
+                    credentialManager.getCredential(
+                        request = request,
+                        context = activity,
+                    )
                 handleSignIn(result)
             } catch (e: GetCredentialException) {
-                e.printStackTrace()
+                analyticsManager.log(e)
             }
         }
-
     }
 
     fun handleSignIn(result: GetCredentialResponse) {
         // Handle the successfully returned credential.
         val credential = result.credential
-        Log.e("!@#", "$credential")
 
         when (credential) {
             is CustomCredential -> {
@@ -56,20 +66,21 @@ class LoginAndroidDelegate(
                     try {
                         // Use googleIdTokenCredential and extract id to validate and
                         // authenticate on your server.
-                        val googleIdTokenCredential = GoogleIdTokenCredential
-                            .createFrom(credential.data)
+                        val googleIdTokenCredential =
+                            GoogleIdTokenCredential
+                                .createFrom(credential.data)
                     } catch (e: GoogleIdTokenParsingException) {
-                        Log.e("!@#", "Received an invalid google id token response", e)
+                        analyticsManager.log(e)
                     }
                 } else {
                     // Catch any unrecognized credential type here.
-                    Log.e("!@#", "Unexpected type of credential")
+                    analyticsManager.log(IllegalArgumentException("Unexpected type of credential"))
                 }
             }
 
             else -> {
                 // Catch any unrecognized credential type here.
-                Log.e("!@#", "Unexpected type of credential")
+                analyticsManager.log(IllegalArgumentException("Unexpected type of credential"))
             }
         }
     }

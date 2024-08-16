@@ -1,3 +1,5 @@
+package app.wesplit
+
 import dev.gitlive.firebase.auth.FirebaseUser
 
 interface LoginDelegate {
@@ -10,4 +12,3 @@ interface LoginDelegate {
 enum class LoginType {
     GOOGLE,
 }
-

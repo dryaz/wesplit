@@ -1,4 +1,4 @@
-package group.list
+package app.wesplit.group.list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
@@ -39,6 +39,7 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.ui.AdaptiveTopAppBar
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import kotlinx.coroutines.CoroutineDispatcher
@@ -52,7 +53,6 @@ import split.composeapp.generated.resources.ic_split_money
 import split.composeapp.generated.resources.login
 import split.composeapp.generated.resources.login_button_cd
 import split.composeapp.generated.resources.no_image_group_cd
-import ui.AdaptiveTopAppBar
 
 sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction

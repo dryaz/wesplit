@@ -1,5 +1,7 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
+import app.wesplit.App
+import app.wesplit.LoginDelegate
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
@@ -20,9 +22,11 @@ fun main() {
         Firebase.initialize(null, options)
 
         CanvasBasedWindow("composeApp") {
-            App(module {
-                single<LoginDelegate> { LoginJsDelegate() }
-            })
+            App(
+                module {
+                    single<LoginDelegate> { LoginJsDelegate() }
+                },
+            )
         }
     }
 }

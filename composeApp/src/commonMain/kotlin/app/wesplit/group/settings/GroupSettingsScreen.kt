@@ -1,4 +1,4 @@
-package group.settings
+package app.wesplit.group.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.user.User
+import app.wesplit.ui.AdaptiveTopAppBar
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_user_to_group
@@ -52,7 +53,6 @@ import split.composeapp.generated.resources.new_group
 import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.settings
-import ui.AdaptiveTopAppBar
 
 sealed interface GroupSettingsAction {
     data object Back : GroupSettingsAction
@@ -267,8 +267,14 @@ private fun TopAppBareByState(
                 modifier =
                     Modifier.fillMaxHeight(1f).clickable {
                         when (state) {
-                            is GroupSettingsViewModel.State.Error -> onToolbarAction(GroupSettingTollbarAction.Reload)
-                            is GroupSettingsViewModel.State.Group -> onToolbarAction(GroupSettingTollbarAction.Commit)
+                            is GroupSettingsViewModel.State.Error ->
+                                onToolbarAction(
+                                    GroupSettingTollbarAction.Reload,
+                                )
+                            is GroupSettingsViewModel.State.Group ->
+                                onToolbarAction(
+                                    GroupSettingTollbarAction.Commit,
+                                )
                             GroupSettingsViewModel.State.Loading -> {}
                         }
                     }.padding(horizontal = 16.dp),

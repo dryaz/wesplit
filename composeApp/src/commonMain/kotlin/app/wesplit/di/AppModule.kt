@@ -1,6 +1,6 @@
-package di
+package app.wesplit.di
 
-import CommonAnalyticsManager
+import app.wesplit.CommonAnalyticsManager
 import app.wesplit.domain.model.AnalyticsManager
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

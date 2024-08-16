@@ -3,9 +3,9 @@ package app.wesplit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import app.wesplit.domain.model.account.Account
-import group.list.GroupListScreen
-import group.list.GroupListViewModel
-import theme.AppTheme
+import app.wesplit.group.list.GroupListScreen
+import app.wesplit.group.list.GroupListViewModel
+import app.wesplit.theme.AppTheme
 
 @Preview
 @Composable

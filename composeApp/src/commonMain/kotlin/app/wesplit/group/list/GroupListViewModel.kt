@@ -1,4 +1,4 @@
-package group.list
+package app.wesplit.group.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

@@ -1,4 +1,4 @@
-package group.detailed
+package app.wesplit.group.detailed
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,10 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import app.wesplit.ui.AdaptiveTopAppBar
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.loading
-import ui.AdaptiveTopAppBar
 
 sealed interface GroupInfoAction {
     data object Back : GroupInfoAction

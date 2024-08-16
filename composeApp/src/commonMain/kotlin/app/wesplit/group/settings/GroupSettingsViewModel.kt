@@ -1,4 +1,4 @@
-package group.settings
+package app.wesplit.group.settings
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

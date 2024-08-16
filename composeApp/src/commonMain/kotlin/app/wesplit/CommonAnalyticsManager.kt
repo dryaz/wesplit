@@ -1,3 +1,5 @@
+package app.wesplit
+
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 

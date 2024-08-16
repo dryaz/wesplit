@@ -1,3 +1,4 @@
+import app.wesplit.LoginType
 import dev.gitlive.firebase.auth.FirebaseUser
 
 actual fun login(
