@@ -1,7 +1,9 @@
 package app.wesplit
 
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -111,6 +113,8 @@ fun RootNavigation() {
         mutableStateOf(MenuItem.Group("Groups"))
     }
 
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+
     LaunchedEffect(secondPaneNavController) {
         secondPaneNavController.addOnDestinationChangedListener(
             object : NavController.OnDestinationChangedListener {
@@ -157,6 +161,7 @@ fun RootNavigation() {
                             },
                     )
             }
+            coroutineScope.launch { drawerState.close() }
         },
         firstNavhost = { modifier ->
             NavHost(
@@ -217,6 +222,8 @@ fun RootNavigation() {
                                             Firebase.auth.signOut()
                                         }
                                     }
+
+                                    GroupListAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
                                 }
                             }
                         }
@@ -240,6 +247,7 @@ fun RootNavigation() {
                 }
             }
         },
+        drawerState = drawerState,
         secondNavhost = { modifier ->
             NavHost(
                 modifier = modifier,

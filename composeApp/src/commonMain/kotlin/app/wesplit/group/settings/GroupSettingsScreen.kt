@@ -261,7 +261,7 @@ private fun TopAppBareByState(
                 ),
             )
         },
-        onBack = { onAction(GroupSettingsAction.Back) },
+        onNavigationIconClick = { onAction(GroupSettingsAction.Back) },
         actions = {
             Box(
                 modifier =

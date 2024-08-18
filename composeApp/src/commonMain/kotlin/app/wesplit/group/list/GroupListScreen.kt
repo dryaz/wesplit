@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,8 +29,12 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +48,7 @@ import coil3.compose.rememberAsyncImagePainter
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.group_list_empty_description
 import split.composeapp.generated.resources.group_list_title
 import split.composeapp.generated.resources.ic_split_money
@@ -55,6 +61,8 @@ sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction
 
     data object CreateNewGroup : GroupListAction
+
+    data object OpenMenu : GroupListAction
 
     data object Login : GroupListAction
 
@@ -79,6 +87,7 @@ fun GroupListRoute(
 }
 
 // TODO: Check recomposition and probably postpone account retrivial?
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun GroupListScreen(
     modifier: Modifier = Modifier,
@@ -86,28 +95,50 @@ fun GroupListScreen(
     accountState: Account,
     onAction: (GroupListAction) -> Unit,
 ) {
+    val windowSizeClass = calculateWindowSizeClass()
+
+    val navigationIconClick =
+        remember(windowSizeClass) {
+            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+                { onAction(GroupListAction.OpenMenu) }
+            } else {
+                null
+            }
+        }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             // TODO: Navigation drawer icon which also connected to menu items inside double pane nav
-            AdaptiveTopAppBar(title = {
-                Text(stringResource(Res.string.group_list_title))
-            }, actions = {
-                Box(
-                    modifier =
-                        Modifier.size(48.dp).clickable {
-                            onAction(GroupListAction.CreateNewGroup)
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
+            AdaptiveTopAppBar(
+                navigationIcon = {
                     Icon(
-                        Icons.Default.AddCircle,
-                        contentDescription = stringResource(Res.string.login_button_cd),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        imageVector = Icons.Filled.Menu,
+                        contentDescription = stringResource(Res.string.back_btn_cd),
                     )
-                }
-            })
+                },
+                navigationTitle = { Unit },
+                onNavigationIconClick = navigationIconClick,
+                title = {
+                    Text(stringResource(Res.string.group_list_title))
+                },
+                actions = {
+                    Box(
+                        modifier =
+                            Modifier.size(48.dp).clickable {
+                                onAction(GroupListAction.CreateNewGroup)
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            Icons.Default.AddCircle,
+                            contentDescription = stringResource(Res.string.login_button_cd),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
+            )
         },
     ) { paddings ->
         when (dataState) {
@@ -154,6 +185,7 @@ private fun EmptyGroupList(
                 Account.Unknown,
                 Account.Unregistered,
                 -> Text(stringResource(Res.string.login))
+
                 is Account.Authorized -> Text(stringResource(Res.string.logout))
             }
         }

@@ -36,7 +36,7 @@ fun GroupInfoScreen(
         if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
             AdaptiveTopAppBar(
                 title = {},
-                onBack = { onAction(GroupInfoAction.Back) },
+                onNavigationIconClick = { onAction(GroupInfoAction.Back) },
             )
         }
     }) { paddings ->

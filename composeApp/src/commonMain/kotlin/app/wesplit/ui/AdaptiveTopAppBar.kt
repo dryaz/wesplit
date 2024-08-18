@@ -34,7 +34,19 @@ fun AdaptiveTopAppBar(
     title: @Composable () -> Unit = {},
     modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit = {},
-    onBack: (() -> Unit)? = null,
+    navigationIcon: @Composable () -> Unit = {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = stringResource(Res.string.back_btn_cd),
+        )
+    },
+    navigationTitle: @Composable () -> Unit = {
+        Text(
+            text = stringResource(Res.string.back),
+            style = MaterialTheme.typography.labelSmall,
+        )
+    },
+    onNavigationIconClick: (() -> Unit)? = null,
 ) {
     val windowSizeClass = calculateWindowSizeClass()
 
@@ -43,12 +55,9 @@ fun AdaptiveTopAppBar(
             modifier = modifier,
             title = title,
             navigationIcon = {
-                onBack?.let { backAction ->
-                    IconButton(onClick = { backAction() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.back_btn_cd),
-                        )
+                onNavigationIconClick?.let { action ->
+                    IconButton(onClick = { action() }) {
+                        navigationIcon()
                     }
                 }
             },
@@ -59,23 +68,19 @@ fun AdaptiveTopAppBar(
             modifier = modifier,
             title = title,
             navigationIcon = {
-                onBack?.let { backAction ->
+                onNavigationIconClick?.let { action ->
                     Row(
                         modifier =
-                            Modifier.fillMaxHeight(1f).clickable {
-                                backAction()
-                            }.padding(horizontal = 16.dp),
+                            Modifier
+                                .fillMaxHeight(1f)
+                                .clickable {
+                                    action()
+                                }.padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(Res.string.back_btn_cd),
-                        )
+                        navigationIcon()
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(Res.string.back),
-                            style = MaterialTheme.typography.labelSmall,
-                        )
+                        navigationTitle()
                     }
                 }
             },
