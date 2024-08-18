@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.crashlytics)
 }
 
 kotlin {
@@ -74,11 +75,11 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
             implementation(libs.coil.network.okhttp)
+            implementation(libs.firebase.common.crashlytics)
 
-            // TODO: version catalgo
-            implementation("androidx.credentials:credentials:1.3.0-rc01")
-            implementation("androidx.credentials:credentials-play-services-auth:1.3.0-rc01")
-            implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+            implementation(libs.androidx.credentials)
+            implementation(libs.androidx.credentials.play.services.auth)
+            implementation(libs.googleid)
         }
 
         commonMain {
@@ -122,8 +123,10 @@ kotlin {
                 implementation(libs.coil.network.okhttp)
             }
 
+            // TODO: Custom set of dependencies 'mobile' could be share if needed
             iosMain.dependencies {
                 implementation(libs.ktor.client.darwin)
+                implementation(libs.firebase.common.crashlytics)
             }
 
 //            wasmJsMain.dependencies {

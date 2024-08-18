@@ -3,6 +3,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import app.wesplit.App
 import app.wesplit.LoginDelegate
+import app.wesplit.domain.model.AnalyticsManager
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.FirebasePlatform
@@ -52,6 +53,7 @@ fun main() {
             App(
                 module {
                     single<LoginDelegate> { LoginDesktopDelegate() }
+                    single<AnalyticsManager> { DesktopAnalyticsManager() }
                 },
             )
         }

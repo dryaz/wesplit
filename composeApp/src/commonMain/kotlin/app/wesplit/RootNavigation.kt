@@ -41,10 +41,14 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.DrawableResource
 import org.koin.compose.koinInject
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.ic_group
+import split.composeapp.generated.resources.ic_profile
 
 private const val LOGIN_ATTEMPT_EVENT = "login_attempt"
-private const val LOGIN_SUCCEED_EVENT = "login_succeed"
+private const val LOGIN_SUCCEED_EVENT = "login"
 private const val LOGIN_FAILED_EVENT = "login_failed"
 
 private const val LOGIN_PROVIDER_PARAM = "provider"
@@ -84,9 +88,9 @@ sealed class RightPane(
 }
 
 sealed class MenuItem : NavigationMenuItem {
-    data class Group(override val title: String) : MenuItem()
+    data class Group(override val title: String, override val icon: DrawableResource) : MenuItem()
 
-    data class Profile(override val title: String) : MenuItem()
+    data class Profile(override val title: String, override val icon: DrawableResource) : MenuItem()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,13 +108,13 @@ fun RootNavigation() {
     val menuItems =
         remember {
             mutableStateListOf(
-                MenuItem.Profile("Profile"),
-                MenuItem.Group("Groups"),
+                MenuItem.Profile("Profile", Res.drawable.ic_profile),
+                MenuItem.Group("Groups", Res.drawable.ic_group),
             )
         }
 
     var selectedMenuItem: NavigationMenuItem by remember {
-        mutableStateOf(MenuItem.Group("Groups"))
+        mutableStateOf(MenuItem.Group("Groups", Res.drawable.ic_group))
     }
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)

@@ -2,6 +2,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import app.wesplit.App
 import app.wesplit.LoginDelegate
+import app.wesplit.domain.model.AnalyticsManager
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
@@ -18,13 +19,15 @@ fun main() {
                 projectId = "wesplit-bill",
                 authDomain = "wesplit-bill.firebaseapp.com",
                 storageBucket = "wesplit-bill.appspot.com",
+                gcmSenderId = "548791587175",
             )
         Firebase.initialize(null, options)
 
-        CanvasBasedWindow("composeApp") {
+        CanvasBasedWindow("WeSplit") {
             App(
                 module {
                     single<LoginDelegate> { LoginJsDelegate() }
+                    single<AnalyticsManager> { JsAnalyticsManager() }
                 },
             )
         }

@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,10 +26,10 @@ import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.stringResource
-import split.composeapp.generated.resources.Res
-import split.composeapp.generated.resources.add_user_to_group
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
@@ -54,8 +52,8 @@ fun DoublePaneNavigation(
                     NavigationRailItem(
                         icon = {
                             Icon(
-                                imageVector = Icons.Outlined.Person,
-                                contentDescription = stringResource(Res.string.add_user_to_group),
+                                painter = painterResource(item.icon),
+                                contentDescription = item.title,
                             )
                         },
                         label = { Text(item.title) },
@@ -83,6 +81,13 @@ fun DoublePaneNavigation(
                             label = { Text(text = item.title) },
                             selected = item == selectedMenuItem,
                             onClick = { onMenuItemClick(item) },
+                            shape = RectangleShape,
+                            icon = {
+                                Icon(
+                                    painter = painterResource(item.icon),
+                                    contentDescription = item.title,
+                                )
+                            },
                         )
                     }
                 }
@@ -111,4 +116,5 @@ fun DoublePaneNavigation(
 
 interface NavigationMenuItem {
     val title: String
+    val icon: DrawableResource
 }

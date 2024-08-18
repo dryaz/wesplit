@@ -1,41 +1,29 @@
 package app.wesplit
 
 import app.wesplit.domain.model.AnalyticsManager
-import app.wesplit.domain.model.LogLevel
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 
-// TODO: Integrate crashlytics/Amplitude/Firebase analytics
-class CommonAnalyticsManager : AnalyticsManager {
-    override fun log(throwable: Throwable) {
-        throwable.printStackTrace()
-    }
-
-    override fun log(
-        msg: String,
-        logLevel: LogLevel,
-        tag: String,
-    ) {
-        println("Tag: $tag | Leve:$logLevel | $msg")
-    }
-
+abstract class CommonAnalyticsManager : AnalyticsManager {
     override fun track(event: String) {
-        println("Event: $event")
+        Firebase.analytics.logEvent(event)
     }
 
     override fun track(
         event: String,
         params: Map<String, String>,
     ) {
-        println("Event: $event | ${params.map { "${it.key} : ${it.value}" }}")
+        Firebase.analytics.logEvent(event, params)
     }
 
     override fun setUserId(userId: String) {
-        println("Set user ID to $userId")
+        Firebase.analytics.setUserId(userId)
     }
 
     override fun setParam(
         key: String,
         value: String,
     ) {
-        println("Set param: $key | $value")
+        Firebase.analytics.setUserProperty(key, value)
     }
 }
