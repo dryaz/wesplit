@@ -90,6 +90,7 @@ fun GroupListScreen(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
+            // TODO: Navigation drawer icon which also connected to menu items inside double pane nav
             AdaptiveTopAppBar(title = {
                 Text(stringResource(Res.string.group_list_title))
             }, actions = {
@@ -151,7 +152,8 @@ private fun EmptyGroupList(
         ) {
             when (accountState) {
                 Account.Unknown,
-                Account.Unregistered -> Text(stringResource(Res.string.login))
+                Account.Unregistered,
+                -> Text(stringResource(Res.string.login))
                 is Account.Authorized -> Text(stringResource(Res.string.logout))
             }
         }

@@ -1,9 +1,11 @@
 package app.wesplit
 
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,6 +57,8 @@ sealed class LeftPane(
     route: String,
 ) : PaneNavigation(route) {
     data object GroupList : LeftPane("groups")
+
+    data object Profile : LeftPane("profile")
 }
 
 sealed class RightPane(
@@ -77,6 +81,12 @@ sealed class RightPane(
     data object NewGroup : RightPane("newGroup")
 }
 
+sealed class MenuItem : NavigationMenuItem {
+    data class Group(override val title: String) : MenuItem()
+
+    data class Profile(override val title: String) : MenuItem()
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootNavigation() {
@@ -88,6 +98,18 @@ fun RootNavigation() {
     val accountRepository: AccountRepository = koinInject()
     val loginDelegate: LoginDelegate = koinInject()
     val coroutineScope = rememberCoroutineScope()
+
+    val menuItems =
+        remember {
+            mutableStateListOf(
+                MenuItem.Profile("Profile"),
+                MenuItem.Group("Groups"),
+            )
+        }
+
+    var selectedMenuItem: NavigationMenuItem by remember {
+        mutableStateOf(MenuItem.Group("Groups"))
+    }
 
     LaunchedEffect(secondPaneNavController) {
         secondPaneNavController.addOnDestinationChangedListener(
@@ -105,12 +127,47 @@ fun RootNavigation() {
 
     DoublePaneNavigation(
         secondNavhostEmpty = secondNahControllerEmpty,
+        menuItems = menuItems,
+        selectedMenuItem = selectedMenuItem,
+        onMenuItemClick = { menuItem ->
+            selectedMenuItem = menuItem
+            when (menuItem) {
+                is MenuItem.Group ->
+                    firstPaneNavController.navigate(
+                        LeftPane.GroupList.route,
+                        navOptions =
+                            navOptions {
+                                launchSingleTop = true
+                                popUpTo(
+                                    LeftPane.GroupList.route,
+                                    popUpToBuilder = { inclusive = true },
+                                )
+                            },
+                    )
+                is MenuItem.Profile ->
+                    firstPaneNavController.navigate(
+                        LeftPane.Profile.route,
+                        navOptions =
+                            navOptions {
+                                launchSingleTop = true
+                                popUpTo(
+                                    LeftPane.GroupList.route,
+                                    popUpToBuilder = { inclusive = false },
+                                )
+                            },
+                    )
+            }
+        },
         firstNavhost = { modifier ->
             NavHost(
                 modifier = modifier,
                 navController = firstPaneNavController,
                 startDestination = LeftPane.GroupList.route,
             ) {
+                composable(route = LeftPane.Profile.route) {
+                    Text("Profile is here")
+                }
+
                 composable(route = LeftPane.GroupList.route) {
                     val callback: (GroupListAction) -> Unit =
                         remember {

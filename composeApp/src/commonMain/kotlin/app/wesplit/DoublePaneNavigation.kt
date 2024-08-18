@@ -12,18 +12,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_user_to_group
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun DoublePaneNavigation(
     secondNavhostEmpty: Boolean,
+    menuItems: List<NavigationMenuItem>,
+    selectedMenuItem: NavigationMenuItem,
+    onMenuItemClick: (NavigationMenuItem) -> Unit,
     firstNavhost: @Composable (Modifier) -> Unit,
     secondNavhost: @Composable (Modifier) -> Unit,
 ) {
@@ -31,7 +43,22 @@ fun DoublePaneNavigation(
 
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(modifier = Modifier.fillMaxHeight(1f)) {
-            firstNavhost(Modifier.width(300.dp).fillMaxHeight(1f))
+            NavigationRail {
+                menuItems.forEach { item ->
+                    NavigationRailItem(
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Person,
+                                contentDescription = stringResource(Res.string.add_user_to_group),
+                            )
+                        },
+                        label = { Text(item.title) },
+                        selected = item == selectedMenuItem,
+                        onClick = { onMenuItemClick(item) },
+                    )
+                }
+            }
+            firstNavhost(Modifier.width(360.dp).fillMaxHeight(1f))
             Spacer(modifier = Modifier.fillMaxHeight(1f).width(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
             // TODO: Calculate weight based on current width, if width is that it will be collapsed -> weight already should be 1.
             //  So it should be from 1 until 2 based on scnreen width. calculateWindowSizeClass() doesn't provide value :(
@@ -57,4 +84,8 @@ fun DoublePaneNavigation(
             }
         }
     }
+}
+
+interface NavigationMenuItem {
+    val title: String
 }
