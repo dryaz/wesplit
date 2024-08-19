@@ -1,8 +1,8 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import app.wesplit.App
-import app.wesplit.LoginDelegate
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.account.LoginDelegate
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize

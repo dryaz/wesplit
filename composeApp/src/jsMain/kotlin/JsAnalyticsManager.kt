@@ -9,6 +9,7 @@ private const val MSG_PARAM = "msg"
 
 class JsAnalyticsManager : CommonAnalyticsManager() {
     override fun log(throwable: Throwable) {
+        throwable.printStackTrace()
         throwable.message?.let {
             Firebase.analytics.logEvent(EXCEPTION_EVENT, mapOf(MSG_PARAM to it))
         }

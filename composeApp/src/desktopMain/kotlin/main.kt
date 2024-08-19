@@ -2,8 +2,8 @@ import android.app.Application
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import app.wesplit.App
-import app.wesplit.LoginDelegate
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.account.LoginDelegate
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.FirebasePlatform

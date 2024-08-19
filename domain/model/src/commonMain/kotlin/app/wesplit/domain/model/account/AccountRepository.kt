@@ -4,4 +4,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface AccountRepository {
     fun get(): StateFlow<Account>
+
+    fun logout()
+
+    fun login(loginType: LoginType)
 }

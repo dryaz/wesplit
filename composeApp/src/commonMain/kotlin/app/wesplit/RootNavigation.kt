@@ -2,7 +2,6 @@ package app.wesplit
 
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,8 +23,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navOptions
-import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.account.ProfileAction
+import app.wesplit.account.ProfileRoute
+import app.wesplit.account.ProfileViewModel
 import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.account.LoginType
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.group.detailed.GroupInfoAction
 import app.wesplit.group.detailed.GroupInfoScreen
@@ -42,16 +44,13 @@ import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.groups
 import split.composeapp.generated.resources.ic_group
 import split.composeapp.generated.resources.ic_profile
-
-private const val LOGIN_ATTEMPT_EVENT = "login_attempt"
-private const val LOGIN_SUCCEED_EVENT = "login"
-private const val LOGIN_FAILED_EVENT = "login_failed"
-
-private const val LOGIN_PROVIDER_PARAM = "provider"
+import split.composeapp.generated.resources.profile
 
 sealed class PaneNavigation(
     val route: String,
@@ -88,9 +87,9 @@ sealed class RightPane(
 }
 
 sealed class MenuItem : NavigationMenuItem {
-    data class Group(override val title: String, override val icon: DrawableResource) : MenuItem()
+    data class Group(override val title: StringResource, override val icon: DrawableResource) : MenuItem()
 
-    data class Profile(override val title: String, override val icon: DrawableResource) : MenuItem()
+    data class Profile(override val title: StringResource, override val icon: DrawableResource) : MenuItem()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -100,21 +99,19 @@ fun RootNavigation() {
     val secondPaneNavController: NavHostController = rememberNavController()
 
     var secondNahControllerEmpty by remember { mutableStateOf(false) }
-    val analytics: AnalyticsManager = koinInject()
     val accountRepository: AccountRepository = koinInject()
-    val loginDelegate: LoginDelegate = koinInject()
     val coroutineScope = rememberCoroutineScope()
 
     val menuItems =
         remember {
             mutableStateListOf(
-                MenuItem.Profile("Profile", Res.drawable.ic_profile),
-                MenuItem.Group("Groups", Res.drawable.ic_group),
+                MenuItem.Profile(Res.string.profile, Res.drawable.ic_profile),
+                MenuItem.Group(Res.string.groups, Res.drawable.ic_group),
             )
         }
 
     var selectedMenuItem: NavigationMenuItem by remember {
-        mutableStateOf(MenuItem.Group("Groups", Res.drawable.ic_group))
+        mutableStateOf(MenuItem.Group(Res.string.groups, Res.drawable.ic_group))
     }
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -152,6 +149,7 @@ fun RootNavigation() {
                                 )
                             },
                     )
+
                 is MenuItem.Profile ->
                     firstPaneNavController.navigate(
                         LeftPane.Profile.route,
@@ -174,7 +172,23 @@ fun RootNavigation() {
                 startDestination = LeftPane.GroupList.route,
             ) {
                 composable(route = LeftPane.Profile.route) {
-                    Text("Profile is here")
+                    val viewModel =
+                        viewModel {
+                            ProfileViewModel(
+                                accountRepository = accountRepository,
+                            )
+                        }
+
+                    ProfileRoute(
+                        viewModel = viewModel,
+                        onAction = { action ->
+                            when (action) {
+                                ProfileAction.Back -> firstPaneNavController.popBackStack()
+                                ProfileAction.Login -> accountRepository.login(LoginType.GOOGLE)
+                                ProfileAction.Logout -> accountRepository.logout()
+                            }
+                        },
+                    )
                 }
 
                 composable(route = LeftPane.GroupList.route) {
@@ -192,23 +206,7 @@ fun RootNavigation() {
                                         )
 
                                     GroupListAction.Login -> {
-                                        // TODO: Proper login via firebase and check who and how should notify repo
-                                        val loginType = LoginType.GOOGLE
-                                        val providerParam = mapOf(LOGIN_PROVIDER_PARAM to loginType.toString())
-                                        analytics.track(LOGIN_ATTEMPT_EVENT, providerParam)
-                                        loginDelegate.login(LoginType.GOOGLE) { result ->
-                                            if (result.isSuccess) {
-                                                analytics.track(LOGIN_SUCCEED_EVENT, providerParam)
-                                                println(result.getOrThrow().email)
-                                                println(result.getOrThrow().photoURL)
-                                                // TODO: Login via repo
-                                            } else {
-                                                analytics.track(LOGIN_FAILED_EVENT, providerParam)
-                                                result.exceptionOrNull()?.let {
-                                                    analytics.log(it)
-                                                }
-                                            }
-                                        }
+                                        accountRepository.login(LoginType.GOOGLE)
                                     }
 
                                     GroupListAction.CreateNewGroup -> {

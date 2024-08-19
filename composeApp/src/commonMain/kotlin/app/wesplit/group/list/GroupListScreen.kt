@@ -2,7 +2,6 @@ package app.wesplit.group.list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,8 +42,7 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Group
 import app.wesplit.ui.AdaptiveTopAppBar
-import coil3.compose.AsyncImagePainter
-import coil3.compose.rememberAsyncImagePainter
+import com.seiko.imageloader.rememberImagePainter
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -55,7 +53,6 @@ import split.composeapp.generated.resources.ic_split_money
 import split.composeapp.generated.resources.login
 import split.composeapp.generated.resources.login_button_cd
 import split.composeapp.generated.resources.logout
-import split.composeapp.generated.resources.no_image_group_cd
 
 sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction
@@ -218,28 +215,17 @@ private fun GroupList(
                     supportingContent = { Text("Users: ${group.users.size}") },
                     leadingContent = {
                         Box(contentAlignment = Alignment.Center) {
-                            val painter = rememberAsyncImagePainter(model = group.imageUrl)
+                            val painter =
+                                rememberImagePainter(
+                                    url = "https://randomuser.me/api/portraits/med/men/73.jpg",
+                                    placeholderPainter = { painterResource(Res.drawable.ic_split_money) },
+                                )
                             Image(
                                 painter = painter,
                                 contentScale = ContentScale.Fit,
                                 contentDescription = group.title,
                                 modifier = Modifier.size(42.dp).clip(CircleShape).aspectRatio(1f),
                             )
-                            if (painter.state !is AsyncImagePainter.State.Success) {
-                                Box(
-                                    modifier =
-                                        Modifier.size(42.dp).clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.surfaceContainer),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Icon(
-                                        painter = painterResource(Res.drawable.ic_split_money),
-                                        contentDescription = stringResource(Res.string.no_image_group_cd, group.title),
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
                         }
                     },
                 )

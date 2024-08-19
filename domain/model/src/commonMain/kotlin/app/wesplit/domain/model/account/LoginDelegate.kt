@@ -1,4 +1,4 @@
-package app.wesplit
+package app.wesplit.domain.model.account
 
 import dev.gitlive.firebase.auth.FirebaseUser
 

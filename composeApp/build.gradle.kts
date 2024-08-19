@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.google.services)
     alias(libs.plugins.crashlytics)
+    alias(libs.plugins.serialization)
 }
 
 kotlin {
@@ -74,12 +75,13 @@ kotlin {
             implementation(compose.uiTooling)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
-            implementation(libs.coil.network.okhttp)
             implementation(libs.firebase.common.crashlytics)
 
             implementation(libs.androidx.credentials)
             implementation(libs.androidx.credentials.play.services.auth)
             implementation(libs.googleid)
+
+            implementation(libs.ktor.client.android)
         }
 
         commonMain {
@@ -103,9 +105,9 @@ kotlin {
                 implementation(libs.koin.compose)
                 implementation(libs.koin.annotations)
 
-                implementation(libs.coil)
-                implementation(libs.coil.compose)
-                implementation(libs.coil.network.ktor)
+                implementation(libs.bundles.ktor.common)
+
+                api(libs.image.loader)
 
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.kotlinx.io)
@@ -120,7 +122,6 @@ kotlin {
                 implementation(compose.uiTooling)
                 implementation(compose.desktop.currentOs)
                 implementation(libs.kotlinx.coroutines.swing)
-                implementation(libs.coil.network.okhttp)
             }
 
             // TODO: Custom set of dependencies 'mobile' could be share if needed
@@ -135,6 +136,7 @@ kotlin {
 //            }
 
             jsMain.dependencies {
+                implementation(libs.kotlinx.coroutines.js)
                 implementation(libs.ktor.client.js)
                 implementation(libs.koin.js)
             }

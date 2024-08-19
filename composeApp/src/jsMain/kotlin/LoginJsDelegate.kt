@@ -1,5 +1,5 @@
-import app.wesplit.LoginDelegate
-import app.wesplit.LoginType
+import app.wesplit.domain.model.account.LoginDelegate
+import app.wesplit.domain.model.account.LoginType
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth

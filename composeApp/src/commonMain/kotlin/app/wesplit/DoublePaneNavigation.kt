@@ -29,7 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
@@ -53,10 +55,10 @@ fun DoublePaneNavigation(
                         icon = {
                             Icon(
                                 painter = painterResource(item.icon),
-                                contentDescription = item.title,
+                                contentDescription = stringResource(item.title),
                             )
                         },
-                        label = { Text(item.title) },
+                        label = { Text(stringResource(item.title)) },
                         selected = item == selectedMenuItem,
                         onClick = { onMenuItemClick(item) },
                     )
@@ -78,14 +80,14 @@ fun DoublePaneNavigation(
                     HorizontalDivider()
                     menuItems.forEach { item ->
                         NavigationDrawerItem(
-                            label = { Text(text = item.title) },
+                            label = { Text(text = stringResource(item.title)) },
                             selected = item == selectedMenuItem,
                             onClick = { onMenuItemClick(item) },
                             shape = RectangleShape,
                             icon = {
                                 Icon(
                                     painter = painterResource(item.icon),
-                                    contentDescription = item.title,
+                                    contentDescription = stringResource(item.title),
                                 )
                             },
                         )
@@ -115,6 +117,6 @@ fun DoublePaneNavigation(
 }
 
 interface NavigationMenuItem {
-    val title: String
+    val title: StringResource
     val icon: DrawableResource
 }
