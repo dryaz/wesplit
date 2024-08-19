@@ -81,7 +81,7 @@ kotlin {
             implementation(libs.androidx.credentials.play.services.auth)
             implementation(libs.googleid)
 
-            implementation(libs.ktor.client.android)
+//            implementation(libs.ktor.client.android)
         }
 
         commonMain {
@@ -105,7 +105,7 @@ kotlin {
                 implementation(libs.koin.compose)
                 implementation(libs.koin.annotations)
 
-                implementation(libs.bundles.ktor.common)
+//                implementation(libs.bundles.ktor.common)
 
                 api(libs.image.loader)
 
@@ -126,7 +126,7 @@ kotlin {
 
             // TODO: Custom set of dependencies 'mobile' could be share if needed
             iosMain.dependencies {
-                implementation(libs.ktor.client.darwin)
+//                implementation(libs.ktor.client.darwin)
                 implementation(libs.firebase.common.crashlytics)
             }
 
@@ -137,7 +137,7 @@ kotlin {
 
             jsMain.dependencies {
                 implementation(libs.kotlinx.coroutines.js)
-                implementation(libs.ktor.client.js)
+//                implementation(libs.ktor.client.js)
                 implementation(libs.koin.js)
             }
         }
