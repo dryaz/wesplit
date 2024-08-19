@@ -1,11 +1,14 @@
 package app.wesplit.theme
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTheme
+import io.github.alexzhirkevich.cupertino.adaptive.CupertinoThemeSpec
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.MaterialThemeSpec
 
 private val lightScheme =
     lightColorScheme(
@@ -257,6 +260,7 @@ val unspecified_scheme =
         Color.Unspecified,
     )
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -270,9 +274,18 @@ fun AppTheme(
             else -> lightScheme
         }
 
-    MaterialTheme(
-        typography = AppTypography(),
-        colorScheme = colorScheme,
-        content = content,
+
+    AdaptiveTheme(
+        material = MaterialThemeSpec.Default(
+            colorScheme = colorScheme,
+            typography = AppTypography()
+        ),
+        cupertino = CupertinoThemeSpec.Default(
+            colorScheme = if (darkTheme)
+                io.github.alexzhirkevich.cupertino.theme.darkColorScheme(accent = Color(0xFFABD290))
+            else io.github.alexzhirkevich.cupertino.theme.lightColorScheme(accent = Color(0xFF456731)),
+
+        ),
+        content = content
     )
 }

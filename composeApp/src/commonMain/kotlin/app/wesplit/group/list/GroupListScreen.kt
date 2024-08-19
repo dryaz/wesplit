@@ -43,6 +43,8 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Group
 import app.wesplit.ui.AdaptiveTopAppBar
 import com.seiko.imageloader.rememberImagePainter
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -189,6 +191,7 @@ private fun EmptyGroupList(
     }
 }
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun GroupList(
     modifier: Modifier = Modifier,
@@ -233,7 +236,7 @@ private fun GroupList(
             }
         }
         AnimatedVisibility(visible = accountState is Account.Unregistered) {
-            Button(
+            AdaptiveButton(
                 modifier = Modifier.fillMaxWidth(1f),
                 onClick = { onAction(GroupListAction.Login) },
             ) {

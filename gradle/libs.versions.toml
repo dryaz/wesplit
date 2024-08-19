@@ -40,7 +40,11 @@ material3WindowSizeClassMultiplatform = "0.5.0"
 #navigationCompose = "2.8.0-alpha08"
 navigationCompose = "2.7.0-alpha07"
 
+cupertino = "0.1.0-alpha04"
+materialKolor = "1.7.0"
+
 [libraries]
+materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
@@ -97,8 +101,13 @@ firebase-common-crashlytics = { module = "dev.gitlive:firebase-crashlytics", ver
 
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
+cupertino-core = { module = "io.github.alexzhirkevich:cupertino", version.ref = "cupertino" }
+cupertino-native = { module = "io.github.alexzhirkevich:cupertino-native", version.ref = "cupertino" }
+cupertino-adaptive = { module = "io.github.alexzhirkevich:cupertino-adaptive", version.ref = "cupertino" }
+
 [bundles]
 ktor-common = ["ktor-client-core", "ktor-client-json", "ktor-client-logging", "ktor-client-serialization", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]
+cupertino = ["cupertino-core", "cupertino-native", "cupertino-adaptive"]
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

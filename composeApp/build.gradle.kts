@@ -115,6 +115,9 @@ kotlin {
                 implementation(libs.firebase.common.auth)
                 implementation(libs.firebase.common.analytics)
                 implementation(libs.firebase.common.firestore)
+
+                implementation(libs.bundles.cupertino)
+                implementation(libs.materialKolor)
             }
 
             desktopMain.dependencies {
