@@ -53,8 +53,9 @@ fun DisplayFontFamily() =
         Font(Res.font.Lexend_Black, weight = FontWeight.Black),
     )
 
+// TODO: OOPS, RU symbols does not work :D
 @Composable
-fun AppTypography() =
+fun MaterialTypography() =
     Typography().run {
         val bodyFontFamily = BodyFontFamily()
         val disaplyFontFamily = DisplayFontFamily()

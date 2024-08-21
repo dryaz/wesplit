@@ -1,7 +1,9 @@
 package app.wesplit.group.detailed
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,7 +18,7 @@ import split.composeapp.generated.resources.group_detailed_empty_description
 @Composable
 fun NoGroupScreen() {
     Box(
-        modifier = Modifier.fillMaxSize(1f),
+        modifier = Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainer),
         contentAlignment = Alignment.Center,
     ) {
         Text(stringResource(Res.string.group_detailed_empty_description))

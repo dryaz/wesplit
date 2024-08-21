@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -106,8 +105,7 @@ fun GroupListScreen(
         }
 
     Scaffold(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             // TODO: Navigation drawer icon which also connected to menu items inside double pane nav
             AdaptiveTopAppBar(
@@ -169,7 +167,7 @@ private fun EmptyGroupList(
     ) {
         Text(stringResource(Res.string.group_list_empty_description))
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
+        AdaptiveButton(
             modifier = Modifier.defaultMinSize(minWidth = 120.dp),
             onClick = {
                 when (accountState) {

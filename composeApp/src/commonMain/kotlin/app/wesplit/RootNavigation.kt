@@ -1,7 +1,6 @@
 package app.wesplit
 
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,7 +19,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navOptions
 import app.wesplit.account.ProfileAction
@@ -87,32 +85,39 @@ sealed class RightPane(
 }
 
 sealed class MenuItem : NavigationMenuItem {
-    data class Group(override val title: StringResource, override val icon: DrawableResource) : MenuItem()
+    data object Group : MenuItem() {
+        override val icon: DrawableResource
+            get() = Res.drawable.ic_group
+        override val title: StringResource
+            get() = Res.string.groups
+    }
 
-    data class Profile(override val title: StringResource, override val icon: DrawableResource) : MenuItem()
+    data object Profile : MenuItem() {
+        override val icon: DrawableResource
+            get() = Res.drawable.ic_profile
+        override val title: StringResource
+            get() = Res.string.profile
+    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RootNavigation() {
-    val firstPaneNavController: NavHostController = rememberNavController()
-    val secondPaneNavController: NavHostController = rememberNavController()
-
-    var secondNahControllerEmpty by remember { mutableStateOf(false) }
+fun RootNavigation(
+    firstPaneNavController: NavHostController,
+    secondPaneNavController: NavHostController,
+    selectedMenuItem: NavigationMenuItem,
+    onSelectMenuItem: (NavigationMenuItem) -> Unit,
+) {
+    var secondNavControllerEmpty by remember { mutableStateOf(false) }
     val accountRepository: AccountRepository = koinInject()
     val coroutineScope = rememberCoroutineScope()
 
     val menuItems =
         remember {
             mutableStateListOf(
-                MenuItem.Profile(Res.string.profile, Res.drawable.ic_profile),
-                MenuItem.Group(Res.string.groups, Res.drawable.ic_group),
+                MenuItem.Profile,
+                MenuItem.Group,
             )
         }
-
-    var selectedMenuItem: NavigationMenuItem by remember {
-        mutableStateOf(MenuItem.Group(Res.string.groups, Res.drawable.ic_group))
-    }
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
 
@@ -124,18 +129,18 @@ fun RootNavigation() {
                     destination: NavDestination,
                     arguments: Bundle?,
                 ) {
-                    secondNahControllerEmpty = controller.previousBackStackEntry == null
+                    secondNavControllerEmpty = controller.previousBackStackEntry == null
                 }
             },
         )
     }
 
     DoublePaneNavigation(
-        secondNavhostEmpty = secondNahControllerEmpty,
+        secondNavhostEmpty = secondNavControllerEmpty,
         menuItems = menuItems,
         selectedMenuItem = selectedMenuItem,
         onMenuItemClick = { menuItem ->
-            selectedMenuItem = menuItem
+            onSelectMenuItem(menuItem)
             when (menuItem) {
                 is MenuItem.Group ->
                     firstPaneNavController.navigate(

@@ -1,6 +1,12 @@
 package app.wesplit
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import app.wesplit.data.firebase.domainModule
 import app.wesplit.data.firebase.firebaseDataModule
 import app.wesplit.di.appModule
@@ -15,8 +21,21 @@ fun App(vararg platformModule: Module) {
     KoinApplication(application = {
         modules(domainModule() + firebaseDataModule() + appModule() + platformModule)
     }) {
+        val firstPaneNavController: NavHostController = rememberNavController()
+        val secondPaneNavController: NavHostController = rememberNavController()
+
+        var selectedMenuItem: NavigationMenuItem by remember {
+            mutableStateOf(MenuItem.Group)
+        }
+
         AppTheme {
-            RootNavigation()
+            RootNavigation(
+                firstPaneNavController = firstPaneNavController,
+                secondPaneNavController = secondPaneNavController,
+                selectedMenuItem = selectedMenuItem,
+            ) { menuItem ->
+                selectedMenuItem = menuItem
+            }
         }
     }
 }

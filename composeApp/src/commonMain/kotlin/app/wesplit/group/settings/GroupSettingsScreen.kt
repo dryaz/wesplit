@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,6 +23,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -75,7 +75,7 @@ fun GroupSettingsScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             TopAppBareByState(
                 state = state.value,
@@ -127,15 +127,15 @@ private fun GroupSettingsView(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Card(
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
             modifier =
                 Modifier
                     .widthIn(max = 450.dp)
                     .fillMaxWidth(1f)
                     .padding(horizontal = 16.dp),
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
@@ -170,15 +170,15 @@ private fun GroupSettingsView(
         }
 
         Card(
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
             modifier =
                 Modifier
                     .widthIn(max = 450.dp)
                     .fillMaxWidth(1f)
                     .padding(16.dp),
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
         ) {
             Row(
                 modifier =
@@ -200,11 +200,8 @@ private fun GroupSettingsView(
             }
 
             group.users.forEachIndexed { index, user ->
-                Spacer(
-                    modifier =
-                        Modifier.fillMaxWidth(1f).height(1.dp)
-                            .padding(start = if (index == 0) 0.dp else 80.dp)
-                            .background(MaterialTheme.colorScheme.outlineVariant),
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = if (index == 0) 0.dp else 80.dp),
                 )
                 UserListItem(user)
             }

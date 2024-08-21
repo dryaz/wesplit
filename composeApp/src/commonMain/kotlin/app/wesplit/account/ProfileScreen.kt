@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
 import app.wesplit.ui.AdaptiveTopAppBar
 import com.seiko.imageloader.rememberImagePainter
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.login
@@ -81,7 +81,7 @@ fun ProfileScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             AdaptiveTopAppBar(
                 onNavigationIconClick = navigationIconClick,
@@ -89,7 +89,7 @@ fun ProfileScreen(
                     Text(stringResource(Res.string.profile))
                 },
                 actions = {
-                    IconButton(onClick = { onAction(ProfileAction.Logout) }) {
+                    AdaptiveIconButton(onClick = { onAction(ProfileAction.Logout) }) {
                         Icon(
                             Icons.AutoMirrored.Outlined.ExitToApp,
                             contentDescription = stringResource(Res.string.logout),
@@ -125,7 +125,7 @@ private fun Unregistered(
         modifier = modifier.fillMaxSize(1f),
         contentAlignment = Alignment.Center,
     ) {
-        Button(
+        AdaptiveButton(
             modifier = Modifier.fillMaxWidth(1f),
             onClick = { onLogin() },
         ) {

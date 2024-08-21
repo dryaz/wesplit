@@ -19,5 +19,7 @@
     <string name="add_user_to_group">Add new user to group</string>
     <string name="profile">Profile</string>
     <string name="groups">Groups</string>
+    <string name="change_theme">Change theme</string>
+    <string name="change_color_mode">Change color mode</string>
     <!--    <string name=""></string>-->
 </resources>

@@ -15,7 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -51,7 +51,15 @@ fun AdaptiveTopAppBar(
     val windowSizeClass = calculateWindowSizeClass()
 
     if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
-        TopAppBar(
+        io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTopAppBar(
+            adaptation = {
+                material {
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        )
+                }
+            },
             modifier = modifier,
             title = title,
             navigationIcon = {
@@ -66,6 +74,10 @@ fun AdaptiveTopAppBar(
     } else {
         CenterAlignedTopAppBar(
             modifier = modifier,
+            colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
             title = title,
             navigationIcon = {
                 onNavigationIconClick?.let { action ->
