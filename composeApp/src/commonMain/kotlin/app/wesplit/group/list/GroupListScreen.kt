@@ -6,9 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,9 +35,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.wesplit.account.GoogleLoginButton
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Group
 import app.wesplit.ui.AdaptiveTopAppBar
@@ -48,12 +51,14 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
-import split.composeapp.generated.resources.group_list_empty_description
+import split.composeapp.generated.resources.group_list_empty_description_authorized
+import split.composeapp.generated.resources.group_list_empty_description_unregistered
 import split.composeapp.generated.resources.group_list_title
 import split.composeapp.generated.resources.ic_split_money
+import split.composeapp.generated.resources.img_add_data
 import split.composeapp.generated.resources.login
 import split.composeapp.generated.resources.login_button_cd
-import split.composeapp.generated.resources.logout
+import split.composeapp.generated.resources.or
 
 sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction
@@ -160,32 +165,68 @@ private fun EmptyGroupList(
     accountState: Account,
     onAction: (GroupListAction) -> Unit,
 ) {
+    AnimatedVisibility(
+        modifier = modifier.fillMaxSize(1f),
+        visible = accountState is Account.Unregistered,
+    ) {
+        EmptyGroupUnregistered(modifier, onAction)
+    }
+
+    AnimatedVisibility(
+        modifier = modifier.fillMaxSize(1f),
+        visible = accountState is Account.Authorized,
+    ) {
+        EmptyGroupAuthorized(modifier)
+    }
+}
+
+@Composable
+private fun EmptyGroupAuthorized(modifier: Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize(1f).padding(horizontal = 32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Image(
+            modifier = Modifier.alpha(0.7f),
+            painter = painterResource(Res.drawable.img_add_data),
+            contentDescription = stringResource(Res.string.back_btn_cd),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(Res.string.group_list_empty_description_authorized),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun EmptyGroupUnregistered(
+    modifier: Modifier,
+    onAction: (GroupListAction) -> Unit,
+) {
     Column(
         modifier = modifier.fillMaxSize(1f),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(stringResource(Res.string.group_list_empty_description))
+        Text(stringResource(Res.string.group_list_empty_description_unregistered))
         Spacer(modifier = Modifier.height(16.dp))
-        AdaptiveButton(
-            modifier = Modifier.defaultMinSize(minWidth = 120.dp),
-            onClick = {
-                when (accountState) {
-                    is Account.Authorized -> onAction(GroupListAction.Logout)
-                    Account.Unknown,
-                    Account.Unregistered,
-                    -> onAction(GroupListAction.Login)
-                }
-            },
+        Row(
+            modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 64.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            when (accountState) {
-                Account.Unknown,
-                Account.Unregistered,
-                -> Text(stringResource(Res.string.login))
-
-                is Account.Authorized -> Text(stringResource(Res.string.logout))
-            }
+            HorizontalDivider(modifier = Modifier.weight(1f))
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = stringResource(Res.string.or),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            HorizontalDivider(modifier = Modifier.weight(1f))
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        GoogleLoginButton { onAction(GroupListAction.Login) }
     }
 }
 

@@ -71,7 +71,7 @@ fun AppTheme(content: @Composable () -> Unit) {
         }
     }
 
-    var theme by remember { mutableStateOf(Theme.Cupertino) }
+    var theme by remember { mutableStateOf(Theme.Material3) }
 
     val cupertinoColorScheme =
         when {
