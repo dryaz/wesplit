@@ -3,10 +3,10 @@ package app.wesplit.group.detailed
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.wesplit.RightPane
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.routing.RightPane
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest

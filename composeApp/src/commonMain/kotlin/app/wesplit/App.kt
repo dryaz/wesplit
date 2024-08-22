@@ -10,6 +10,8 @@ import androidx.navigation.compose.rememberNavController
 import app.wesplit.data.firebase.domainModule
 import app.wesplit.data.firebase.firebaseDataModule
 import app.wesplit.di.appModule
+import app.wesplit.routing.MenuItem
+import app.wesplit.routing.RootNavigation
 import app.wesplit.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinApplication

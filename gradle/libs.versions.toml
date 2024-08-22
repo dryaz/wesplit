@@ -14,6 +14,7 @@ coil = "3.0.0-alpha06"
 #compose-plugin = "1.7.0-alpha02"
 compose-plugin = "1.6.11"
 credentials = "1.3.0-rc01"
+deeplink = "2.1.1"
 googleid = "1.1.1"
 imageLoader = "1.8.2"
 junit = "4.13.2"
@@ -32,6 +33,8 @@ firebase = "1.13.0"
 gservice = "4.4.2"
 kermit = "2.0.4"
 crashlytics = "3.0.2"
+dokka = "1.9.20"
+kotest = "5.5.4"
 
 # wasmJs support
 koin = "4.0.0-RC1"
@@ -44,6 +47,7 @@ cupertino = "0.1.0-alpha04"
 materialKolor = "1.7.0"
 
 [libraries]
+deeplink = { module = "com.motorro.keeplink:deeplink", version.ref = "deeplink" }
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
@@ -105,6 +109,10 @@ cupertino-core = { module = "io.github.alexzhirkevich:cupertino", version.ref = 
 cupertino-native = { module = "io.github.alexzhirkevich:cupertino-native", version.ref = "cupertino" }
 cupertino-adaptive = { module = "io.github.alexzhirkevich:cupertino-adaptive", version.ref = "cupertino" }
 
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+kotest-framework-datatest = { module = "io.kotest:kotest-framework-datatest", version.ref = "kotest" }
+
 [bundles]
 ktor-common = ["ktor-client-core", "ktor-client-json", "ktor-client-logging", "ktor-client-serialization", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]
 cupertino = ["cupertino-core", "cupertino-native", "cupertino-adaptive"]
@@ -122,3 +130,5 @@ google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp-googl
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 google-services = { id = "com.google.gms.google-services", version.ref = "gservice" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+

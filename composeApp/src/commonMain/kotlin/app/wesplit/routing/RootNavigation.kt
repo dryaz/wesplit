@@ -1,4 +1,4 @@
-package app.wesplit
+package app.wesplit.routing
 
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
@@ -21,6 +21,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navOptions
+import app.wesplit.DoublePaneNavigation
+import app.wesplit.NavigationMenuItem
 import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel

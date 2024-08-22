@@ -1,4 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.gradle.DokkaTaskPartial
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -12,6 +14,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.crashlytics)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.dokka)
 }
 
 kotlin {
@@ -118,6 +121,8 @@ kotlin {
 
                 implementation(libs.bundles.cupertino)
                 implementation(libs.materialKolor)
+
+                implementation(libs.deeplink)
             }
 
             desktopMain.dependencies {
@@ -142,6 +147,14 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.js)
 //                implementation(libs.ktor.client.js)
                 implementation(libs.koin.js)
+            }
+
+            commonTest.dependencies {
+                dependsOn(commonMain.get())
+                implementation(kotlin("test"))
+                implementation(libs.kotest.assertions.core)
+                implementation(libs.kotest.framework.engine)
+                implementation(libs.kotest.framework.datatest)
             }
         }
     }
@@ -234,3 +247,18 @@ dependencies {
 //        it.dependsOn("kspCommonMainKotlinMetadata")
 //    }
 // }
+
+subprojects {
+    tasks {
+        withType<DokkaTask>().configureEach {
+            dokkaSourceSets.configureEach {
+                includes.from("moduledoc.md")
+            }
+        }
+        withType<DokkaTaskPartial>().configureEach {
+            dokkaSourceSets.configureEach {
+                includes.from("moduledoc.md")
+            }
+        }
+    }
+}
