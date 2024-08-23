@@ -3,9 +3,11 @@ package app.wesplit.group.settings
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.user.User
+import app.wesplit.domain.model.user.user
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +19,7 @@ import org.koin.core.component.KoinComponent
 class GroupSettingsViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
+    private val accountRepository: AccountRepository,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support same settings screen for existing group.
     val groupId: String? = null
@@ -79,11 +82,7 @@ class GroupSettingsViewModel(
         State.Group(
             id = null,
             title = "",
-            // TODO: Should we have current user in group by default? Probably yes.
-            users =
-                (0..50).map {
-                    User("$it", "User #$it", "photoUrl")
-                },
+            users = listOf(accountRepository.getCurrent().user()).filterNotNull(),
         )
 
     sealed interface State {

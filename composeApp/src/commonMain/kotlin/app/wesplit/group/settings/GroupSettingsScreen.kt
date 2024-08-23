@@ -1,5 +1,6 @@
 package app.wesplit.group.settings
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,8 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,28 +30,32 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.user.User
 import app.wesplit.ui.AdaptiveTopAppBar
+import com.seiko.imageloader.model.ImageAction
+import com.seiko.imageloader.rememberImageSuccessPainter
+import com.seiko.imageloader.ui.AutoSizeBox
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_user_to_group
 import split.composeapp.generated.resources.create
 import split.composeapp.generated.resources.group_name
+import split.composeapp.generated.resources.ic_user
+import split.composeapp.generated.resources.ic_user_add
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_group
 import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.settings
+import split.composeapp.generated.resources.you
 
 sealed interface GroupSettingsAction {
     data object Back : GroupSettingsAction
@@ -71,7 +74,6 @@ fun GroupSettingsScreen(
     onAction: (GroupSettingsAction) -> Unit,
 ) {
     val state = viewModel.state.collectAsState()
-    var groupTitle by remember { mutableStateOf("") }
 
     Scaffold(
         modifier = modifier,
@@ -189,8 +191,8 @@ private fun GroupSettingsView(
                         }.padding(16.dp),
             ) {
                 Icon(
+                    painter = painterResource(Res.drawable.ic_user_add),
                     modifier = Modifier.width(48.dp),
-                    imageVector = Icons.Outlined.Person,
                     contentDescription = stringResource(Res.string.add_user_to_group),
                 )
                 Spacer(modifier = Modifier.width(16.dp))
@@ -221,16 +223,41 @@ fun UserListItem(user: User) {
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color.Red),
-        )
+        AutoSizeBox(
+            url = user.photoUrl ?: "",
+        ) { action ->
+            when (action) {
+                is ImageAction.Success -> {
+                    Image(
+                        rememberImageSuccessPainter(action),
+                        modifier = Modifier.size(56.dp).clip(CircleShape),
+                        contentDescription = user.name,
+                    )
+                }
+
+                is ImageAction.Loading -> {
+                    CircularProgressIndicator()
+                }
+
+                is ImageAction.Failure -> {
+                    Box(
+                        modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerLow),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Image(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(Res.drawable.ic_user),
+                            contentDescription = "No image for user ${user.name}",
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        )
+                    }
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = user.name,
+            text = user.name + if (user.isCurrentUser) " (${stringResource(Res.string.you)})" else "",
         )
     }
 }
@@ -268,10 +295,12 @@ private fun TopAppBareByState(
                                 onToolbarAction(
                                     GroupSettingTollbarAction.Reload,
                                 )
+
                             is GroupSettingsViewModel.State.Group ->
                                 onToolbarAction(
                                     GroupSettingTollbarAction.Commit,
                                 )
+
                             GroupSettingsViewModel.State.Loading -> {}
                         }
                     }.padding(horizontal = 16.dp),

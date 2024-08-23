@@ -107,7 +107,7 @@ fun ProfileScreen(
                     account = accountState,
                 )
             Account.Unknown,
-            Account.Unregistered,
+            is Account.Anonymous,
             ->
                 Unregistered(
                     onLogin = { onAction(ProfileAction.Login) },

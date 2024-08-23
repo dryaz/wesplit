@@ -303,6 +303,7 @@ fun RootNavigation(
                             GroupSettingsViewModel(
                                 SavedStateHandle.createHandle(null, null),
                                 groupRepository,
+                                accountRepository,
                             )
                         }
 

@@ -85,7 +85,7 @@ fun AppTheme(content: @Composable () -> Unit) {
             MaterialThemeSpec.Default(
                 colorScheme =
                     dynamicColorScheme(
-                        seedColor = Color(0xFF456731),
+                        seedColor = Color(0xFF48B04A),
                         isDark = darkTheme,
                         isAmoled = false,
                         style = PaletteStyle.Rainbow,

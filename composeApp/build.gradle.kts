@@ -6,15 +6,14 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.serialization)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsCompose)
-    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.google.services)
     alias(libs.plugins.crashlytics)
-    alias(libs.plugins.serialization)
-    alias(libs.plugins.dokka)
 }
 
 kotlin {
@@ -234,18 +233,30 @@ dependencies {
 }
 
 // WORKAROUND: ADD this dependsOn("kspCommonMainKotlinMetadata") instead of above dependencies
-// tasks.withType<KotlinCompile<*>>().configureEach {
+// tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().configureEach {
 //    if (name != "kspCommonMainKotlinMetadata") {
 //        dependsOn("kspCommonMainKotlinMetadata")
 //    }
 // }
+//
+// tasks.withType<org.jlleitschuh.gradle.ktlint.tasks.BaseKtLintCheckTask>().configureEach {
+//    println("Add dependency from :${this.name}")
+//    dependsOn("kspCommonMainKotlinMetadata")
+// }
+//
 // afterEvaluate {
 //    tasks.filter {
 //        it.name.contains("SourcesJar", true)
-//    }?.forEach {
+//    }.forEach {
 //        println("SourceJarTask====>${it.name}")
 //        it.dependsOn("kspCommonMainKotlinMetadata")
 //    }
+// }
+
+// val javadocJar by tasks.creating(Jar::class) {
+//    group = "documentation"
+//    archiveClassifier.set("javadoc")
+//    from(tasks.dokkaHtml)
 // }
 
 subprojects {

@@ -6,6 +6,7 @@ import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.LoginDelegate
 import app.wesplit.domain.model.account.LoginType
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -29,22 +30,21 @@ class AccountFirebaseRepository(
     private val coroutineDispatcher: CoroutineDispatcher,
     private val loginDelegate: LoginDelegate,
 ) : AccountRepository {
-    private val accountState = MutableStateFlow<Account>(Account.Unregistered)
+    private val accountState = MutableStateFlow<Account>(Account.Unknown)
     private val coroutinScope = CoroutineScope(coroutineDispatcher)
 
     private val authListener =
         Firebase.auth.authStateChanged.map { user ->
-            if (user == null) {
-                // TODO: Anonymous user as well
-                Account.Unregistered
-            } else {
-                Account.Authorized(user)
-            }
+            val account = getAccount(user)
+            if (account is Account.Unknown) Firebase.auth.signInAnonymously()
+            account
         }.stateIn(
             scope = coroutinScope,
             started = SharingStarted.Lazily,
             initialValue = Account.Unknown,
         )
+
+    override fun getCurrent(): Account = getAccount(Firebase.auth.currentUser)
 
     override fun get(): StateFlow<Account> = authListener
 
@@ -68,4 +68,15 @@ class AccountFirebaseRepository(
             }
         }
     }
+
+    private fun getAccount(user: FirebaseUser?) =
+        if (user == null) {
+            Account.Unknown
+        } else {
+            if (user.isAnonymous) {
+                Account.Anonymous(user)
+            } else {
+                Account.Authorized(user)
+            }
+        }
 }

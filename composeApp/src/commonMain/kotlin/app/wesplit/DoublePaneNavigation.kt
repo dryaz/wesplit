@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
@@ -43,6 +45,7 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.app_name
 import split.composeapp.generated.resources.change_color_mode
 import split.composeapp.generated.resources.change_theme
 import split.composeapp.generated.resources.ic_android
@@ -74,7 +77,9 @@ fun DoublePaneNavigation(
             NavigationRail(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             ) {
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                AppLogo(modifier = Modifier.size(56.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 menuItems.forEach { item ->
                     NavigationRailItem(
                         icon = {
@@ -160,7 +165,13 @@ fun DoublePaneNavigation(
             drawerState = drawerState,
             drawerContent = {
                 ModalDrawerSheet {
-                    Text("Drawer title", modifier = Modifier.padding(16.dp))
+                    Row(modifier = Modifier.fillMaxWidth(1f)) {
+                        AppLogo(modifier = Modifier.size(56.dp))
+                        Text(
+                            text = stringResource(Res.string.app_name),
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
                     HorizontalDivider()
                     menuItems.forEach { item ->
                         NavigationDrawerItem(

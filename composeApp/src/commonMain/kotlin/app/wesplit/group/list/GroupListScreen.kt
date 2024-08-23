@@ -167,7 +167,7 @@ private fun EmptyGroupList(
 ) {
     AnimatedVisibility(
         modifier = modifier.fillMaxSize(1f),
-        visible = accountState is Account.Unregistered,
+        visible = accountState is Account.Anonymous,
     ) {
         EmptyGroupUnregistered(modifier, onAction)
     }
@@ -274,7 +274,7 @@ private fun GroupList(
                 HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
             }
         }
-        AnimatedVisibility(visible = accountState is Account.Unregistered) {
+        AnimatedVisibility(visible = accountState is Account.Anonymous) {
             AdaptiveButton(
                 modifier = Modifier.fillMaxWidth(1f),
                 onClick = { onAction(GroupListAction.Login) },
