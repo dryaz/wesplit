@@ -70,16 +70,23 @@ class LoginAndroidDelegate(
             is CustomCredential -> {
                 if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                     try {
-                        // Use googleIdTokenCredential and extract id to validate and
-                        // authenticate on your server.
                         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                        val authCredential = GoogleAuthProvider.credential(googleIdTokenCredential.idToken, null)
+
                         val signinResult =
-                            Firebase.auth.signInWithCredential(
-                                GoogleAuthProvider.credential(googleIdTokenCredential.idToken, null),
-                            )
-                        val fbUser = signinResult.user
-                        if (fbUser != null) {
-                            return Result.success(fbUser)
+                            kotlin.runCatching {
+                                Firebase.auth.currentUser?.let {
+                                    Firebase.auth.currentUser?.linkWithCredential(authCredential)
+                                } ?: Firebase.auth.signInWithCredential(authCredential)
+                            }.onFailure { e ->
+                                analyticsManager.log(e)
+                            }.recover {
+                                Firebase.auth.signInWithCredential(authCredential)
+                            }.getOrNull()
+
+                        val user = signinResult?.user
+                        if (user != null) {
+                            return Result.success(user)
                         } else {
                             return Result.failure(IllegalAccessException("Can't get firebase user"))
                         }

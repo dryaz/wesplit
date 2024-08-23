@@ -169,10 +169,6 @@ fun DoublePaneNavigation(
                         contentAlignment = Alignment.Center,
                     ) {
                         AppLogo(modifier = Modifier.size(56.dp))
-//                        Text(
-//                            text = stringResource(Res.string.app_name),
-//                            modifier = Modifier.padding(16.dp),
-//                        )
                     }
 
                     menuItems.forEach { item ->

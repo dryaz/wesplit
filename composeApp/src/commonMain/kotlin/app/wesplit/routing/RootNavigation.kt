@@ -178,6 +178,7 @@ fun RootNavigation(
                 navController = firstPaneNavController,
                 startDestination = LeftPane.GroupList.route,
             ) {
+                // TODO: App navigation could be one per navhost + action controlled by composable
                 composable(route = LeftPane.Profile.route) {
                     val viewModel =
                         viewModel {
@@ -190,9 +191,9 @@ fun RootNavigation(
                         viewModel = viewModel,
                         onAction = { action ->
                             when (action) {
-                                ProfileAction.Back -> firstPaneNavController.popBackStack()
                                 ProfileAction.Login -> accountRepository.login(LoginType.GOOGLE)
                                 ProfileAction.Logout -> accountRepository.logout()
+                                ProfileAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
                             }
                         },
                     )

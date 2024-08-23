@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,16 +34,17 @@ import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.login
 import split.composeapp.generated.resources.logout
 import split.composeapp.generated.resources.profile
 
 sealed interface ProfileAction {
-    data object Back : ProfileAction
-
     data object Login : ProfileAction
 
     data object Logout : ProfileAction
+
+    data object OpenMenu : ProfileAction
 }
 
 @Composable
@@ -73,7 +75,7 @@ fun ProfileScreen(
     val navigationIconClick =
         remember(windowSizeClass) {
             if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
-                { onAction(ProfileAction.Back) }
+                { onAction(ProfileAction.OpenMenu) }
             } else {
                 null
             }
@@ -84,6 +86,12 @@ fun ProfileScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             AdaptiveTopAppBar(
+                navigationIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Menu,
+                        contentDescription = stringResource(Res.string.back_btn_cd),
+                    )
+                },
                 onNavigationIconClick = navigationIconClick,
                 title = {
                     Text(stringResource(Res.string.profile))
@@ -91,6 +99,7 @@ fun ProfileScreen(
                 actions = {
                     AdaptiveIconButton(onClick = { onAction(ProfileAction.Logout) }) {
                         Icon(
+                            // TODO: Rework logout
                             Icons.AutoMirrored.Outlined.ExitToApp,
                             contentDescription = stringResource(Res.string.logout),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -106,6 +115,7 @@ fun ProfileScreen(
                     modifier = Modifier.padding(paddings),
                     account = accountState,
                 )
+
             Account.Unknown,
             is Account.Anonymous,
             ->
