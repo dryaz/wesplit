@@ -35,7 +35,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
@@ -188,7 +187,7 @@ private fun EmptyGroupAuthorized(modifier: Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
-            modifier = Modifier.alpha(0.7f),
+            modifier = Modifier,
             painter = painterResource(Res.drawable.img_add_data),
             contentDescription = stringResource(Res.string.back_btn_cd),
         )

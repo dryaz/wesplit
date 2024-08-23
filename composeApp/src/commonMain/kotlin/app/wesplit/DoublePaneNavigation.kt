@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -32,6 +31,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
@@ -45,7 +45,6 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
-import split.composeapp.generated.resources.app_name
 import split.composeapp.generated.resources.change_color_mode
 import split.composeapp.generated.resources.change_theme
 import split.composeapp.generated.resources.ic_android
@@ -165,14 +164,17 @@ fun DoublePaneNavigation(
             drawerState = drawerState,
             drawerContent = {
                 ModalDrawerSheet {
-                    Row(modifier = Modifier.fillMaxWidth(1f)) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(1f).padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
                         AppLogo(modifier = Modifier.size(56.dp))
-                        Text(
-                            text = stringResource(Res.string.app_name),
-                            modifier = Modifier.padding(16.dp),
-                        )
+//                        Text(
+//                            text = stringResource(Res.string.app_name),
+//                            modifier = Modifier.padding(16.dp),
+//                        )
                     }
-                    HorizontalDivider()
+
                     menuItems.forEach { item ->
                         NavigationDrawerItem(
                             label = { Text(text = stringResource(item.title)) },
