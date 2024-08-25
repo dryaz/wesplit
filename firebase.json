@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": "composeApp/build/dist/js/productionExecutable",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]//,
+//    "rewrites": [
+//      {
+//        "source": "**",
+//        "destination": "/kotlin/index.html"
+//      }
+//    ]
+  }
+}
