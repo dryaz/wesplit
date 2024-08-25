@@ -44,7 +44,6 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Group
 import app.wesplit.ui.AdaptiveTopAppBar
 import com.seiko.imageloader.rememberImagePainter
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -55,7 +54,6 @@ import split.composeapp.generated.resources.group_list_empty_description_unregis
 import split.composeapp.generated.resources.group_list_title
 import split.composeapp.generated.resources.ic_split_money
 import split.composeapp.generated.resources.img_add_data
-import split.composeapp.generated.resources.login
 import split.composeapp.generated.resources.login_button_cd
 import split.composeapp.generated.resources.or
 
@@ -166,7 +164,7 @@ private fun EmptyGroupList(
 ) {
     AnimatedVisibility(
         modifier = modifier.fillMaxSize(1f),
-        visible = accountState is Account.Anonymous,
+        visible = accountState is Account.Unknown,
     ) {
         EmptyGroupUnregistered(modifier, onAction)
     }
@@ -271,14 +269,6 @@ private fun GroupList(
                     },
                 )
                 HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
-            }
-        }
-        AnimatedVisibility(visible = accountState is Account.Anonymous) {
-            AdaptiveButton(
-                modifier = Modifier.fillMaxWidth(1f),
-                onClick = { onAction(GroupListAction.Login) },
-            ) {
-                Text(stringResource(Res.string.login))
             }
         }
     }

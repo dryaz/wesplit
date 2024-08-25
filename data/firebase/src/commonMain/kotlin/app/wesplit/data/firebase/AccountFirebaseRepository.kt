@@ -36,7 +36,8 @@ class AccountFirebaseRepository(
     private val authListener =
         Firebase.auth.authStateChanged.map { user ->
             val account = getAccount(user)
-            if (account is Account.Unknown) Firebase.auth.signInAnonymously()
+            // TODO: Enabled anon here creates a lot of users AND leave user images empty.
+            //  Maybe need to create user just when user want to create group/expense, TBD.
             account
         }.stateIn(
             scope = coroutinScope,

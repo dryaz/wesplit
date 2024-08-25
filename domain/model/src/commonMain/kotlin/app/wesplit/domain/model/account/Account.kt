@@ -5,6 +5,9 @@ import dev.gitlive.firebase.auth.FirebaseUser
 sealed interface Account {
     data object Unknown : Account
 
+    /**
+     * TODO: Not yet supported, but maybe need to
+     */
     data class Anonymous(
         val user: FirebaseUser,
     ) : Account
