@@ -6,7 +6,6 @@ import app.wesplit.domain.model.account.LoginDelegate
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
-import kotlinx.browser.window
 import org.jetbrains.skiko.wasm.onWasmReady
 import org.koin.dsl.module
 
@@ -31,8 +30,6 @@ fun main() {
 
         // TODO: Changed destination in app should change browser url
         // TODO: How to support back? Probably propagte it from here
-        val origin = window.location
-        println("!@# $origin")
 
         CanvasBasedWindow("WeSplit") {
             // TODO: Support initial destination
