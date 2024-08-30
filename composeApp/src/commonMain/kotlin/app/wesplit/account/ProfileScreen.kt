@@ -32,6 +32,7 @@ import app.wesplit.ui.AdaptiveTopAppBar
 import com.seiko.imageloader.rememberImagePainter
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
@@ -63,7 +64,7 @@ fun ProfileRoute(
 }
 
 // TODO: Check recomposition and probably postpone account retrivial?
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalAdaptiveApi::class)
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
@@ -97,13 +98,15 @@ fun ProfileScreen(
                     Text(stringResource(Res.string.profile))
                 },
                 actions = {
-                    AdaptiveIconButton(onClick = { onAction(ProfileAction.Logout) }) {
-                        Icon(
-                            // TODO: Rework logout
-                            Icons.AutoMirrored.Outlined.ExitToApp,
-                            contentDescription = stringResource(Res.string.logout),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                    if (accountState is Account.Authorized) {
+                        AdaptiveIconButton(onClick = { onAction(ProfileAction.Logout) }) {
+                            Icon(
+                                // TODO: Rework logout
+                                Icons.AutoMirrored.Outlined.ExitToApp,
+                                contentDescription = stringResource(Res.string.logout),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 },
             )
@@ -119,8 +122,13 @@ fun ProfileScreen(
             Account.Unknown,
             is Account.Anonymous,
             ->
-                Unregistered(
-                    onLogin = { onAction(ProfileAction.Login) },
+                LoginSection(
+                    modifier = modifier,
+                    onAction = { loginAction ->
+                        when (loginAction) {
+                            LoginAction.Login -> onAction(ProfileAction.Login)
+                        }
+                    },
                 )
         }
     }

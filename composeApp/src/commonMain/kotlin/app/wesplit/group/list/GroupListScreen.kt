@@ -6,11 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,7 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.wesplit.account.GoogleLoginButton
+import app.wesplit.account.LoginAction
+import app.wesplit.account.LoginSection
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Group
 import app.wesplit.ui.AdaptiveTopAppBar
@@ -50,12 +49,10 @@ import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.group_list_empty_description_authorized
-import split.composeapp.generated.resources.group_list_empty_description_unregistered
 import split.composeapp.generated.resources.group_list_title
 import split.composeapp.generated.resources.ic_split_money
 import split.composeapp.generated.resources.img_add_data
 import split.composeapp.generated.resources.login_button_cd
-import split.composeapp.generated.resources.or
 
 sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction
@@ -123,18 +120,20 @@ fun GroupListScreen(
                     Text(stringResource(Res.string.group_list_title))
                 },
                 actions = {
-                    Box(
-                        modifier =
-                            Modifier.size(48.dp).clickable {
-                                onAction(GroupListAction.CreateNewGroup)
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            Icons.Default.AddCircle,
-                            contentDescription = stringResource(Res.string.login_button_cd),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                    if (accountState is Account.Authorized) {
+                        Box(
+                            modifier =
+                                Modifier.size(48.dp).clickable {
+                                    onAction(GroupListAction.CreateNewGroup)
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                Icons.Default.AddCircle,
+                                contentDescription = stringResource(Res.string.login_button_cd),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 },
             )
@@ -166,7 +165,14 @@ private fun EmptyGroupList(
         modifier = modifier.fillMaxSize(1f),
         visible = accountState is Account.Unknown,
     ) {
-        EmptyGroupUnregistered(modifier, onAction)
+        LoginSection(
+            modifier = modifier,
+            onAction = { loginAction ->
+                when (loginAction) {
+                    LoginAction.Login -> onAction(GroupListAction.Login)
+                }
+            },
+        )
     }
 
     AnimatedVisibility(
@@ -195,35 +201,6 @@ private fun EmptyGroupAuthorized(modifier: Modifier) {
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
         )
-    }
-}
-
-@Composable
-private fun EmptyGroupUnregistered(
-    modifier: Modifier,
-    onAction: (GroupListAction) -> Unit,
-) {
-    Column(
-        modifier = modifier.fillMaxSize(1f),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(stringResource(Res.string.group_list_empty_description_unregistered))
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 64.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f))
-            Text(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                text = stringResource(Res.string.or),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            HorizontalDivider(modifier = Modifier.weight(1f))
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        GoogleLoginButton { onAction(GroupListAction.Login) }
     }
 }
 
