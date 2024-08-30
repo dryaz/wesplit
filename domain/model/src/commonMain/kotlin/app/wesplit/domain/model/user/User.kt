@@ -3,8 +3,9 @@ package app.wesplit.domain.model.user
 import app.wesplit.domain.model.account.Account
 
 data class User(
-    val id: String,
+    val id: String?,
     val name: String,
+    // TODO: Ux improvement - if photoUrl is null generate colorful template based on hash of id/name
     val photoUrl: String?,
     val contacts: List<Contact> = emptyList(),
     val isCurrentUser: Boolean = false,

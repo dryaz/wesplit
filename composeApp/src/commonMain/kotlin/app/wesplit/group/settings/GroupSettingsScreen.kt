@@ -1,6 +1,6 @@
 package app.wesplit.group.settings
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -15,10 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,32 +31,31 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import app.wesplit.domain.model.user.User
 import app.wesplit.ui.AdaptiveTopAppBar
-import com.seiko.imageloader.model.ImageAction
-import com.seiko.imageloader.rememberImageSuccessPainter
-import com.seiko.imageloader.ui.AutoSizeBox
+import app.wesplit.user.UserListItem
+import app.wesplit.user.UserPicker
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_user_to_group
 import split.composeapp.generated.resources.create
 import split.composeapp.generated.resources.group_name
-import split.composeapp.generated.resources.ic_user
 import split.composeapp.generated.resources.ic_user_add
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_group
 import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.settings
-import split.composeapp.generated.resources.you
 
 sealed interface GroupSettingsAction {
     data object Back : GroupSettingsAction
@@ -121,6 +121,8 @@ private fun GroupSettingsView(
     onDone: () -> Unit,
     onUpdated: (GroupSettingsViewModel.State.Group) -> Unit,
 ) {
+    var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
+
     Column(
         modifier =
             modifier
@@ -187,7 +189,7 @@ private fun GroupSettingsView(
                     Modifier
                         .fillMaxWidth(1f)
                         .clickable {
-                            // TODO: Add new user flow
+                            userSelectorVisibility = true
                         }.padding(16.dp),
             ) {
                 Icon(
@@ -201,64 +203,41 @@ private fun GroupSettingsView(
                 )
             }
 
+            // TODO: Add/Remove with animation. Lazycolumn?
             group.users.forEachIndexed { index, user ->
                 HorizontalDivider(
                     modifier = Modifier.padding(start = if (index == 0) 0.dp else 80.dp),
                 )
-                UserListItem(user)
+                UserListItem(
+                    user = user,
+                    action =
+                        if (!user.isCurrentUser) {
+                            {
+                                AdaptiveIconButton(onClick = { onUpdated(group.copy(users = group.users - user)) }) {
+                                    Icon(
+                                        Icons.Filled.Delete,
+                                        // TODO: Proper CD
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        } else {
+                            null
+                        },
+                )
             }
         }
     }
-}
 
-@Composable
-fun UserListItem(user: User) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth(1f)
-                .clickable {
-                    // TODO: Add new user flow
-                }
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AutoSizeBox(
-            url = user.photoUrl ?: "",
-        ) { action ->
-            when (action) {
-                is ImageAction.Success -> {
-                    Image(
-                        rememberImageSuccessPainter(action),
-                        modifier = Modifier.size(56.dp).clip(CircleShape),
-                        contentDescription = user.name,
-                    )
-                }
-
-                is ImageAction.Loading -> {
-                    CircularProgressIndicator()
-                }
-
-                is ImageAction.Failure -> {
-                    Box(
-                        modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerLow),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Image(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(Res.drawable.ic_user),
-                            contentDescription = "No image for user ${user.name}",
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                        )
-                    }
-                }
+    AnimatedVisibility(visible = userSelectorVisibility) {
+        UserPicker { user ->
+            userSelectorVisibility = false
+            user?.let {
+                // TODO: Filter out unique
+                onUpdated(group.copy(users = group.users + it))
             }
         }
-
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = user.name + if (user.isCurrentUser) " (${stringResource(Res.string.you)})" else "",
-        )
     }
 }
 
