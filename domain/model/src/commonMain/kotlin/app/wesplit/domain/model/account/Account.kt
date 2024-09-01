@@ -6,6 +6,7 @@ import dev.gitlive.firebase.auth.FirebaseUser
 
 sealed interface Account {
     data object Unknown : Account
+
     data object Anonymous : Account
 
     data class Authorized(
@@ -13,19 +14,21 @@ sealed interface Account {
     ) : Account
 }
 
-fun Account.participant(): Participant? = (this as? Account.Authorized)?.user?.let { authUser ->
-    Participant(
-        id = authUser.uid,
-        name = authUser.displayName ?: authUser.email ?: authUser.phoneNumber ?: authUser.uid,
-        user = this.user(),
-        isMe = true,
-    )
-}
+fun Account.participant(): Participant? =
+    (this as? Account.Authorized)?.user?.let { authUser ->
+        Participant(
+            id = authUser.uid,
+            name = authUser.displayName ?: authUser.email ?: authUser.phoneNumber ?: authUser.uid,
+            user = this.user(),
+            isMe = true,
+        )
+    }
 
-private fun Account.user(): User? = (this as? Account.Authorized)?.user?.let { authUser ->
-    User(
-        id = authUser.uid,
-        name = authUser.displayName ?: authUser.email ?: authUser.phoneNumber ?: authUser.uid,
-        photoUrl = authUser.photoURL,
-    )
-}
+private fun Account.user(): User? =
+    (this as? Account.Authorized)?.user?.let { authUser ->
+        User(
+            id = authUser.uid,
+            name = authUser.displayName ?: authUser.email ?: authUser.phoneNumber ?: authUser.uid,
+            photoUrl = authUser.photoURL,
+        )
+    }

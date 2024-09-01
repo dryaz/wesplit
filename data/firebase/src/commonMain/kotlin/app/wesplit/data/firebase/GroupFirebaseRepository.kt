@@ -58,13 +58,15 @@ class GroupFirebaseRepository(
     }
 
     // TODO: Implement, current is mock
-    override fun getSuggestedParticipants(searchQuery: String): Flow<List<Participant>> = flow {
-        val data = listOf(
-            Participant("1", "Ivan", null),
-            Participant("2", "Dima", null),
-            Participant("3", "Marko", null)
-        )
-        // TODO: Probably we soulc query firebase with some query
-        emit(data.filter { it.name.lowercase().contains(searchQuery.lowercase()) })
-    }
+    override fun getSuggestedParticipants(searchQuery: String): Flow<List<Participant>> =
+        flow {
+            val data =
+                listOf(
+                    Participant("1", "Ivan", null),
+                    Participant("2", "Dima", null),
+                    Participant("3", "Marko", null),
+                )
+            // TODO: Probably we soulc query firebase with some query
+            emit(data.filter { it.name.lowercase().contains(searchQuery.lowercase()) })
+        }
 }

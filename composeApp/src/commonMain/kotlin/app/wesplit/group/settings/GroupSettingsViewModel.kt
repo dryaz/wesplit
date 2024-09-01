@@ -82,9 +82,10 @@ class GroupSettingsViewModel(
         State.Group(
             id = null,
             title = "",
-            participants = listOf(
-                accountRepository.getCurrent().participant()
-            ).filterNotNull(),
+            participants =
+                listOf(
+                    accountRepository.getCurrent().participant(),
+                ).filterNotNull(),
         )
 
     sealed interface State {

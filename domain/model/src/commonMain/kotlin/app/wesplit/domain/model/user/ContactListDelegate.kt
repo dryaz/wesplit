@@ -6,6 +6,8 @@ interface ContactListDelegate {
 
 sealed interface State {
     data object NotSuppoted : State
+
     data object PermissionRequired : State
+
     data class Contacts(val data: List<User>) : State
 }

@@ -44,6 +44,7 @@ import app.wesplit.group.ParticipantListItem
 import app.wesplit.group.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -114,6 +115,7 @@ fun GroupSettingsScreen(
     }
 }
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun GroupSettingsView(
     modifier: Modifier = Modifier,
@@ -235,6 +237,7 @@ private fun GroupSettingsView(
             userSelectorVisibility = false
             user?.let {
                 // TODO: Filter out unique
+                // TODO: Update name as well if not yet manually updated
                 onUpdated(group.copy(participants = group.participants + it))
             }
         }
