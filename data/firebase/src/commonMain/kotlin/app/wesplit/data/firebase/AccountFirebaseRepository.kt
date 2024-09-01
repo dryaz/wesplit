@@ -75,7 +75,7 @@ class AccountFirebaseRepository(
             Account.Unknown
         } else {
             if (user.isAnonymous) {
-                Account.Anonymous(user)
+                Account.Anonymous
             } else {
                 Account.Authorized(user)
             }

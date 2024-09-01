@@ -1,6 +1,5 @@
 package app.wesplit.domain.model.group
 
-import app.wesplit.domain.model.user.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -27,6 +26,11 @@ interface GroupRepository {
     fun commit(
         id: String?,
         title: String,
-        users: List<User>,
+        participants: List<Participant>,
     )
+
+    /**
+     * Get suggestions about users when user suppose to add new user to the group.
+     */
+    fun getSuggestedParticipants(searchQuery: String): Flow<List<Participant>>
 }

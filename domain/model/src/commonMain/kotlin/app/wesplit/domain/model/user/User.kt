@@ -1,29 +1,16 @@
 package app.wesplit.domain.model.user
 
-import app.wesplit.domain.model.account.Account
-
+/**
+ * User is an authorized user info.
+ * If somebody creates groups with anonymous 'user' it treated as participant.
+ */
 data class User(
-    val id: String?,
+    val id: String,
     val name: String,
     // TODO: Ux improvement - if photoUrl is null generate colorful template based on hash of id/name
     val photoUrl: String?,
     val contacts: List<Contact> = emptyList(),
-    val isCurrentUser: Boolean = false,
 )
-
-fun Account.user() =
-    when (this) {
-        is Account.Anonymous -> user
-        is Account.Authorized -> user
-        Account.Unknown -> null
-    }?.let { firebaseUser ->
-        User(
-            id = firebaseUser.uid,
-            name = firebaseUser.displayName ?: firebaseUser.email ?: firebaseUser.phoneNumber ?: firebaseUser.uid,
-            photoUrl = firebaseUser.photoURL,
-            isCurrentUser = true,
-        )
-    }
 
 sealed interface Contact {
     class Email(

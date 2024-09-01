@@ -149,7 +149,6 @@ fun GroupListScreen(
                     modifier = Modifier.padding(paddings),
                     groups = dataState.groups,
                     onAction = { onAction(it) },
-                    accountState = accountState,
                 )
         }
     }
@@ -209,7 +208,6 @@ private fun EmptyGroupAuthorized(modifier: Modifier) {
 private fun GroupList(
     modifier: Modifier = Modifier,
     groups: List<Group>,
-    accountState: Account,
     onAction: (GroupListAction) -> Unit,
 ) {
     val lazyColumnListState = rememberLazyListState()

@@ -1,4 +1,4 @@
-package app.wesplit.user
+package app.wesplit.group
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
-import app.wesplit.domain.model.user.User
+import app.wesplit.domain.model.group.Participant
 import com.seiko.imageloader.model.ImageAction
 import com.seiko.imageloader.rememberImageSuccessPainter
 import com.seiko.imageloader.ui.AutoSizeBox
@@ -31,12 +31,12 @@ import split.composeapp.generated.resources.ic_user
 import split.composeapp.generated.resources.you
 
 @Composable
-fun UserListItem(
-    user: User,
+fun ParticipantListItem(
+    participant: Participant,
     action: @Composable (() -> Unit)? = null,
-    onClick: ((User) -> Unit)? = null,
+    onClick: ((Participant) -> Unit)? = null,
 ) {
-    val modifier = onClick?.let { Modifier.clickable { onClick(user) } } ?: Modifier
+    val modifier = onClick?.let { Modifier.clickable { onClick(participant) } } ?: Modifier
     Row(
         modifier =
             modifier
@@ -45,14 +45,14 @@ fun UserListItem(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AutoSizeBox(
-            url = user.photoUrl ?: "",
+            url = participant.user?.photoUrl ?: "",
         ) { action ->
             when (action) {
                 is ImageAction.Success -> {
                     Image(
                         rememberImageSuccessPainter(action),
                         modifier = Modifier.size(56.dp).clip(CircleShape),
-                        contentDescription = user.name,
+                        contentDescription = participant.name,
                     )
                 }
 
@@ -68,7 +68,7 @@ fun UserListItem(
                         Image(
                             modifier = Modifier.size(24.dp),
                             painter = painterResource(Res.drawable.ic_user),
-                            contentDescription = "No image for user ${user.name}",
+                            contentDescription = "No image for user ${participant.name}",
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
                         )
                     }
@@ -79,7 +79,7 @@ fun UserListItem(
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             modifier = Modifier.weight(1f),
-            text = user.name + if (user.isCurrentUser) " (${stringResource(Res.string.you)})" else "",
+            text = participant.name + if (participant.isMe) " (${stringResource(Res.string.you)})" else "",
         )
         action?.let {
             it()

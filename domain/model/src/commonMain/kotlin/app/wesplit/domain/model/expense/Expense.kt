@@ -1,7 +1,7 @@
 package app.wesplit.domain.model.expense
 
-import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Group
+import app.wesplit.domain.model.group.Participant
 
 data class Expense(
     val id: String,
@@ -13,9 +13,4 @@ data class Expense(
     val type: ExpenseType,
     // TODO: Itemization
     // TODO: Comments
-)
-
-data class Participant(
-    val account: Account,
-    val amount: Amount,
 )

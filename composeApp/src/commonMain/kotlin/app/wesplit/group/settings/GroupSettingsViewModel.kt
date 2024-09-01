@@ -4,10 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.account.participant
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
 import app.wesplit.domain.model.group.GroupRepository
-import app.wesplit.domain.model.user.User
-import app.wesplit.domain.model.user.user
+import app.wesplit.domain.model.group.Participant
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,7 +42,7 @@ class GroupSettingsViewModel(
     // TODO: TBD if it possible to create a group and not to be part of it (probably not)
     fun commit() =
         with(state.value as State.Group) {
-            groupRepository.commit(id, title, users)
+            groupRepository.commit(id, title, participants)
         }
 
     fun update(group: State.Group) = _state.update { group }
@@ -68,7 +68,7 @@ class GroupSettingsViewModel(
                                         State.Group(
                                             id = this.id,
                                             title = this.title,
-                                            users = this.users,
+                                            participants = this.users,
                                         )
                                     }
                                 }
@@ -82,7 +82,9 @@ class GroupSettingsViewModel(
         State.Group(
             id = null,
             title = "",
-            users = listOf(accountRepository.getCurrent().user()).filterNotNull(),
+            participants = listOf(
+                accountRepository.getCurrent().participant()
+            ).filterNotNull(),
         )
 
     sealed interface State {
@@ -100,7 +102,7 @@ class GroupSettingsViewModel(
             // TODO: Support image
             val id: String?,
             val title: String,
-            val users: List<User>,
+            val participants: List<Participant>,
         ) : State
     }
 }

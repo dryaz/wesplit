@@ -3,6 +3,8 @@ import androidx.compose.ui.window.CanvasBasedWindow
 import app.wesplit.App
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.LoginDelegate
+import app.wesplit.domain.model.user.ContactListDelegate
+import app.wesplit.user.UnsupportedContactListDelegate
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
@@ -38,6 +40,8 @@ fun main() {
                 module {
                     single<LoginDelegate> { LoginJsDelegate() }
                     single<AnalyticsManager> { JsAnalyticsManager() }
+                    // TODO: Support contact list of iOS
+                    single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 },
             )
         }

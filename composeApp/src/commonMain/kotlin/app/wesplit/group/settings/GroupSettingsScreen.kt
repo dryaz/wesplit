@@ -40,9 +40,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import app.wesplit.group.ParticipantListItem
+import app.wesplit.group.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
-import app.wesplit.user.UserListItem
-import app.wesplit.user.UserPicker
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -204,16 +204,16 @@ private fun GroupSettingsView(
             }
 
             // TODO: Add/Remove with animation. Lazycolumn?
-            group.users.forEachIndexed { index, user ->
+            group.participants.forEachIndexed { index, user ->
                 HorizontalDivider(
                     modifier = Modifier.padding(start = if (index == 0) 0.dp else 80.dp),
                 )
-                UserListItem(
-                    user = user,
+                ParticipantListItem(
+                    participant = user,
                     action =
-                        if (!user.isCurrentUser) {
+                        if (!user.isMe) {
                             {
-                                AdaptiveIconButton(onClick = { onUpdated(group.copy(users = group.users - user)) }) {
+                                AdaptiveIconButton(onClick = { onUpdated(group.copy(participants = group.participants - user)) }) {
                                     Icon(
                                         Icons.Filled.Delete,
                                         // TODO: Proper CD
@@ -231,11 +231,11 @@ private fun GroupSettingsView(
     }
 
     AnimatedVisibility(visible = userSelectorVisibility) {
-        UserPicker { user ->
+        ParticipantPicker { user ->
             userSelectorVisibility = false
             user?.let {
                 // TODO: Filter out unique
-                onUpdated(group.copy(users = group.users + it))
+                onUpdated(group.copy(participants = group.participants + it))
             }
         }
     }

@@ -3,7 +3,7 @@ package app.wesplit.data.firebase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
-import app.wesplit.domain.model.user.User
+import app.wesplit.domain.model.group.Participant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,14 +38,14 @@ class GroupFirebaseRepository(
     override fun commit(
         id: String?,
         title: String,
-        users: List<User>,
+        participants: List<Participant>,
     ) {
         val eventName = if (id != null) GROUP_UPDATE_EVENT else GROUP_CREATE_EVENT
 
         analyticsManager.track(
             eventName,
             mapOf(
-                GROUP_COMMIT_PARAM_USERS to users.size.toString(),
+                GROUP_COMMIT_PARAM_USERS to participants.size.toString(),
                 GROUP_COMMIT_PARAM_TITLE to title,
             ),
         )
@@ -53,7 +53,18 @@ class GroupFirebaseRepository(
         groups.getAndUpdate { existingGroups ->
             // TODO: Support updating for internal memory impl
             val randItn = Random.nextInt()
-            existingGroups + Group(randItn.toString(), "$title", users)
+            existingGroups + Group(randItn.toString(), "$title", participants)
         }
+    }
+
+    // TODO: Implement, current is mock
+    override fun getSuggestedParticipants(searchQuery: String): Flow<List<Participant>> = flow {
+        val data = listOf(
+            Participant("1", "Ivan", null),
+            Participant("2", "Dima", null),
+            Participant("3", "Marko", null)
+        )
+        // TODO: Probably we soulc query firebase with some query
+        emit(data.filter { it.name.lowercase().contains(searchQuery.lowercase()) })
     }
 }

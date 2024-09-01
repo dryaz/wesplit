@@ -4,6 +4,8 @@ import androidx.compose.ui.window.application
 import app.wesplit.App
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.LoginDelegate
+import app.wesplit.domain.model.user.ContactListDelegate
+import app.wesplit.user.UnsupportedContactListDelegate
 import com.google.firebase.Firebase
 import com.google.firebase.FirebaseOptions
 import com.google.firebase.FirebasePlatform
@@ -54,6 +56,7 @@ fun main() {
                 module {
                     single<LoginDelegate> { LoginDesktopDelegate() }
                     single<AnalyticsManager> { DesktopAnalyticsManager() }
+                    single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 },
             )
         }

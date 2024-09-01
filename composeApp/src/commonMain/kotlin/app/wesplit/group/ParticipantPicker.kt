@@ -1,4 +1,4 @@
-package app.wesplit.user
+package app.wesplit.group
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,17 +15,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import app.wesplit.domain.model.user.User
+import app.wesplit.domain.model.group.Participant
+import app.wesplit.user.UserPickerViewModel
 
 // TODO: Ux improvement - add multiple users from single bottom sheet
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun UserPicker(
+internal fun ParticipantPicker(
     viewModel: UserPickerViewModel =
         viewModel {
             UserPickerViewModel()
         },
-    onUserSelect: (User?) -> Unit,
+    onUserSelect: (Participant?) -> Unit,
 ) {
     // TODO: Search user, last option is to create new user with name as current input in search
     // TODO: Empty state, if no yet users show img and description that start typing to create contact
@@ -34,12 +35,12 @@ internal fun UserPicker(
     var searchText by remember { mutableStateOf("") }
     val lazyColumnListState = rememberLazyListState()
 
-    val users =
+    val participants =
         (0..50).map { num ->
-            User(
-                "$num",
-                "User #$num",
-                "",
+            Participant(
+                id = "$num",
+                name = "User #$num",
+                user = null
             )
         }
 
@@ -50,8 +51,8 @@ internal fun UserPicker(
             modifier = Modifier.weight(1f),
             state = lazyColumnListState,
         ) {
-            items(items = users, key = { it.name }) { user ->
-                UserListItem(user) {
+            items(items = participants, key = { it.name }) { participant ->
+                ParticipantListItem(participant) {
                     onUserSelect(it)
                 }
                 HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
