@@ -6,3 +6,8 @@ data class Group(
     val participants: Set<Participant>,
     val imageUrl: String? = null,
 )
+
+fun Group.uiTitle() =
+    title.ifBlank {
+        participants.map { it.name }.joinToString()
+    }

@@ -65,6 +65,9 @@ class GroupFirebaseRepository(
                     Participant("1", "Ivan", null),
                     Participant("2", "Dima", null),
                     Participant("3", "Marko", null),
+                    Participant("4", "John Smith", null),
+                    Participant("5", "Pedro", null),
+                    Participant("6", "Huan Gonsales", null),
                 )
             // TODO: Probably we soulc query firebase with some query
             emit(data.filter { it.name.lowercase().contains(searchQuery.lowercase()) })

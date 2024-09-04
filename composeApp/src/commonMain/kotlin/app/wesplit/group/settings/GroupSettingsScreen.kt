@@ -1,7 +1,6 @@
 package app.wesplit.group.settings
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -37,7 +35,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import app.wesplit.group.ParticipantListItem
@@ -147,14 +144,9 @@ private fun GroupSettingsView(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(
-                    modifier =
-                        Modifier
-                            .size(64.dp)
-                            .background(Color.Red),
-                )
-                Spacer(modifier = Modifier.width(16.dp))
+                // TODO: Support adding image, place pic selector in here
                 OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(1f),
                     // TODO: Prefil later when select paritipatns if empty
                     value = group.title,
                     onValueChange = { onUpdated(group.copy(title = it)) },

@@ -2,12 +2,12 @@ package app.wesplit.group.list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -19,9 +19,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,15 +36,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.wesplit.account.LoginAction
 import app.wesplit.account.LoginSection
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Group
+import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.ui.AdaptiveTopAppBar
-import com.seiko.imageloader.rememberImagePainter
+import com.seiko.imageloader.model.ImageAction
+import com.seiko.imageloader.rememberImageSuccessPainter
+import com.seiko.imageloader.ui.AutoSizeBox
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -50,7 +56,7 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.group_list_empty_description_authorized
 import split.composeapp.generated.resources.group_list_title
-import split.composeapp.generated.resources.ic_split_money
+import split.composeapp.generated.resources.ic_group
 import split.composeapp.generated.resources.img_add_data
 import split.composeapp.generated.resources.login_button_cd
 
@@ -162,7 +168,7 @@ private fun EmptyGroupList(
 ) {
     AnimatedVisibility(
         modifier = modifier.fillMaxSize(1f),
-        visible = accountState is Account.Unknown,
+        visible = accountState is Account.Anonymous,
     ) {
         LoginSection(
             modifier = modifier,
@@ -179,6 +185,17 @@ private fun EmptyGroupList(
         visible = accountState is Account.Authorized,
     ) {
         EmptyGroupAuthorized(modifier)
+    }
+
+    AnimatedVisibility(
+        modifier = modifier.fillMaxSize(1f),
+        visible = accountState is Account.Unknown,
+    ) {
+        Box(
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
     }
 }
 
@@ -220,26 +237,57 @@ private fun GroupList(
         ) {
             items(items = groups, key = { it.id }) { group ->
                 ListItem(
+                    colors =
+                        ListItemDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        ),
                     modifier =
                         Modifier.clickable {
                             onAction(GroupListAction.Select(group))
                         },
                     // TODO: Define View for group item
-                    headlineContent = { Text("${group.title}") },
+                    headlineContent = {
+                        Text(
+                            text = "${group.uiTitle()}",
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
                     supportingContent = { Text("Users: ${group.participants.size}") },
                     leadingContent = {
-                        Box(contentAlignment = Alignment.Center) {
-                            val painter =
-                                rememberImagePainter(
-                                    url = "https://randomuser.me/api/portraits/med/men/73.jpg",
-                                    placeholderPainter = { painterResource(Res.drawable.ic_split_money) },
-                                )
-                            Image(
-                                painter = painter,
-                                contentScale = ContentScale.Fit,
-                                contentDescription = group.title,
-                                modifier = Modifier.size(42.dp).clip(CircleShape).aspectRatio(1f),
-                            )
+                        AutoSizeBox(
+                            url = group.imageUrl ?: "",
+                        ) { action ->
+                            when (action) {
+                                is ImageAction.Success -> {
+                                    Image(
+                                        rememberImageSuccessPainter(action),
+                                        modifier = Modifier.size(56.dp).clip(CircleShape),
+                                        contentDescription = group.title,
+                                    )
+                                }
+
+                                is ImageAction.Loading -> {
+                                    CircularProgressIndicator()
+                                }
+
+                                is ImageAction.Failure -> {
+                                    Box(
+                                        modifier =
+                                            Modifier.size(48.dp).clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Image(
+                                            modifier = Modifier.size(24.dp),
+                                            painter = painterResource(Res.drawable.ic_group),
+                                            // TODO: String CD
+                                            contentDescription = "No image for user ${group.title}",
+                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                                        )
+                                    }
+                                }
+                            }
                         }
                     },
                 )

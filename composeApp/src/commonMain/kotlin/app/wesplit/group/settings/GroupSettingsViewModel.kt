@@ -38,8 +38,6 @@ class GroupSettingsViewModel(
         }
     }
 
-    // TODO: Possible error/info state that if you create gropu without yourself you won't be able to see it
-    // TODO: TBD if it possible to create a group and not to be part of it (probably not)
     fun commit() =
         with(state.value as State.Group) {
             groupRepository.commit(id, title, participants)
