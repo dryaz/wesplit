@@ -53,12 +53,12 @@ import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_group_cd
 import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.group_list_empty_description_authorized
 import split.composeapp.generated.resources.group_list_title
 import split.composeapp.generated.resources.ic_group
 import split.composeapp.generated.resources.img_add_data
-import split.composeapp.generated.resources.login_button_cd
 
 sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction
@@ -136,7 +136,7 @@ fun GroupListScreen(
                         ) {
                             Icon(
                                 Icons.Default.AddCircle,
-                                contentDescription = stringResource(Res.string.login_button_cd),
+                                contentDescription = stringResource(Res.string.add_group_cd),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }

@@ -72,7 +72,7 @@ class AccountFirebaseRepository(
 
     private fun getAccount(user: FirebaseUser?) =
         if (user == null) {
-            Account.Unknown
+            Account.Anonymous
         } else {
             if (user.isAnonymous) {
                 Account.Anonymous

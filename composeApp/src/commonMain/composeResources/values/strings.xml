@@ -29,5 +29,6 @@
     <string name="search_contact">Search for contact</string>
     <string name="no_contact_found">You don't have such contacts</string>
     <string name="user_already_in_group">This user already added to this group</string>
-    <!--    <string name=""></string>-->
+    <string name="add_group_cd">Create new group</string>
+    <string name="login_to_create_descr">Login into your account to create new group and sync it safely</string>
 </resources>
