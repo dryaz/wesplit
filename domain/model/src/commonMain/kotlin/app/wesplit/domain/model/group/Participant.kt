@@ -7,8 +7,8 @@ import app.wesplit.domain.model.user.User
  * Same participant could be involved in multiple groups.
  */
 data class Participant(
-    val id: String,
+    val id: String?,
     val name: String,
-    val user: User?,
+    val user: User? = null,
     val isMe: Boolean = false,
 )

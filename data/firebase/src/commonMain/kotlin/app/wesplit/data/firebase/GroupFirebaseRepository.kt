@@ -62,6 +62,7 @@ class GroupFirebaseRepository(
         flow {
             val data =
                 listOf(
+                    Participant(id = null, name = searchQuery),
                     Participant("1", "Ivan", null),
                     Participant("2", "Dima", null),
                     Participant("3", "Marko", null),
@@ -70,6 +71,6 @@ class GroupFirebaseRepository(
                     Participant("6", "Huan Gonsales", null),
                 )
             // TODO: Probably we soulc query firebase with some query
-            emit(data.filter { it.name.lowercase().contains(searchQuery.lowercase()) })
+            emit(data.filter { !it.name.isNullOrBlank() && it.name.lowercase().contains(searchQuery.lowercase()) })
         }
 }
