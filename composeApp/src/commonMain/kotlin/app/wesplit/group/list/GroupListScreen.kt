@@ -192,7 +192,7 @@ private fun EmptyGroupList(
         visible = accountState is Account.Unknown,
     ) {
         Box(
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator()
         }

@@ -227,11 +227,12 @@ private fun GroupSettingsView(
     AnimatedVisibility(visible = userSelectorVisibility) {
         ParticipantPicker(
             group.participants,
+            onPickerClose = { userSelectorVisibility = false },
         ) { user ->
-            userSelectorVisibility = false
-            user?.let {
-                // TODO: Update name as well if not yet manually updated
-                onUpdated(group.copy(participants = group.participants + it))
+            if (user in group.participants) {
+                onUpdated(group.copy(participants = group.participants - user))
+            } else {
+                onUpdated(group.copy(participants = group.participants + user))
             }
         }
     }

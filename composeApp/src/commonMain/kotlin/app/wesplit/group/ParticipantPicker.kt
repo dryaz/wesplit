@@ -20,7 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -47,7 +49,8 @@ import split.composeapp.generated.resources.user_already_in_group
 @Composable
 internal fun ParticipantPicker(
     currentParticipants: Set<Participant>,
-    onParticipantClick: (Participant?) -> Unit,
+    onPickerClose: () -> Unit,
+    onParticipantClick: (Participant) -> Unit,
 ) {
     val groupRepository: GroupRepository = koinInject()
     val contactListDelegate: ContactListDelegate = koinInject()
@@ -73,11 +76,13 @@ internal fun ParticipantPicker(
             }
         }
     val lazyColumnListState = rememberLazyListState()
+    val sheetState: SheetState = rememberModalBottomSheetState()
 
     // TODO: Min sheet size. Is it possible not to jump during filtering by text?
     // TODO: (Idea) Add search to the bottom so even collapsing items won't affect users' UX
     ModalBottomSheet(
-        onDismissRequest = { onParticipantClick(null) },
+        sheetState = sheetState,
+        onDismissRequest = { onPickerClose() },
     ) {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 16.dp),
@@ -134,8 +139,5 @@ internal fun ParticipantPicker(
             }
         }
         // TODO: Loading
-        // TODO: Empty state
     }
-
-    // TODO: Fire callback after modal is closed first to improve UX
 }
