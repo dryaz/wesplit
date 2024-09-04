@@ -26,5 +26,7 @@
     <string name="empty_group_cd">No group selected</string>
     <string name="login_with_google_cd">Login with Google</string>
     <string name="you">you</string>
+    <string name="search_contact">Search for contact</string>
+    <string name="no_contact_found">You don't have such contacts</string>
     <!--    <string name=""></string>-->
 </resources>
