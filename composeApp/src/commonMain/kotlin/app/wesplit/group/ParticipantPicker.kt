@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -39,11 +40,15 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.img_search_empty
 import split.composeapp.generated.resources.no_contact_found
 import split.composeapp.generated.resources.search_contact
+import split.composeapp.generated.resources.user_already_in_group
 
 // TODO: Ux improvement - add multiple users from single bottom sheet
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ParticipantPicker(onUserSelect: (Participant?) -> Unit) {
+internal fun ParticipantPicker(
+    currentParticipants: Set<Participant>,
+    onParticipantClick: (Participant?) -> Unit,
+) {
     val groupRepository: GroupRepository = koinInject()
     val contactListDelegate: ContactListDelegate = koinInject()
 
@@ -72,7 +77,7 @@ internal fun ParticipantPicker(onUserSelect: (Participant?) -> Unit) {
     // TODO: Min sheet size. Is it possible not to jump during filtering by text?
     // TODO: (Idea) Add search to the bottom so even collapsing items won't affect users' UX
     ModalBottomSheet(
-        onDismissRequest = { onUserSelect(null) },
+        onDismissRequest = { onParticipantClick(null) },
     ) {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 16.dp),
@@ -92,8 +97,20 @@ internal fun ParticipantPicker(onUserSelect: (Participant?) -> Unit) {
                 state = lazyColumnListState,
             ) {
                 items(items = participants.value ?: emptyList(), key = { it.name }) { participant ->
-                    ParticipantListItem(participant) {
-                        onUserSelect(it)
+                    ParticipantListItem(
+                        participant = participant,
+                        action = {
+                            if (participant in currentParticipants) {
+                                Icon(
+                                    Icons.Filled.Done,
+                                    contentDescription = stringResource(Res.string.user_already_in_group),
+                                )
+                            } else {
+                                Unit
+                            }
+                        },
+                    ) {
+                        onParticipantClick(it)
                     }
                     HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
                 }

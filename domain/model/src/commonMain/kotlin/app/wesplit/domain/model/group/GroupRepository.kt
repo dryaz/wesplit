@@ -26,7 +26,7 @@ interface GroupRepository {
     fun commit(
         id: String?,
         title: String,
-        participants: List<Participant>,
+        participants: Set<Participant>,
     )
 
     /**

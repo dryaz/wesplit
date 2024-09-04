@@ -233,10 +233,11 @@ private fun GroupSettingsView(
     }
 
     AnimatedVisibility(visible = userSelectorVisibility) {
-        ParticipantPicker { user ->
+        ParticipantPicker(
+            group.participants,
+        ) { user ->
             userSelectorVisibility = false
             user?.let {
-                // TODO: Filter out unique
                 // TODO: Update name as well if not yet manually updated
                 onUpdated(group.copy(participants = group.participants + it))
             }

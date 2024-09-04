@@ -28,5 +28,6 @@
     <string name="you">you</string>
     <string name="search_contact">Search for contact</string>
     <string name="no_contact_found">You don't have such contacts</string>
+    <string name="user_already_in_group">This user already added to this group</string>
     <!--    <string name=""></string>-->
 </resources>

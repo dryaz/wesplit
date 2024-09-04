@@ -38,7 +38,7 @@ class GroupFirebaseRepository(
     override fun commit(
         id: String?,
         title: String,
-        participants: List<Participant>,
+        participants: Set<Participant>,
     ) {
         val eventName = if (id != null) GROUP_UPDATE_EVENT else GROUP_CREATE_EVENT
 

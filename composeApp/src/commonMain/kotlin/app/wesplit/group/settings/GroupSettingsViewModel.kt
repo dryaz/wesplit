@@ -68,7 +68,7 @@ class GroupSettingsViewModel(
                                         State.Group(
                                             id = this.id,
                                             title = this.title,
-                                            participants = this.users,
+                                            participants = this.participants,
                                         )
                                     }
                                 }
@@ -83,9 +83,9 @@ class GroupSettingsViewModel(
             id = null,
             title = "",
             participants =
-                listOf(
+                linkedSetOf(
                     accountRepository.getCurrent().participant(),
-                ).filterNotNull(),
+                ).filterNotNull().toSet(),
         )
 
     sealed interface State {
@@ -103,7 +103,7 @@ class GroupSettingsViewModel(
             // TODO: Support image
             val id: String?,
             val title: String,
-            val participants: List<Participant>,
+            val participants: Set<Participant>,
         ) : State
     }
 }

@@ -226,7 +226,7 @@ private fun GroupList(
                         },
                     // TODO: Define View for group item
                     headlineContent = { Text("${group.title}") },
-                    supportingContent = { Text("Users: ${group.users.size}") },
+                    supportingContent = { Text("Users: ${group.participants.size}") },
                     leadingContent = {
                         Box(contentAlignment = Alignment.Center) {
                             val painter =
