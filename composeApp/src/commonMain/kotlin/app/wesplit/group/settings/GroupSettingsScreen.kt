@@ -226,7 +226,8 @@ private fun GroupSettingsView(
 
     AnimatedVisibility(visible = userSelectorVisibility) {
         ParticipantPicker(
-            group.participants,
+            currentParticipants = group.participants,
+            isFullScreen = true,
             onPickerClose = { userSelectorVisibility = false },
         ) { user ->
             if (user in group.participants) {

@@ -32,4 +32,10 @@
     <string name="add_group_cd">Create new group</string>
     <string name="login_to_create_descr">Login into your account to create new group and sync it safely</string>
     <string name="new">New</string>
+    <!-- TODO: Create tooltip that you will be able to invite contact -->
+    <string name="create_new_contact">Create new contact in Wesplit</string>
+    <string name="contacts_in_wesplit">You existing connections in Wesplit</string>
+    <string name="grant_permission">Grant permission</string>
+    <string name="contacts_in_book">Contacts in address book</string>
+
 </resources>

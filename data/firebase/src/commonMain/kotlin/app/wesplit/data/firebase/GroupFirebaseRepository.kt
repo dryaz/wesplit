@@ -62,7 +62,6 @@ class GroupFirebaseRepository(
         flow {
             val data =
                 listOf(
-                    Participant(id = null, name = searchQuery),
                     Participant("1", "Ivan", null),
                     Participant("2", "Dima", null),
                     Participant("3", "Marko", null),

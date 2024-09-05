@@ -1,13 +1,10 @@
 package app.wesplit.group
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,19 +13,19 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.outlined.AccountBox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -37,12 +34,13 @@ import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.ContactListDelegate
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
-import split.composeapp.generated.resources.img_search_empty
-import split.composeapp.generated.resources.no_contact_found
+import split.composeapp.generated.resources.contacts_in_book
+import split.composeapp.generated.resources.contacts_in_wesplit
+import split.composeapp.generated.resources.create_new_contact
+import split.composeapp.generated.resources.grant_permission
 import split.composeapp.generated.resources.search_contact
 import split.composeapp.generated.resources.user_already_in_group
 
@@ -51,6 +49,7 @@ import split.composeapp.generated.resources.user_already_in_group
 @Composable
 internal fun ParticipantPicker(
     currentParticipants: Set<Participant>,
+    isFullScreen: Boolean = false,
     onPickerClose: () -> Unit,
     onParticipantClick: (Participant) -> Unit,
 ) {
@@ -71,14 +70,12 @@ internal fun ParticipantPicker(
             context = Dispatchers.Main.immediate,
         )
     var suggestions = viewModel.suggestions.collectAsState()
-    val participants =
-        remember {
-            derivedStateOf {
-                (suggestions.value as? ParticipantPickerViewModel.State.Suggestions)?.participants ?: emptyList()
-            }
-        }
+
     val lazyColumnListState = rememberLazyListState()
-    val sheetState: SheetState = rememberModalBottomSheetState()
+    val sheetState: SheetState =
+        rememberModalBottomSheetState(
+            skipPartiallyExpanded = isFullScreen,
+        )
 
     // TODO: Min sheet size. Is it possible not to jump during filtering by text?
     // TODO: (Idea) Add search to the bottom so even collapsing items won't affect users' UX
@@ -109,48 +106,95 @@ internal fun ParticipantPicker(
                 )
             },
         )
-        val anyParticipants = participants.value.size > 0
-        AnimatedVisibility(modifier = Modifier.fillMaxSize(1f), visible = anyParticipants) {
-            LazyColumn(
-                state = lazyColumnListState,
-            ) {
-                items(items = participants.value, key = { (it.id ?: "") + it.name }) { participant ->
-                    ParticipantListItem(
-                        participant = participant,
-                        action = {
-                            if (participant in currentParticipants) {
-                                Icon(
-                                    Icons.Filled.Done,
-                                    contentDescription = stringResource(Res.string.user_already_in_group),
-                                )
-                            } else {
-                                Unit
-                            }
-                        },
+
+        Box(modifier = Modifier.fillMaxSize(1f)) {
+            when (val state = suggestions.value) {
+                ParticipantPickerViewModel.State.Loading -> CircularProgressIndicator()
+                is ParticipantPickerViewModel.State.Suggestions ->
+                    LazyColumn(
+                        state = lazyColumnListState,
                     ) {
-                        onParticipantClick(it)
+                        state.newParticipant?.let { participant ->
+                            item {
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+                                    text = stringResource(Res.string.create_new_contact),
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                                ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
+                            }
+                        }
+
+                        if (state.connections.isNotEmpty()) {
+                            item {
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+                                    text = stringResource(Res.string.contacts_in_wesplit),
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                            }
+
+                            items(items = state.connections, key = { (it.id ?: "") + it.name }) { participant ->
+                                ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
+                                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+                            }
+                        }
+
+                        if (state.contacts !is ContactListDelegate.State.NotSuppoted) {
+                            item {
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+                                    text = stringResource(Res.string.contacts_in_book),
+                                    style = MaterialTheme.typography.titleSmall,
+                                )
+                            }
+
+                            if (state.contacts is ContactListDelegate.State.PermissionRequired) {
+                                item {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        OutlinedButton(
+                                            modifier = Modifier.padding(top = 8.dp),
+                                            onClick = { TODO("Request contact permission") },
+                                        ) {
+                                            Text(text = stringResource(Res.string.grant_permission))
+                                        }
+                                    }
+                                }
+                            } else if (state.contacts is ContactListDelegate.State.Contacts) {
+                                items(items = state.contacts.data, key = { (it.id ?: "") + it.name }) { participant ->
+                                    ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
+                                    HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+                                }
+                            }
+                        }
                     }
-                    HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
-                }
             }
-        }
-        AnimatedVisibility(modifier = Modifier.fillMaxSize(1f), visible = !anyParticipants) {
-            Column(
-                modifier = Modifier.padding(top = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Image(
-                    modifier = Modifier,
-                    painter = painterResource(Res.drawable.img_search_empty),
-                    contentDescription = stringResource(Res.string.no_contact_found),
+        } // TODO: Loading?
+    }
+}
+
+@Composable
+private fun ParticipantPickerItem(
+    participant: Participant,
+    currentParticipants: Set<Participant>,
+    onParticipantClick: (Participant) -> Unit,
+) {
+    ParticipantListItem(
+        participant = participant,
+        action = {
+            if (participant in currentParticipants) {
+                Icon(
+                    Icons.Filled.Done,
+                    contentDescription = stringResource(Res.string.user_already_in_group),
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(Res.string.no_contact_found),
-                    style = MaterialTheme.typography.bodyLarge,
-                )
+            } else {
+                Unit
             }
-        }
-        // TODO: Loading
+        },
+    ) {
+        onParticipantClick(it)
     }
 }

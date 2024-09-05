@@ -11,13 +11,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import kotlin.time.Duration.Companion.milliseconds
 
-// TODO: Find user connections
-// TODO: Create platform delegate to return list of users
 // TODO: Sort users by recent?
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class ParticipantPickerViewModel(
@@ -29,10 +28,21 @@ class ParticipantPickerViewModel(
 
     init {
         viewModelScope.launch {
-            searchText.debounce(75.milliseconds).flatMapLatest { query ->
-                groupRepository.getSuggestedParticipants(query)
-            }.collectLatest { participants ->
-                suggestions.update { State.Suggestions(participants) }
+            searchText.debounce(150.milliseconds).flatMapLatest { query ->
+                groupRepository.getSuggestedParticipants(query).map { it to query }
+            }.collectLatest { data ->
+                val query = data.second
+                val connections = data.first
+                val newParticipant = if (query.isNotBlank()) Participant(name = query) else null
+                val contacts = contactListDelegate.get(query)
+                val suggestions =
+                    State.Suggestions(
+                        newParticipant = newParticipant,
+                        connections = connections,
+                        contacts = contacts,
+                    )
+
+                this@ParticipantPickerViewModel.suggestions.update { suggestions }
             }
         }
     }
@@ -44,6 +54,10 @@ class ParticipantPickerViewModel(
     sealed interface State {
         data object Loading : State
 
-        data class Suggestions(val participants: List<Participant>) : State
+        data class Suggestions(
+            val newParticipant: Participant?,
+            val connections: List<Participant>,
+            val contacts: ContactListDelegate.State,
+        ) : State
     }
 }
