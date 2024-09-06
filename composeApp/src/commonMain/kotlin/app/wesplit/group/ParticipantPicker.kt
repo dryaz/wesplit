@@ -48,7 +48,6 @@ import split.composeapp.generated.resources.search_contact
 import split.composeapp.generated.resources.start_type_creat_contact
 import split.composeapp.generated.resources.user_already_in_group
 
-// TODO: Ux improvement - add multiple users from single bottom sheet
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ParticipantPicker(
@@ -66,7 +65,6 @@ internal fun ParticipantPicker(
         }
 
     // TODO: Search user, last option is to create new user with name as current input in search
-    // TODO: Empty state, if no yet users show img and description that start typing to create contact
     // TODO: Platform delegate to request access to contacts to get contacts
     // TODO: Good point for linkedin post how to create user picker in KMP compose
     var searchText =
@@ -81,8 +79,6 @@ internal fun ParticipantPicker(
             skipPartiallyExpanded = isFullScreen,
         )
 
-    // TODO: Min sheet size. Is it possible not to jump during filtering by text?
-    // TODO: (Idea) Add search to the bottom so even collapsing items won't affect users' UX
     ModalBottomSheet(
         sheetState = sheetState,
         onDismissRequest = { onPickerClose() },

@@ -122,6 +122,7 @@ kotlin {
                 implementation(libs.materialKolor)
 
                 implementation(libs.deeplink)
+                implementation(libs.kotlinx.datetime)
             }
 
             desktopMain.dependencies {

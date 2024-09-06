@@ -57,6 +57,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             // TODO: Simplification to have FirebaseUser as is for now
             implementation(libs.firebase.common.auth)
+            implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

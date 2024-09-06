@@ -19,6 +19,7 @@ googleid = "1.1.1"
 imageLoader = "1.8.2"
 junit = "4.13.2"
 kotlin = "2.0.10"
+kotlinxDatetime = "0.6.1"
 ktor = "3.0.0-beta-2"
 ktor-client = "3.0.0-beta-2"
 ktorClientWasm = "3.0.0-beta-2"
@@ -48,6 +49,7 @@ materialKolor = "1.7.0"
 
 [libraries]
 deeplink = { module = "com.motorro.keeplink:deeplink", version.ref = "deeplink" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }

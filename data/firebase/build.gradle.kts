@@ -63,6 +63,8 @@ kotlin {
                 implementation(libs.firebase.common.auth)
                 implementation(libs.firebase.common.analytics)
                 implementation(libs.firebase.common.firestore)
+
+                implementation(libs.kotlinx.datetime)
             }
         }
     }
