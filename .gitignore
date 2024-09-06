@@ -1,6 +1,7 @@
 .kotlin/
 local.properties
 .intellijPlatform/
+.firebase
 
 # Created by https://www.toptal.com/developers/gitignore/api/swift,xcode,gradle,kotlin,intellij,cocoapods
 # Edit at https://www.toptal.com/developers/gitignore?templates=swift,xcode,gradle,kotlin,intellij,cocoapods
