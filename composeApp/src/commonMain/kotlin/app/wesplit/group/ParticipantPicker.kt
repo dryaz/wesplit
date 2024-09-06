@@ -89,6 +89,7 @@ internal fun ParticipantPicker(
     ) {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 16.dp),
+            singleLine = true,
             value = searchText.value,
             onValueChange = { value -> viewModel.search(value) },
             prefix = {
