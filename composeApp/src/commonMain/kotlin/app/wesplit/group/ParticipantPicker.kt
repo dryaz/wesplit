@@ -3,15 +3,18 @@ package app.wesplit.group
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.AccountBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,6 +45,7 @@ import split.composeapp.generated.resources.contacts_in_wesplit
 import split.composeapp.generated.resources.create_new_contact
 import split.composeapp.generated.resources.grant_permission
 import split.composeapp.generated.resources.search_contact
+import split.composeapp.generated.resources.start_type_creat_contact
 import split.composeapp.generated.resources.user_already_in_group
 
 // TODO: Ux improvement - add multiple users from single bottom sheet
@@ -114,65 +118,104 @@ internal fun ParticipantPicker(
                     LazyColumn(
                         state = lazyColumnListState,
                     ) {
-                        state.newParticipant?.let { participant ->
-                            item {
-                                Text(
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
-                                    text = stringResource(Res.string.create_new_contact),
-                                    style = MaterialTheme.typography.titleSmall,
-                                )
-                                ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
-                            }
-                        }
-
-                        if (state.connections.isNotEmpty()) {
-                            item {
-                                Text(
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
-                                    text = stringResource(Res.string.contacts_in_wesplit),
-                                    style = MaterialTheme.typography.titleSmall,
-                                )
-                            }
-
-                            items(items = state.connections, key = { (it.id ?: "") + it.name }) { participant ->
-                                ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
-                                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
-                            }
-                        }
-
-                        if (state.contacts !is ContactListDelegate.State.NotSuppoted) {
-                            item {
-                                Text(
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
-                                    text = stringResource(Res.string.contacts_in_book),
-                                    style = MaterialTheme.typography.titleSmall,
-                                )
-                            }
-
-                            if (state.contacts is ContactListDelegate.State.PermissionRequired) {
-                                item {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        OutlinedButton(
-                                            modifier = Modifier.padding(top = 8.dp),
-                                            onClick = { TODO("Request contact permission") },
-                                        ) {
-                                            Text(text = stringResource(Res.string.grant_permission))
-                                        }
-                                    }
-                                }
-                            } else if (state.contacts is ContactListDelegate.State.Contacts) {
-                                items(items = state.contacts.data, key = { (it.id ?: "") + it.name }) { participant ->
-                                    ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
-                                    HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
-                                }
-                            }
-                        }
+                        newParticipantItem(state, currentParticipants, onParticipantClick)
+                        currentConnectionsItem(state, currentParticipants, onParticipantClick)
+                        contatctItem(state, currentParticipants, onParticipantClick)
                     }
             }
         } // TODO: Loading?
+    }
+}
+
+private fun LazyListScope.contatctItem(
+    state: ParticipantPickerViewModel.State.Suggestions,
+    currentParticipants: Set<Participant>,
+    onParticipantClick: (Participant) -> Unit,
+) {
+    if (state.contacts !is ContactListDelegate.State.NotSuppoted) {
+        item {
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+                text = stringResource(Res.string.contacts_in_book),
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
+
+        if (state.contacts is ContactListDelegate.State.PermissionRequired) {
+            item {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    OutlinedButton(
+                        modifier = Modifier.padding(top = 8.dp),
+                        onClick = { TODO("Request contact permission") },
+                    ) {
+                        Text(text = stringResource(Res.string.grant_permission))
+                    }
+                }
+            }
+        } else if (state.contacts is ContactListDelegate.State.Contacts) {
+            items(items = state.contacts.data, key = { (it.id ?: "") + it.name }) { participant ->
+                ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
+                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+            }
+        }
+    }
+}
+
+private fun LazyListScope.currentConnectionsItem(
+    state: ParticipantPickerViewModel.State.Suggestions,
+    currentParticipants: Set<Participant>,
+    onParticipantClick: (Participant) -> Unit,
+) {
+    if (state.connections.isNotEmpty()) {
+        item {
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+                text = stringResource(Res.string.contacts_in_wesplit),
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
+
+        items(items = state.connections, key = { (it.id ?: "") + it.name }) { participant ->
+            ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
+            HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+        }
+    }
+}
+
+private fun LazyListScope.newParticipantItem(
+    state: ParticipantPickerViewModel.State.Suggestions,
+    currentParticipants: Set<Participant>,
+    onParticipantClick: (Participant) -> Unit,
+) {
+    item {
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+            text = stringResource(Res.string.create_new_contact),
+            style = MaterialTheme.typography.titleSmall,
+        )
+        if (state.newParticipant != null) {
+            ParticipantPickerItem(state.newParticipant, currentParticipants, onParticipantClick)
+        } else {
+            Row(
+                modifier = Modifier.fillMaxHeight(1f).padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    Icons.Filled.Info,
+                    contentDescription = stringResource(Res.string.start_type_creat_contact),
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(Res.string.start_type_creat_contact),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 
