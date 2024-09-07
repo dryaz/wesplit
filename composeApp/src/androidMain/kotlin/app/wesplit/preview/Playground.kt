@@ -62,10 +62,12 @@ fun ExpenseItem(expense: Expense) {
             Text(
                 text = localeDate.month.name.substring(0, 3),
                 style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.outline,
             )
             Text(
                 text = localeDate.dayOfMonth.toString().padStart(2, '0'),
                 style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.outline,
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
@@ -74,7 +76,7 @@ fun ExpenseItem(expense: Expense) {
         Column {
             Text(
                 text = expense.title,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
             )
             LentString(expense)
         }
@@ -86,10 +88,17 @@ fun ExpenseItem(expense: Expense) {
             Text(
                 text = "${expense.totalAmount.format()}",
                 style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.secondary,
             )
             Text(
                 text = "You: ${expense.myAmount().amount}",
                 style = MaterialTheme.typography.bodyMedium,
+                color =
+                    if (expense.myAmount().amount != 0f) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.outlineVariant
+                    },
             )
         }
     }
@@ -101,7 +110,7 @@ private fun LentString(expense: Expense) {
         Text(
             text = "You're not participating",
             style = MaterialTheme.typography.bodyMedium,
-            // TODO: neutral color
+            color = MaterialTheme.colorScheme.outlineVariant,
         )
     } else if (expense.payedBy.isMe) {
         val lent =
@@ -112,13 +121,13 @@ private fun LentString(expense: Expense) {
         Text(
             text = "You lent: ${lent.format()}",
             style = MaterialTheme.typography.bodyMedium,
-            // TODO: positive color
+            color = MaterialTheme.colorScheme.primary,
         )
     } else {
         Text(
             text = "You borrowed: ${expense.myAmount().format()}",
             style = MaterialTheme.typography.bodyMedium,
-            // TODO: negative color
+            color = MaterialTheme.colorScheme.error,
         )
     }
 }
