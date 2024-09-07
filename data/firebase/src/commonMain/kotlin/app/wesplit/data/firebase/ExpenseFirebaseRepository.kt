@@ -20,7 +20,7 @@ class ExpenseFirebaseRepository(
 ) : ExpenseRepository {
     override fun getByGroupId(
         groupId: String,
-        cursorExpenseId: String,
+        cursorExpenseId: String?,
     ): Flow<List<Expense>> =
         flow {
             emit(fakeData())

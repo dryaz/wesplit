@@ -38,5 +38,5 @@
     <string name="grant_permission">Grant permission</string>
     <string name="contacts_in_book">Contacts in address book</string>
     <string name="start_type_creat_contact">Start typing above to create a new contact</string>
-
+    <string name="share_group">Share this group</string>
 </resources>

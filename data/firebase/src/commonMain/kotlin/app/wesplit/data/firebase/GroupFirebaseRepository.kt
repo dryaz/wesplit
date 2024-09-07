@@ -4,6 +4,7 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.user.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,12 +63,12 @@ class GroupFirebaseRepository(
         flow {
             val data =
                 listOf(
-                    Participant("1", "Ivan", null),
-                    Participant("2", "Dima", null),
-                    Participant("3", "Marko", null),
-                    Participant("4", "John Smith", null),
-                    Participant("5", "Pedro", null),
-                    Participant("6", "Huan Gonsales", null),
+                    Participant("1", "Ivan", User("1", "Ivan", "https://randomuser.me/api/portraits/med/men/75.jpg")),
+                    Participant("2", "Dima", User("2", "Dima", "https://randomuser.me/api/portraits/med/men/75.jpg")),
+                    Participant("3", "Marko", User("3", "Marko", "https://randomuser.me/api/portraits/med/men/75.jpg")),
+                    Participant("4", "John Smith", User("4", "John Smith", "https://randomuser.me/api/portraits/med/men/75.jpg")),
+                    Participant("5", "Pedro", User("5", "Pedro", "https://randomuser.me/api/portraits/med/men/75.jpg")),
+                    Participant("6", "Huan Gonsales", User("6", "Huan Gonsales", "https://randomuser.me/api/portraits/med/men/75.jpg")),
                 )
             // TODO: Probably we soulc query firebase with some query
             emit(data.filter { !it.name.isNullOrBlank() && it.name.lowercase().contains(searchQuery.lowercase()) })

@@ -1,133 +1,80 @@
 package app.wesplit.preview
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import app.wesplit.data.firebase.fakeData
-import app.wesplit.domain.model.expense.Amount
-import app.wesplit.domain.model.expense.Expense
-import app.wesplit.domain.model.expense.format
-import app.wesplit.domain.model.expense.myAmount
+import app.wesplit.domain.model.group.Group
+import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.uiTitle
+import app.wesplit.domain.model.user.User
+import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.theme.AppTheme
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import kotlin.random.Random
 
 /**
  * KMP doesn't have proper preview but android do have
  * preview mode + liveedit. So sometimes it makes sense
  * to use playground to build view.
- *
- * NB: AppTheme can't be used here 'cause it inects custom fonts
- * Maybe it make sense to create custom theme with default fonts
- * in order to support at least colors.
  */
 @Composable
 @Preview(showSystemUi = true)
 fun Playground() =
     AppTheme {
-        ExpenseList(expenses = fakeData())
+        GroupHeader(
+            group =
+                Group(
+                    id = "1",
+                    title = "Awesome group",
+                    participants =
+                        setOf(
+                            Participant(name = "User 1", isMe = Random.nextFloat() > 0.5f),
+                            Participant(name = "User 2"),
+                            Participant(name = "User 3", user = User("1", "a", "a")),
+                            Participant(name = "User 4", user = User("1", "a", "a")),
+                        ),
+                ),
+        )
     }
 
 @Composable
-fun ExpenseList(expenses: List<Expense>) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(1f),
-    ) {
-        items(items = expenses, key = { it.id }) { expense ->
-            ExpenseItem(expense)
-        }
-    }
-}
-
-@Composable
-fun ExpenseItem(expense: Expense) {
-    val localeDate = expense.date.toLocalDateTime(TimeZone.currentSystemDefault())
+private fun GroupHeader(group: Group) {
     Row(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.padding(16.dp).fillMaxWidth(1f),
     ) {
-        // Date
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = localeDate.month.name.substring(0, 3),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline,
-            )
-            Text(
-                text = localeDate.dayOfMonth.toString().padStart(2, '0'),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.outline,
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        // TODO: Support category image
-        // Title + balance
-        Column {
-            Text(
-                text = expense.title,
-                style = MaterialTheme.typography.bodyLarge,
-            )
-            LentString(expense)
-        }
-        Spacer(modifier = Modifier.weight(1f))
-        // Total sum + your cat
         Column(
-            horizontalAlignment = Alignment.End,
+            modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = "${expense.totalAmount.format()}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.secondary,
+                text = group.uiTitle(),
+                style = MaterialTheme.typography.titleMedium,
             )
-            Text(
-                text = "You: ${expense.myAmount().amount}",
-                style = MaterialTheme.typography.bodyMedium,
-                color =
-                    if (expense.myAmount().amount != 0f) {
-                        MaterialTheme.colorScheme.tertiary
-                    } else {
-                        MaterialTheme.colorScheme.outlineVariant
-                    },
-            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Box {
+                group.participants.forEachIndexed { index, participant ->
+                    ParticipantAvatar(
+                        modifier = Modifier.padding(start = 20.dp * index),
+                        participant = participant,
+                        size = 36.dp,
+                    )
+                }
+            }
         }
-    }
-}
-
-@Composable
-private fun LentString(expense: Expense) {
-    if (expense.myAmount().amount == 0f) {
-        Text(
-            text = "You're not participating",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.outlineVariant,
-        )
-    } else if (expense.payedBy.isMe) {
-        val lent =
-            Amount(
-                amount = expense.totalAmount.amount - expense.myAmount().amount,
-                currencyCode = expense.totalAmount.currencyCode,
-            )
-        Text(
-            text = "You lent: ${lent.format()}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-    } else {
-        Text(
-            text = "You borrowed: ${expense.myAmount().format()}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
+        Icon(
+            Icons.Filled.Share,
+            contentDescription = "stringResource(Res.string.share_group)",
         )
     }
 }

@@ -11,6 +11,6 @@ interface ExpenseRepository {
      */
     fun getByGroupId(
         groupId: String,
-        cursorExpenseId: String,
+        cursorExpenseId: String? = null,
     ): Flow<List<Expense>>
 }

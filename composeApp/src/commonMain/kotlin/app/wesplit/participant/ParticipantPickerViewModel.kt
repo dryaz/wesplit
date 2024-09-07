@@ -1,4 +1,4 @@
-package app.wesplit.group
+package app.wesplit.participant
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
