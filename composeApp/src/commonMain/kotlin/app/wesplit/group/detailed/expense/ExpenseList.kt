@@ -1,4 +1,4 @@
-package app.wesplit.expense
+package app.wesplit.group.detailed.expense
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -96,10 +96,10 @@ private fun ExpenseItem(expense: Expense) {
                 color = MaterialTheme.colorScheme.secondary,
             )
             Text(
-                text = "You: ${expense.myAmount().amount}",
+                text = "You: ${expense.myAmount().value}",
                 style = MaterialTheme.typography.bodyMedium,
                 color =
-                    if (expense.myAmount().amount != 0f) {
+                    if (expense.myAmount().value != 0f) {
                         MaterialTheme.colorScheme.tertiary
                     } else {
                         MaterialTheme.colorScheme.outlineVariant
@@ -111,7 +111,7 @@ private fun ExpenseItem(expense: Expense) {
 
 @Composable
 private fun LentString(expense: Expense) {
-    if (expense.myAmount().amount == 0f) {
+    if (expense.myAmount().value == 0f) {
         Text(
             text = "You're not participating",
             style = MaterialTheme.typography.bodyMedium,
@@ -120,7 +120,7 @@ private fun LentString(expense: Expense) {
     } else if (expense.payedBy.isMe) {
         val lent =
             Amount(
-                amount = expense.totalAmount.amount - expense.myAmount().amount,
+                value = expense.totalAmount.value - expense.myAmount().value,
                 currencyCode = expense.totalAmount.currencyCode,
             )
         Text(

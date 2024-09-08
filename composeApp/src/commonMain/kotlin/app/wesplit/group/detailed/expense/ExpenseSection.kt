@@ -1,4 +1,4 @@
-package app.wesplit.expense
+package app.wesplit.group.detailed.expense
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

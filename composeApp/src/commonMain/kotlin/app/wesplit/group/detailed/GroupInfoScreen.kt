@@ -26,9 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Group
+import app.wesplit.domain.model.group.balance.BalanceRepository
 import app.wesplit.domain.model.group.uiTitle
-import app.wesplit.expense.ExpenseSection
-import app.wesplit.expense.ExpenseSectionViewModel
+import app.wesplit.group.detailed.balance.BalanceSection
+import app.wesplit.group.detailed.balance.BalanceSectionViewModel
+import app.wesplit.group.detailed.expense.ExpenseSection
+import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
 import org.jetbrains.compose.resources.stringResource
@@ -85,6 +88,8 @@ fun GroupInfoScreen(
 private fun GroupInfoContent(group: Group) {
     // TODO: 2 sections, based on size etc.
     val expenseRepository: ExpenseRepository = koinInject()
+    val balanceRepository: BalanceRepository = koinInject()
+
     val expenseViewModel: ExpenseSectionViewModel =
         viewModel {
             ExpenseSectionViewModel(
@@ -92,6 +97,14 @@ private fun GroupInfoContent(group: Group) {
                 expenseRepository = expenseRepository,
             )
         }
+    val balanceSectionViewModel: BalanceSectionViewModel =
+        viewModel {
+            BalanceSectionViewModel(
+                groupId = group.id,
+                balanceRepository = balanceRepository,
+            )
+        }
+
     Column(
         modifier = Modifier.fillMaxSize(1f),
     ) {
@@ -108,11 +121,11 @@ private fun GroupInfoContent(group: Group) {
                 Box(
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("Balances is here!")
+                    BalanceSection(balanceSectionViewModel)
                 }
             }
         } else {
-            // TODO: ViewPager
+            // TODO: ViewPager with BalanceSection as well
             ExpenseSection(expenseViewModel)
         }
     }

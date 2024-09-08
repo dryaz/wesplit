@@ -1,23 +1,19 @@
-package app.wesplit.expense
+package app.wesplit.group.detailed.balance
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.wesplit.domain.model.expense.Expense
-import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.group.balance.Balance
+import app.wesplit.domain.model.group.balance.BalanceRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
 
-private const val PAGE_SIZE = 30
-
-class ExpenseSectionViewModel(
+class BalanceSectionViewModel(
     private val groupId: String,
-    private val expenseRepository: ExpenseRepository,
+    private val balanceRepository: BalanceRepository,
 ) : ViewModel(),
     KoinComponent {
     val dataState: StateFlow<State>
@@ -29,23 +25,15 @@ class ExpenseSectionViewModel(
         refresh()
     }
 
+    // TODO: We show only balances for ppl which are not settled, should probably show all ppl with 0 balance
     fun refresh() {
         viewModelScope.launch {
-            expenseRepository.getByGroupId(groupId).collectLatest { expenses ->
+            balanceRepository.getByGroupId(groupId).collectLatest { balance ->
                 _dataState.update {
-                    State.Expenses(
-                        expenses.groupBy {
-                            val localDate = it.date.toLocalDateTime(TimeZone.currentSystemDefault())
-                            "${localDate.month} ${localDate.year}"
-                        },
-                    )
+                    State.Data(balance)
                 }
             }
         }
-    }
-
-    fun loadNextPage() {
-        TODO("Implement")
     }
 
     sealed interface State {
@@ -55,8 +43,8 @@ class ExpenseSectionViewModel(
 
         data object Unauthorized : State
 
-        data class Expenses(
-            val groupedExpenses: Map<String, List<Expense>>,
+        data class Data(
+            val balance: Balance?,
         ) : State
     }
 }

@@ -14,16 +14,20 @@ import org.koin.core.annotation.Single
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.days
 
+private const val GET_EXPENSE_EVENT = "expenses_get"
+private const val GET_EXPENSE_SIZE_PARAM = "size"
+
 @Single
 class ExpenseFirebaseRepository(
     private val analyticsManager: AnalyticsManager,
 ) : ExpenseRepository {
-    override fun getByGroupId(
-        groupId: String,
-        cursorExpenseId: String?,
-    ): Flow<List<Expense>> =
+    // TODO: Check if firebase get local balances or maybe need to cache expenses by group id in order
+    //  not to fetch this multiple times, e.g. for showing trxs and for computing balances.
+    override fun getByGroupId(groupId: String): Flow<List<Expense>> =
         flow {
-            emit(fakeData())
+            val expenses = fakeData()
+            analyticsManager.track(GET_EXPENSE_EVENT, mapOf(GET_EXPENSE_SIZE_PARAM to "${expenses.size}"))
+            emit(expenses)
         }
 }
 
@@ -42,7 +46,7 @@ fun fakeData() =
                         participant = Participant(name = "User 1", isMe = Random.nextFloat() > 0.5f),
                         amount =
                             Amount(
-                                amount = first.toFloat() / 100f,
+                                value = first.toFloat() / 100f,
                                 currencyCode = "USD",
                             ),
                     ),
@@ -50,7 +54,7 @@ fun fakeData() =
                         participant = Participant(name = "User 2"),
                         amount =
                             Amount(
-                                amount = second.toFloat() / 100f,
+                                value = second.toFloat() / 100f,
                                 currencyCode = "USD",
                             ),
                     ),
@@ -58,14 +62,14 @@ fun fakeData() =
                         participant = Participant(name = "User 3"),
                         amount =
                             Amount(
-                                amount = third.toFloat() / 100f,
+                                value = third.toFloat() / 100f,
                                 currencyCode = "USD",
                             ),
                     ),
                 ),
             totalAmount =
                 Amount(
-                    amount = total.toFloat() / 100f,
+                    value = total.toFloat() / 100f,
                     currencyCode = "USD",
                 ),
             type = ExpenseType.EXPENSE,
