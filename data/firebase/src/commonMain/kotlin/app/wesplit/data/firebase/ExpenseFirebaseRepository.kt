@@ -36,7 +36,7 @@ fun fakeData() =
         var total = Random.nextInt(1, 10000)
         val first = Random.nextInt(1, total)
         val second = Random.nextInt(1, total - first)
-        val third = total - first - second
+        val third = total - first - second - 1
         Expense(
             id = "$it",
             title = "Expense #$it",
