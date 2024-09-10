@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
@@ -53,9 +54,11 @@ import split.composeapp.generated.resources.change_color_mode
 import split.composeapp.generated.resources.change_theme
 import split.composeapp.generated.resources.ic_android
 import split.composeapp.generated.resources.ic_dark
+import split.composeapp.generated.resources.ic_feedback
 import split.composeapp.generated.resources.ic_light
 import split.composeapp.generated.resources.ic_system
 import split.composeapp.generated.resources.ic_web
+import split.composeapp.generated.resources.submit_feedback_cd
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
@@ -69,6 +72,8 @@ fun DoublePaneNavigation(
     secondNavhost: @Composable (Modifier) -> Unit,
 ) {
     val windowSizeClass = calculateWindowSizeClass()
+    // TODO: AB test rather to send email or fill the form via prodcamp
+    val uriHandler = LocalUriHandler.current
 
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(
@@ -124,6 +129,19 @@ fun DoublePaneNavigation(
                         },
                     )
                 }
+
+                NavigationRailItem(
+                    icon = {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_feedback),
+                            contentDescription = stringResource(Res.string.submit_feedback_cd),
+                        )
+                    },
+                    selected = false,
+                    onClick = {
+                        uriHandler.openUri("https://wesplit.prodcamp.com/")
+                    },
+                )
 
                 NavigationRailItem(
                     icon = {
@@ -206,13 +224,27 @@ fun DoublePaneNavigation(
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
+
+                    NavigationDrawerItem(
+                        label = { Text(text = stringResource(Res.string.submit_feedback_cd)) },
+                        selected = false,
+                        onClick = { uriHandler.openUri("https://wesplit.prodcamp.com/") },
+                        shape = RectangleShape,
+                        icon = {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_feedback),
+                                contentDescription = stringResource(Res.string.submit_feedback_cd),
+                            )
+                        },
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),
                         text = stringResource(Res.string.app_version),
                         style = MaterialTheme.typography.labelSmall,
                         textAlign = TextAlign.Center,
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             },
         ) {
