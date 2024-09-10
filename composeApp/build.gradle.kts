@@ -177,7 +177,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = libs.versions.android.versionCode.get().toInt()
-        versionName = libs.versions.versionName.get()
+        versionName = "${libs.versions.versionName.get()}+${libs.versions.android.versionCode.get()}"
     }
     packaging {
         resources {

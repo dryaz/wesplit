@@ -7,6 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import app.wesplit.di.AndroidAppModule
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.user.ContactListDelegate
+import app.wesplit.user.UnsupportedContactListDelegate
 import org.koin.dsl.module
 import org.koin.ksp.generated.module
 
@@ -17,7 +19,11 @@ class MainActivity : ComponentActivity() {
             App(
                 AndroidAppModule().module,
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
-                module { single<AnalyticsManager> { AndroidAnalyticsManager() } },
+                module {
+                    single<AnalyticsManager> { AndroidAnalyticsManager() }
+                    // TODO: Support user's contacts
+                    single<ContactListDelegate> { UnsupportedContactListDelegate() }
+                },
             )
         }
     }
