@@ -293,6 +293,7 @@ fun RootNavigation(
                     ) { action ->
                         when (action) {
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
+                            GroupInfoAction.Share -> TODO("Implement share")
                         }
                     }
                 }

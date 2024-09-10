@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -32,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.expense.ExpenseRepository
@@ -51,6 +53,8 @@ import split.composeapp.generated.resources.share_group
 
 sealed interface GroupInfoAction {
     data object Back : GroupInfoAction
+
+    data object Share : GroupInfoAction
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -61,7 +65,6 @@ fun GroupInfoScreen(
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val data = viewModel.dataState.collectAsState()
-
     val windowSizeClass = calculateWindowSizeClass()
 
     Scaffold(
@@ -69,9 +72,31 @@ fun GroupInfoScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+                // TODO: Better to have collapsing toolbar instead of hiding group header
                 AdaptiveTopAppBar(
-                    title = {},
+                    title = {
+                        Text(
+                            text =
+                                when (val state = data.value) {
+                                    is GroupInfoViewModel.State.Error -> "Error"
+                                    is GroupInfoViewModel.State.GroupInfo -> state.group.uiTitle()
+                                    GroupInfoViewModel.State.Loading -> "Loading"
+                                },
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
                     onNavigationIconClick = { onAction(GroupInfoAction.Back) },
+                    actions = {
+                        IconButton(
+                            onClick = { onAction.invoke(GroupInfoAction.Share) },
+                        ) {
+                            Icon(
+                                Icons.Filled.Share,
+                                contentDescription = stringResource(Res.string.share_group),
+                            )
+                        }
+                    },
                 )
             }
         },
@@ -81,7 +106,7 @@ fun GroupInfoScreen(
             contentAlignment = Alignment.Center,
         ) {
             when (val state = data.value) {
-                is GroupInfoViewModel.State.GroupInfo -> GroupInfoContent(state.group)
+                is GroupInfoViewModel.State.GroupInfo -> GroupInfoContent(state.group, onAction)
                 GroupInfoViewModel.State.Loading ->
                     Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator()
@@ -95,9 +120,14 @@ fun GroupInfoScreen(
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-private fun GroupInfoContent(group: Group) {
+private fun GroupInfoContent(
+    group: Group,
+    onAction: (GroupInfoAction) -> Unit,
+) {
     val expenseRepository: ExpenseRepository = koinInject()
     val balanceRepository: BalanceRepository = koinInject()
+
+    val windowSizeClass = calculateWindowSizeClass()
 
     val expenseViewModel: ExpenseSectionViewModel =
         viewModel {
@@ -117,9 +147,10 @@ private fun GroupInfoContent(group: Group) {
     Column(
         modifier = Modifier.fillMaxSize(1f),
     ) {
-        GroupHeader(group)
+        if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
+            GroupHeader(group, onAction)
+        }
 
-        val windowSizeClass = calculateWindowSizeClass()
         if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
             SplitView(expenseViewModel, balanceSectionViewModel)
         } else {
@@ -220,7 +251,10 @@ private fun PaginationView(
 }
 
 @Composable
-private fun GroupHeader(group: Group) {
+private fun GroupHeader(
+    group: Group,
+    onAction: (GroupInfoAction) -> Unit,
+) {
     Row(
         modifier = Modifier.padding(16.dp).fillMaxWidth(1f),
     ) {
@@ -242,9 +276,13 @@ private fun GroupHeader(group: Group) {
                 }
             }
         }
-        Icon(
-            Icons.Filled.Share,
-            contentDescription = stringResource(Res.string.share_group),
-        )
+        IconButton(
+            onClick = { onAction.invoke(GroupInfoAction.Share) },
+        ) {
+            Icon(
+                Icons.Filled.Share,
+                contentDescription = stringResource(Res.string.share_group),
+            )
+        }
     }
 }
