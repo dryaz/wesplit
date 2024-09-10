@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import app.wesplit.theme.ColorMode
 import app.wesplit.theme.LocalThemeState
@@ -69,8 +71,8 @@ fun DoublePaneNavigation(
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(
             modifier =
-                Modifier
-                    .fillMaxHeight(1f),
+            Modifier
+                .fillMaxHeight(1f),
         ) {
             // TODO: https://m3.material.io/ has navigation rail only on expanded but even not medium
             NavigationRail(
@@ -96,40 +98,49 @@ fun DoublePaneNavigation(
 
                 val localTheme = LocalThemeState.current
 
-                NavigationRailItem(
-                    icon = {
-                        Icon(
-                            painter =
+                // TODO: Leave for debug only
+                if (false) {
+                    NavigationRailItem(
+                        icon = {
+                            Icon(
+                                painter =
                                 painterResource(
                                     when (localTheme.theme) {
                                         Theme.Cupertino -> Res.drawable.ic_web
                                         Theme.Material3 -> Res.drawable.ic_android
                                     },
                                 ),
-                            contentDescription = stringResource(Res.string.change_theme),
-                        )
-                    },
-                    selected = false,
-                    onClick = {
-                        when (localTheme.theme) {
-                            Theme.Cupertino -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Material3))
-                            Theme.Material3 -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Cupertino))
-                        }
-                    },
-                )
+                                contentDescription = stringResource(Res.string.change_theme),
+                            )
+                        },
+                        selected = false,
+                        onClick = {
+                            when (localTheme.theme) {
+                                Theme.Cupertino -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Material3))
+                                Theme.Material3 -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Cupertino))
+                            }
+                        },
+                    )
+                }
 
                 NavigationRailItem(
                     icon = {
                         Icon(
                             painter =
-                                painterResource(
-                                    when (localTheme.colorMode) {
-                                        ColorMode.LIGHT -> Res.drawable.ic_light
-                                        ColorMode.DARK -> Res.drawable.ic_dark
-                                        ColorMode.SYSTEM -> Res.drawable.ic_system
-                                    },
-                                ),
+                            painterResource(
+                                when (localTheme.colorMode) {
+                                    ColorMode.LIGHT -> Res.drawable.ic_light
+                                    ColorMode.DARK -> Res.drawable.ic_dark
+                                    ColorMode.SYSTEM -> Res.drawable.ic_system
+                                },
+                            ),
                             contentDescription = stringResource(Res.string.change_color_mode),
+                        )
+                    },
+                    label = {
+                        Text(
+                            text = localTheme.colorMode.name.lowercase().capitalize(Locale.current),
+                            style = MaterialTheme.typography.labelSmall
                         )
                     },
                     selected = false,
@@ -146,10 +157,10 @@ fun DoublePaneNavigation(
             }
             Row(
                 modifier =
-                    Modifier
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(16.dp)
-                        .clip(RoundedCornerShape(20.dp)),
+                Modifier
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(20.dp)),
             ) {
                 firstNavhost(Modifier.width(320.dp).fillMaxHeight(1f))
                 VerticalDivider()
@@ -190,9 +201,9 @@ fun DoublePaneNavigation(
         ) {
             Box(
                 modifier =
-                    Modifier
-                        .fillMaxSize(1f)
-                        .background(MaterialTheme.colorScheme.surface),
+                Modifier
+                    .fillMaxSize(1f)
+                    .background(MaterialTheme.colorScheme.surface),
             ) {
                 AnimatedVisibility(
                     visible = secondNavhostEmpty,
