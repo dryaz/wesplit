@@ -143,7 +143,7 @@ internal fun ParticipantPicker(
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = closeButtonVisibility,
                             ) {
-                                Spacer(modifier = Modifier.height(70.dp))
+                                Spacer(modifier = Modifier.height(76.dp))
                             }
                         }
                     }
