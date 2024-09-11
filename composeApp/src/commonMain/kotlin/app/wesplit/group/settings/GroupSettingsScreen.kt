@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
@@ -158,6 +159,7 @@ private fun GroupSettingsView(
                     keyboardOptions =
                         KeyboardOptions(
                             imeAction = ImeAction.Next,
+                            capitalization = KeyboardCapitalization.Sentences,
                         ),
                     keyboardActions =
                         KeyboardActions {
