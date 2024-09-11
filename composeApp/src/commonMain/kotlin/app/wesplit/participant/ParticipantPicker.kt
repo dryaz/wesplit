@@ -1,13 +1,17 @@
 package app.wesplit.participant
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -29,6 +33,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -36,10 +45,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.ContactListDelegate
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.close_picker
 import split.composeapp.generated.resources.contacts_in_book
 import split.composeapp.generated.resources.contacts_in_wesplit
 import split.composeapp.generated.resources.create_new_contact
@@ -48,7 +61,7 @@ import split.composeapp.generated.resources.search_contact
 import split.composeapp.generated.resources.start_type_creat_contact
 import split.composeapp.generated.resources.user_already_in_group
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAdaptiveApi::class)
 @Composable
 internal fun ParticipantPicker(
     currentParticipants: Set<Participant>,
@@ -58,6 +71,9 @@ internal fun ParticipantPicker(
 ) {
     val groupRepository: GroupRepository = koinInject()
     val contactListDelegate: ContactListDelegate = koinInject()
+    val coroutineScope = rememberCoroutineScope()
+
+    var closeButtonVisibility by remember { mutableStateOf(false) }
 
     val viewModel =
         viewModel {
@@ -108,6 +124,11 @@ internal fun ParticipantPicker(
             },
         )
 
+        val participantClickHandler: (Participant) -> Unit = {
+            closeButtonVisibility = true
+            onParticipantClick(it)
+        }
+
         Box(modifier = Modifier.fillMaxSize(1f)) {
             when (val state = suggestions.value) {
                 ParticipantPickerViewModel.State.Loading -> CircularProgressIndicator()
@@ -115,10 +136,37 @@ internal fun ParticipantPicker(
                     LazyColumn(
                         state = lazyColumnListState,
                     ) {
-                        newParticipantItem(state, currentParticipants, onParticipantClick)
-                        currentConnectionsItem(state, currentParticipants, onParticipantClick)
-                        contatctItem(state, currentParticipants, onParticipantClick)
+                        newParticipantItem(state, currentParticipants, participantClickHandler)
+                        currentConnectionsItem(state, currentParticipants, participantClickHandler)
+                        contatctItem(state, currentParticipants, participantClickHandler)
+                        item {
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = closeButtonVisibility,
+                            ) {
+                                Spacer(modifier = Modifier.height(70.dp))
+                            }
+                        }
                     }
+            }
+
+            androidx.compose.animation.AnimatedVisibility(
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp).widthIn(min = 120.dp),
+                visible = closeButtonVisibility,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                AdaptiveButton(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    onClick = {
+                        closeButtonVisibility = false
+                        coroutineScope.launch {
+                            sheetState.hide()
+                            onPickerClose()
+                        }
+                    },
+                ) {
+                    Text(stringResource(Res.string.close_picker))
+                }
             }
         } // TODO: Loading?
     }

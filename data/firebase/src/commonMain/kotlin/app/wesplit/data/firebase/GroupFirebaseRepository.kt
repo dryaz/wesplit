@@ -63,12 +63,24 @@ class GroupFirebaseRepository(
         flow {
             val data =
                 listOf(
-                    Participant("1", "Ivan", User("1", "Ivan", "https://randomuser.me/api/portraits/med/men/75.jpg")),
-                    Participant("2", "Dima", User("2", "Dima", "https://randomuser.me/api/portraits/med/men/75.jpg")),
-                    Participant("3", "Marko", User("3", "Marko", "https://randomuser.me/api/portraits/med/men/75.jpg")),
-                    Participant("4", "John Smith", User("4", "John Smith", "https://randomuser.me/api/portraits/med/men/75.jpg")),
-                    Participant("5", "Pedro", User("5", "Pedro", "https://randomuser.me/api/portraits/med/men/75.jpg")),
+                    Participant("1", "Ivan", User("1", "Ivan", "https://randomuser.me/api/portraits/med/men/74.jpg")),
+                    Participant("2", "Dima", User("2", "Dima", "https://randomuser.me/api/portraits/med/men/73.jpg")),
+                    Participant("3", "Marko", User("3", "Marko", "https://randomuser.me/api/portraits/med/men/72.jpg")),
+                    Participant("4", "John Smith", User("4", "John Smith", "https://randomuser.me/api/portraits/med/men/71.jpg")),
+                    Participant("5", "Pedro", User("5", "Pedro", "https://randomuser.me/api/portraits/med/men/70.jpg")),
                     Participant("6", "Huan Gonsales", User("6", "Huan Gonsales", "https://randomuser.me/api/portraits/med/men/75.jpg")),
+                    Participant("7", "Daria", User("7", "Ivan", "https://randomuser.me/api/portraits/med/men/61.jpg")),
+                    Participant("8", "Tanya", User("8", "Dima", "https://randomuser.me/api/portraits/med/men/60.jpg")),
+                    Participant("9", "Anna", User("9", "Marko", "https://randomuser.me/api/portraits/med/men/59.jpg")),
+                    Participant("10", "Zarina", User("10", "John Smith", "https://randomuser.me/api/portraits/med/men/58.jpg")),
+                    Participant("11", "Jim", User("11", "Pedro", "https://randomuser.me/api/portraits/med/men/57.jpg")),
+                    Participant("12", "James", User("12", "Huan Gonsales", "https://randomuser.me/api/portraits/med/men/56.jpg")),
+                    Participant("13", "Petr", User("13", "Ivan", "https://randomuser.me/api/portraits/med/men/55.jpg")),
+                    Participant("14", "Vlad", User("14", "Dima", "https://randomuser.me/api/portraits/med/men/54.jpg")),
+                    Participant("15", "Nikola", User("15", "Marko", "https://randomuser.me/api/portraits/med/men/53.jpg")),
+                    Participant("16", "Nobody", User("16", "John Smith", "https://randomuser.me/api/portraits/med/men/52.jpg")),
+                    Participant("17", "Othe name's", User("17", "Pedro", "https://randomuser.me/api/portraits/med/men/51.jpg")),
+                    Participant("18", "Last item", User("18", "Huan Gonsales", "https://randomuser.me/api/portraits/med/men/50.jpg")),
                 )
             // TODO: Probably we soulc query firebase with some query
             emit(data.filter { !it.name.isNullOrBlank() && it.name.lowercase().contains(searchQuery.lowercase()) })

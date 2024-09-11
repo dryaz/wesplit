@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">WeSplit</string>
-    <string name="app_version">v1.0.0+2</string>
+    <string name="app_version">v1.0.0+3</string>
     <string name="no_image_group_cd">No image for group %s</string>
     <string name="login">Login</string>
     <string name="logout">Logout</string>
@@ -41,4 +41,6 @@
     <string name="start_type_creat_contact">Start typing above to create a new contact</string>
     <string name="share_group">Share this group</string>
     <string name="submit_feedback_cd">Submit feedback</string>
+    <string name="close_picker">Apply and close</string>
+
 </resources>
