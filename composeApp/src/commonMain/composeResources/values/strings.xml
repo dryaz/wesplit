@@ -42,5 +42,6 @@
     <string name="share_group">Share this group</string>
     <string name="submit_feedback_cd">Submit feedback</string>
     <string name="close_picker">Apply and close</string>
+    <string name="new_expense">Apply and close</string>
 
 </resources>

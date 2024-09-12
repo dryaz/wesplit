@@ -54,7 +54,8 @@ import split.composeapp.generated.resources.share_group
 sealed interface GroupInfoAction {
     data object Back : GroupInfoAction
 
-    data object Share : GroupInfoAction
+    // TODO: How to shar group
+    data class Share(val group: Group?) : GroupInfoAction
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -89,7 +90,11 @@ fun GroupInfoScreen(
                     onNavigationIconClick = { onAction(GroupInfoAction.Back) },
                     actions = {
                         IconButton(
-                            onClick = { onAction.invoke(GroupInfoAction.Share) },
+                            onClick = {
+                                onAction.invoke(
+                                    GroupInfoAction.Share((data.value as? GroupInfoViewModel.State.GroupInfo)?.group),
+                                )
+                            },
                         ) {
                             Icon(
                                 Icons.Filled.Share,
@@ -277,7 +282,7 @@ private fun GroupHeader(
             }
         }
         IconButton(
-            onClick = { onAction.invoke(GroupInfoAction.Share) },
+            onClick = { onAction.invoke(GroupInfoAction.Share(group)) },
         ) {
             Icon(
                 Icons.Filled.Share,

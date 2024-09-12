@@ -28,7 +28,11 @@ import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.LoginType
+import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.expense.AddExpenseAction
+import app.wesplit.expense.AddExpenseScreen
+import app.wesplit.expense.AddExpenseViewModel
 import app.wesplit.group.detailed.GroupInfoAction
 import app.wesplit.group.detailed.GroupInfoScreen
 import app.wesplit.group.detailed.GroupInfoViewModel
@@ -39,6 +43,7 @@ import app.wesplit.group.list.GroupListViewModel
 import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
+import app.wesplit.routing.RightPane.Group.Param
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.CoroutineDispatcher
@@ -80,10 +85,26 @@ sealed class RightPane(
 
         fun destination(groupId: String): String = "group/$groupId"
 
-        override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId: String) instead")
+        override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId) instead")
     }
 
     data object NewGroup : RightPane("newGroup")
+
+    data object AddExpense : RightPane("group/{${Param.GROUP_ID.paramName}}/{${Param.EXPENSE_ID.paramName}}") {
+        enum class Param(
+            val paramName: String,
+        ) {
+            GROUP_ID("group_id"),
+            EXPENSE_ID("expense_id"),
+        }
+
+        fun destination(
+            groupId: String,
+            expenseId: String? = null,
+        ): String = "group/$groupId/${expenseId ?: "new"}"
+
+        override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId, expenseId) instead")
+    }
 }
 
 sealed class MenuItem : NavigationMenuItem {
@@ -267,6 +288,7 @@ fun RootNavigation(
                 composable(route = RightPane.Empty.route) {
                     NoGroupScreen()
                 }
+
                 composable(
                     route = RightPane.Group.route,
                     arguments =
@@ -293,10 +315,20 @@ fun RootNavigation(
                     ) { action ->
                         when (action) {
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
-                            GroupInfoAction.Share -> TODO("Implement share")
+                            is GroupInfoAction.Share -> {
+                                // TODO: Implement share, here is add expense for test purposes
+                                secondPaneNavController.navigate(
+                                    RightPane.AddExpense.destination(action.group?.id ?: ""),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                        },
+                                )
+                            }
                         }
                     }
                 }
+
                 composable(route = RightPane.NewGroup.route) {
                     val groupRepository: GroupRepository = koinInject()
 
@@ -312,6 +344,39 @@ fun RootNavigation(
                     GroupSettingsScreen(viewModel = viewModel) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
+                        }
+                    }
+                }
+
+                composable(
+                    route = RightPane.AddExpense.route,
+                    arguments =
+                        listOf(
+                            navArgument(RightPane.Group.Param.GROUP_ID.paramName) {
+                                type = NavType.StringType
+                            },
+                        ),
+                ) {
+                    // TODO: Accorgin ti github koin starts to support navigation args in savedstate in VM, POC
+                    val groupRepository: GroupRepository = koinInject()
+                    val expenseRepository: ExpenseRepository = koinInject()
+
+                    val viewModel: AddExpenseViewModel =
+                        viewModel(
+                            key = it.arguments.toString(),
+                        ) {
+                            AddExpenseViewModel(
+                                SavedStateHandle.createHandle(null, it.arguments),
+                                groupRepository,
+                                expenseRepository,
+                            )
+                        }
+
+                    AddExpenseScreen(
+                        viewModel = viewModel,
+                    ) { action ->
+                        when (action) {
+                            AddExpenseAction.Back -> secondPaneNavController.navigateUp()
                         }
                     }
                 }
