@@ -26,6 +26,7 @@ import app.wesplit.NavigationMenuItem
 import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.LoginType
 import app.wesplit.domain.model.expense.ExpenseRepository
@@ -56,6 +57,10 @@ import split.composeapp.generated.resources.groups
 import split.composeapp.generated.resources.ic_group
 import split.composeapp.generated.resources.ic_profile
 import split.composeapp.generated.resources.profile
+
+private const val SCREEN_VIEW = "screen_view"
+private const val SCREEN_NAME = "screen_name"
+private const val SCREEN_CLASS = "screen_class"
 
 sealed class PaneNavigation(
     val route: String,
@@ -131,6 +136,7 @@ fun RootNavigation(
     onSelectMenuItem: (NavigationMenuItem) -> Unit,
 ) {
     var secondNavControllerEmpty by remember { mutableStateOf(false) }
+    val analyticsManager: AnalyticsManager = koinInject()
     val accountRepository: AccountRepository = koinInject()
     val coroutineScope = rememberCoroutineScope()
 
@@ -144,6 +150,40 @@ fun RootNavigation(
 
     val drawerState = rememberDrawerState(DrawerValue.Closed)
 
+    fun trackScreen(
+        destination: NavDestination,
+        arguments: Bundle?,
+    ) {
+        val param = mutableMapOf<String, String>()
+        destination.arguments.forEach {
+            param.put(it.key, it.value.toString())
+        }
+        arguments?.let { args ->
+            param.putAll(args.keySet().mapNotNull { it }.filter { !it.isNullOrBlank() }.associateWith { args.getString(it) ?: "" })
+        }
+        val screenName = destination.route ?: destination.displayName
+        param.put(SCREEN_NAME, screenName)
+        param.put(SCREEN_CLASS, destination.route ?: destination.displayName)
+
+        if (screenName != "empty") {
+            analyticsManager.track(SCREEN_VIEW, param)
+        }
+    }
+
+    LaunchedEffect(firstPaneNavController) {
+        firstPaneNavController.addOnDestinationChangedListener(
+            object : NavController.OnDestinationChangedListener {
+                override fun onDestinationChanged(
+                    controller: NavController,
+                    destination: NavDestination,
+                    arguments: Bundle?,
+                ) {
+                    trackScreen(destination, arguments)
+                }
+            },
+        )
+    }
+
     LaunchedEffect(secondPaneNavController) {
         secondPaneNavController.addOnDestinationChangedListener(
             object : NavController.OnDestinationChangedListener {
@@ -152,6 +192,7 @@ fun RootNavigation(
                     destination: NavDestination,
                     arguments: Bundle?,
                 ) {
+                    trackScreen(destination, arguments)
                     secondNavControllerEmpty = controller.previousBackStackEntry == null
                 }
             },
