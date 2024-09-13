@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,13 +51,16 @@ import app.wesplit.ui.AdaptiveTopAppBar
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.share_group
 
 sealed interface GroupInfoAction {
     data object Back : GroupInfoAction
 
-    // TODO: How to shar group
-    data class Share(val group: Group?) : GroupInfoAction
+    data class AddExpense(val group: Group) : GroupInfoAction
+
+    // TODO: How to share group
+    data class Share(val group: Group) : GroupInfoAction
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -68,44 +73,48 @@ fun GroupInfoScreen(
     val data = viewModel.dataState.collectAsState()
     val windowSizeClass = calculateWindowSizeClass()
 
-    Scaffold(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        topBar = {
-            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
-                // TODO: Better to have collapsing toolbar instead of hiding group header
-                AdaptiveTopAppBar(
-                    title = {
-                        Text(
-                            text =
-                                when (val state = data.value) {
-                                    is GroupInfoViewModel.State.Error -> "Error"
-                                    is GroupInfoViewModel.State.GroupInfo -> state.group.uiTitle()
-                                    GroupInfoViewModel.State.Loading -> "Loading"
-                                },
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                    onNavigationIconClick = { onAction(GroupInfoAction.Back) },
-                    actions = {
-                        IconButton(
-                            onClick = {
-                                onAction.invoke(
-                                    GroupInfoAction.Share((data.value as? GroupInfoViewModel.State.GroupInfo)?.group),
-                                )
-                            },
-                        ) {
-                            Icon(
-                                Icons.Filled.Share,
-                                contentDescription = stringResource(Res.string.share_group),
-                            )
-                        }
-                    },
+    Scaffold(modifier = modifier, containerColor = MaterialTheme.colorScheme.surfaceContainer, floatingActionButton = {
+        (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
+            FloatingActionButton(onClick = {
+                onAction(GroupInfoAction.AddExpense(group))
+            }) {
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = stringResource(Res.string.add_expense_to_group),
                 )
             }
-        },
-    ) { paddings ->
+        }
+    }, topBar = {
+        if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+            // TODO: Better to have collapsing toolbar instead of hiding group header
+            AdaptiveTopAppBar(title = {
+                Text(
+                    text =
+                        when (val state = data.value) {
+                            is GroupInfoViewModel.State.Error -> "Error"
+                            is GroupInfoViewModel.State.GroupInfo -> state.group.uiTitle()
+                            GroupInfoViewModel.State.Loading -> "Loading"
+                        },
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }, onNavigationIconClick = { onAction(GroupInfoAction.Back) }, actions = {
+                IconButton(onClick = {
+                    // TODO: Proper state handling, not just 1 groupinfo handler
+                    (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
+                        onAction.invoke(
+                            GroupInfoAction.Share(group),
+                        )
+                    }
+                }) {
+                    Icon(
+                        Icons.Filled.Share,
+                        contentDescription = stringResource(Res.string.share_group),
+                    )
+                }
+            })
+        }
+    }) { paddings ->
         Box(
             modifier = Modifier.padding(paddings).fillMaxSize(1f),
             contentAlignment = Alignment.Center,
@@ -174,16 +183,8 @@ private fun SplitView(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             selectedTabIndex = 2,
         ) {
-            Tab(
-                selected = false,
-                onClick = {},
-                text = { Text("Transactions") },
-            )
-            Tab(
-                selected = false,
-                onClick = {},
-                text = { Text("Balances") },
-            )
+            Tab(selected = false, onClick = {}, text = { Text("Transactions") })
+            Tab(selected = false, onClick = {}, text = { Text("Balances") })
         }
     }
     Row {
@@ -216,16 +217,8 @@ private fun PaginationView(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             selectedTabIndex = selectedTabIndex,
         ) {
-            Tab(
-                selected = selectedTabIndex == 0,
-                onClick = { selectedTabIndex = 0 },
-                text = { Text("Transactions") },
-            )
-            Tab(
-                selected = selectedTabIndex == 1,
-                onClick = { selectedTabIndex = 1 },
-                text = { Text("Balances") },
-            )
+            Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text("Transactions") })
+            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text("Balances") })
         }
 
         HorizontalPager(
@@ -281,9 +274,7 @@ private fun GroupHeader(
                 }
             }
         }
-        IconButton(
-            onClick = { onAction.invoke(GroupInfoAction.Share(group)) },
-        ) {
+        IconButton(onClick = { onAction.invoke(GroupInfoAction.Share(group)) }) {
             Icon(
                 Icons.Filled.Share,
                 contentDescription = stringResource(Res.string.share_group),

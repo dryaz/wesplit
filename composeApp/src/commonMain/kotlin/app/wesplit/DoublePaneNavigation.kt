@@ -61,6 +61,8 @@ import split.composeapp.generated.resources.ic_system
 import split.composeapp.generated.resources.ic_web
 import split.composeapp.generated.resources.submit_feedback_cd
 
+// TODO: Add expense from top lvl view without defining the group
+//  https://github.com/dryaz/wesplit/issues/68
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun DoublePaneNavigation(
@@ -78,9 +80,7 @@ fun DoublePaneNavigation(
 
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(
-            modifier =
-                Modifier
-                    .fillMaxHeight(1f),
+            modifier = Modifier.fillMaxHeight(1f),
         ) {
             // TODO: https://m3.material.io/ has navigation rail only on expanded but even not medium
             NavigationRail(
@@ -108,71 +108,58 @@ fun DoublePaneNavigation(
 
                 // TODO: Leave for debug only
                 if (false) {
-                    NavigationRailItem(
-                        icon = {
-                            Icon(
-                                painter =
-                                    painterResource(
-                                        when (localTheme.theme) {
-                                            Theme.Cupertino -> Res.drawable.ic_web
-                                            Theme.Material3 -> Res.drawable.ic_android
-                                        },
-                                    ),
-                                contentDescription = stringResource(Res.string.change_theme),
-                            )
-                        },
-                        selected = false,
-                        onClick = {
-                            when (localTheme.theme) {
-                                Theme.Cupertino -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Material3))
-                                Theme.Material3 -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Cupertino))
-                            }
-                        },
-                    )
-                }
-
-                NavigationRailItem(
-                    icon = {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_feedback),
-                            contentDescription = stringResource(Res.string.submit_feedback_cd),
-                        )
-                    },
-                    selected = false,
-                    onClick = {
-                        uriHandler.openUri("https://wesplit.prodcamp.com/")
-                    },
-                )
-
-                NavigationRailItem(
-                    icon = {
+                    NavigationRailItem(icon = {
                         Icon(
                             painter =
                                 painterResource(
-                                    when (localTheme.colorMode) {
-                                        ColorMode.LIGHT -> Res.drawable.ic_light
-                                        ColorMode.DARK -> Res.drawable.ic_dark
-                                        ColorMode.SYSTEM -> Res.drawable.ic_system
+                                    when (localTheme.theme) {
+                                        Theme.Cupertino -> Res.drawable.ic_web
+                                        Theme.Material3 -> Res.drawable.ic_android
                                     },
                                 ),
-                            contentDescription = stringResource(Res.string.change_color_mode),
+                            contentDescription = stringResource(Res.string.change_theme),
                         )
-                    },
-                    label = {
-                        Text(
-                            text = localTheme.colorMode.name.lowercase().capitalize(Locale.current),
-                            style = MaterialTheme.typography.labelSmall,
-                        )
-                    },
-                    selected = false,
-                    onClick = {
-                        when (localTheme.colorMode) {
-                            ColorMode.LIGHT -> localTheme.actionCallback(ThemeAction.ChangeColorMode(ColorMode.DARK))
-                            ColorMode.DARK -> localTheme.actionCallback(ThemeAction.ChangeColorMode(ColorMode.SYSTEM))
-                            ColorMode.SYSTEM -> localTheme.actionCallback(ThemeAction.ChangeColorMode(ColorMode.LIGHT))
+                    }, selected = false, onClick = {
+                        when (localTheme.theme) {
+                            Theme.Cupertino -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Material3))
+                            Theme.Material3 -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Cupertino))
                         }
-                    },
-                )
+                    })
+                }
+
+                NavigationRailItem(icon = {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_feedback),
+                        contentDescription = stringResource(Res.string.submit_feedback_cd),
+                    )
+                }, selected = false, onClick = {
+                    uriHandler.openUri("https://wesplit.prodcamp.com/")
+                })
+
+                NavigationRailItem(icon = {
+                    Icon(
+                        painter =
+                            painterResource(
+                                when (localTheme.colorMode) {
+                                    ColorMode.LIGHT -> Res.drawable.ic_light
+                                    ColorMode.DARK -> Res.drawable.ic_dark
+                                    ColorMode.SYSTEM -> Res.drawable.ic_system
+                                },
+                            ),
+                        contentDescription = stringResource(Res.string.change_color_mode),
+                    )
+                }, label = {
+                    Text(
+                        text = localTheme.colorMode.name.lowercase().capitalize(Locale.current),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }, selected = false, onClick = {
+                    when (localTheme.colorMode) {
+                        ColorMode.LIGHT -> localTheme.actionCallback(ThemeAction.ChangeColorMode(ColorMode.DARK))
+                        ColorMode.DARK -> localTheme.actionCallback(ThemeAction.ChangeColorMode(ColorMode.SYSTEM))
+                        ColorMode.SYSTEM -> localTheme.actionCallback(ThemeAction.ChangeColorMode(ColorMode.LIGHT))
+                    }
+                })
 
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
@@ -184,9 +171,7 @@ fun DoublePaneNavigation(
             }
             Row(
                 modifier =
-                    Modifier
-                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                        .padding(16.dp)
+                    Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(16.dp)
                         .clip(RoundedCornerShape(20.dp)),
             ) {
                 firstNavhost(Modifier.width(320.dp).fillMaxHeight(1f))
@@ -198,63 +183,56 @@ fun DoublePaneNavigation(
             }
         }
     } else {
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            drawerContent = {
-                ModalDrawerSheet {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(1f).padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        AppLogo(modifier = Modifier.size(56.dp))
-                    }
+        ModalNavigationDrawer(drawerState = drawerState, drawerContent = {
+            ModalDrawerSheet {
+                Box(
+                    modifier = Modifier.fillMaxWidth(1f).padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AppLogo(modifier = Modifier.size(56.dp))
+                }
 
-                    menuItems.forEach { item ->
-                        NavigationDrawerItem(
-                            label = { Text(text = stringResource(item.title)) },
-                            selected = item == selectedMenuItem,
-                            onClick = { onMenuItemClick(item) },
-                            shape = RectangleShape,
-                            icon = {
-                                Icon(
-                                    painter = painterResource(item.icon),
-                                    contentDescription = stringResource(item.title),
-                                )
-                            },
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
+                menuItems.forEach { item ->
                     NavigationDrawerItem(
-                        label = { Text(text = stringResource(Res.string.submit_feedback_cd)) },
-                        selected = false,
-                        onClick = { uriHandler.openUri("https://wesplit.prodcamp.com/") },
+                        label = { Text(text = stringResource(item.title)) },
+                        selected = item == selectedMenuItem,
+                        onClick = { onMenuItemClick(item) },
                         shape = RectangleShape,
                         icon = {
                             Icon(
-                                painter = painterResource(Res.drawable.ic_feedback),
-                                contentDescription = stringResource(Res.string.submit_feedback_cd),
+                                painter = painterResource(item.icon),
+                                contentDescription = stringResource(item.title),
                             )
                         },
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        modifier = Modifier.fillMaxWidth(1f),
-                        text = stringResource(Res.string.app_version),
-                        style = MaterialTheme.typography.labelSmall,
-                        textAlign = TextAlign.Center,
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
                 }
-            },
-        ) {
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                NavigationDrawerItem(
+                    label = { Text(text = stringResource(Res.string.submit_feedback_cd)) },
+                    selected = false,
+                    onClick = { uriHandler.openUri("https://wesplit.prodcamp.com/") },
+                    shape = RectangleShape,
+                    icon = {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_feedback),
+                            contentDescription = stringResource(Res.string.submit_feedback_cd),
+                        )
+                    },
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    modifier = Modifier.fillMaxWidth(1f),
+                    text = stringResource(Res.string.app_version),
+                    style = MaterialTheme.typography.labelSmall,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+        }) {
             Box(
-                modifier =
-                    Modifier
-                        .fillMaxSize(1f)
-                        .navigationBarsPadding()
-                        .background(MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxSize(1f).navigationBarsPadding().background(MaterialTheme.colorScheme.surface),
             ) {
                 AnimatedVisibility(
                     visible = secondNavhostEmpty,

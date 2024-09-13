@@ -358,8 +358,11 @@ fun RootNavigation(
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
                             is GroupInfoAction.Share -> {
                                 // TODO: Implement share, here is add expense for test purposes
+                            }
+
+                            is GroupInfoAction.AddExpense -> {
                                 secondPaneNavController.navigate(
-                                    RightPane.AddExpense.destination(action.group?.id ?: ""),
+                                    RightPane.AddExpense.destination(action.group.id),
                                     navOptions =
                                         navOptions {
                                             launchSingleTop = true
