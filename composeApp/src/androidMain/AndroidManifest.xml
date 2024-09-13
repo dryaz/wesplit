@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:name=".MainApplication"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
+        <meta-data android:name="google_analytics_automatic_screen_reporting_enabled" android:value="false" />
+
         <activity
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|fontScale|fontWeightAdjustment|keyboard|layoutDirection|locale|mcc|navigation|smallestScreenSize|touchscreen|uiMode"
