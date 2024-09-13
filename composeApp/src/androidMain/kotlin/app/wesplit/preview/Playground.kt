@@ -1,8 +1,6 @@
 package app.wesplit.preview
 
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
+import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import app.wesplit.theme.AppTheme
@@ -13,24 +11,11 @@ import app.wesplit.theme.AppTheme
  * to use playground to build view.
  */
 @Composable
-@Preview(showSystemUi = true)
+@Preview(showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun Playground() =
     AppTheme {
-        GroupTabs()
     }
 
 @Composable
-private fun GroupTabs() {
-    TabRow(selectedTabIndex = 2) {
-        Tab(
-            selected = false,
-            onClick = {},
-            text = { Text("Transactions") },
-        )
-        Tab(
-            selected = false,
-            onClick = {},
-            text = { Text("Balances") },
-        )
-    }
+private fun Temp() {
 }

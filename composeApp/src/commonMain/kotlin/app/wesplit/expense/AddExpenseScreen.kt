@@ -1,36 +1,58 @@
 package app.wesplit.expense
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.expense.Expense
+import app.wesplit.domain.model.expense.format
+import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.create
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_expense
@@ -57,6 +79,16 @@ fun AddExpenseScreen(
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                // TODO: Commit
+            }) {
+                Icon(
+                    Icons.Filled.Done,
+                    contentDescription = stringResource(Res.string.add_expense_to_group),
+                )
+            }
+        },
         topBar = {
             TopAppBareByState(
                 state = state.value,
@@ -71,10 +103,10 @@ fun AddExpenseScreen(
     ) { paddings ->
         when (val expenseState = state.value) {
             is AddExpenseViewModel.State.Error -> Text("Error")
-            is AddExpenseViewModel.State.Expense ->
+            is AddExpenseViewModel.State.Data ->
                 AddExpenseScreenView(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
-                    expense = expenseState,
+                    data = expenseState,
                     onDone = {
                         TODO("Commit group")
                     },
@@ -91,13 +123,10 @@ fun AddExpenseScreen(
 @Composable
 private fun AddExpenseScreenView(
     modifier: Modifier = Modifier,
-    expense: AddExpenseViewModel.State.Expense,
+    data: AddExpenseViewModel.State.Data,
     onDone: () -> Unit,
-    onUpdated: (AddExpenseViewModel.State.Expense) -> Unit,
+    onUpdated: (Expense) -> Unit,
 ) {
-    // TODO: Select payer same way that we select participants
-    var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
-
     Column(
         modifier =
             modifier
@@ -116,17 +145,136 @@ private fun AddExpenseScreenView(
                     .fillMaxWidth(1f)
                     .padding(horizontal = 16.dp),
         ) {
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                modifier =
+                    Modifier
+                        .fillMaxWidth(1f)
+                        .padding(horizontal = 16.dp),
+                singleLine = true,
+                value = data.expense.title,
+                onValueChange = { value -> },
+                prefix = {
+                    Row {
+                        Icon(
+                            imageVector = Icons.Filled.Create,
+                            contentDescription = "Expense title",
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                },
+                placeholder = {
+                    Text(
+                        text = "Expense title",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                },
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             Row(
-                modifier = Modifier.padding(16.dp),
+                modifier =
+                    Modifier
+                        .height(IntrinsicSize.Max)
+                        .fillMaxWidth(1f)
+                        .padding(horizontal = 16.dp),
+            ) {
+                var expanded by remember { mutableStateOf(false) }
+
+                FilledTonalButton(
+                    modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
+                    onClick = { expanded = true },
+                    shape = RoundedCornerShape(10.dp),
+                ) {
+                    Text("$")
+                }
+
+                DropdownMenu(
+                    modifier = Modifier.requiredSizeIn(maxHeight = 250.dp),
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    (0..20).forEach {
+                        DropdownMenuItem(
+                            // TODO: Currencies in here
+                            text = { Text("Item1") },
+                            onClick = { expanded = false },
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                TextField(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(1f),
+                    singleLine = true,
+                    value = data.expense.totalAmount.value.toString(),
+                    onValueChange = { value -> },
+                    placeholder = {
+                        Text(
+                            text = "Amount",
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    },
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = "Payed by",
+                style = MaterialTheme.typography.labelSmall,
+            )
+
+            ParticipantListItem(participant = data.expense.payedBy)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Card(
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
+            modifier =
+                Modifier
+                    .widthIn(max = 450.dp)
+                    .fillMaxWidth(1f)
+                    .padding(horizontal = 16.dp),
+        ) {
+            Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Here is adding ui")
+                Text(
+                    text = "We split in",
+                    modifier = Modifier.padding(vertical = 16.dp).padding(start = 16.dp),
+                    color = MaterialTheme.colorScheme.outline,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = data.group.title,
+                    modifier = Modifier.padding(vertical = 16.dp).padding(end = 16.dp),
+                )
+            }
+            HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
+            data.group.participants.forEach { participant ->
+                ParticipantListItem(
+                    participant = participant,
+                    action = {
+                        Checkbox(
+                            checked = data.expense.shares.any { it.participant == participant },
+                            onCheckedChange = { },
+                        )
+                    },
+                    subTitle =
+                        data.expense.shares.find { it.participant == participant }?.let {
+                            it.amount.format()
+                        } ?: "Not participating",
+                )
             }
         }
-    }
-
-    AnimatedVisibility(visible = userSelectorVisibility) {
-        // TODO: Same UI as ParticipantPicker but only from predefine list of current participants
     }
 }
 
@@ -142,11 +290,11 @@ private fun TopAppBareByState(
                 when (state) {
                     AddExpenseViewModel.State.Loading -> stringResource(Res.string.loading)
                     is AddExpenseViewModel.State.Error -> stringResource(Res.string.settings)
-                    is AddExpenseViewModel.State.Expense ->
-                        if (state.id == null) {
+                    is AddExpenseViewModel.State.Data ->
+                        if (state.expense.id == null) {
                             stringResource(Res.string.new_expense)
                         } else {
-                            state.title ?: ""
+                            state.expense.title ?: ""
                         }
                 },
             )
@@ -159,7 +307,7 @@ private fun TopAppBareByState(
                         when (state) {
                             is AddExpenseViewModel.State.Error -> {}
 
-                            is AddExpenseViewModel.State.Expense ->
+                            is AddExpenseViewModel.State.Data ->
                                 onToolbarAction(
                                     AddExpenseTollbarAction.Commit,
                                 )
@@ -176,8 +324,8 @@ private fun TopAppBareByState(
                             text = stringResource(Res.string.retry),
                         )
 
-                    is AddExpenseViewModel.State.Expense ->
-                        if (state.id == null) {
+                    is AddExpenseViewModel.State.Data ->
+                        if (state.expense.id == null) {
                             // TODO: Add leading icon OK
                             Text(
                                 text = stringResource(Res.string.create),

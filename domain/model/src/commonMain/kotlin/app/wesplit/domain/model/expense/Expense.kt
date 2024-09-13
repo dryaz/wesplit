@@ -4,7 +4,7 @@ import app.wesplit.domain.model.group.Participant
 import kotlinx.datetime.Instant
 
 data class Expense(
-    val id: String,
+    val id: String?,
     val title: String,
     // TODO: Possible support paying by shares
     val payedBy: Participant,

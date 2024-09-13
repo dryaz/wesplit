@@ -44,7 +44,7 @@ fun ExpenseList(expenses: Map<String, List<Expense>>) {
                     color = MaterialTheme.colorScheme.outline,
                 )
             }
-            items(items = entry.value, key = { it.id }) { expense ->
+            items(items = entry.value, key = { it.id ?: it.hashCode() }) { expense ->
                 ExpenseItem(expense)
             }
         }

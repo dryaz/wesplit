@@ -5,11 +5,16 @@ import androidx.lifecycle.ViewModel
 import app.wesplit.domain.model.expense.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.expense.ExpenseType
+import app.wesplit.domain.model.expense.Share
+import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.domain.model.group.Participant
 import app.wesplit.routing.RightPane
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
 class AddExpenseViewModel(
@@ -46,10 +51,47 @@ class AddExpenseViewModel(
 
     init {
         _state.update {
-            State.Expense(
-                id = null,
-                title = null,
-                total = Amount(0f, "USD"),
+            State.Data(
+                group =
+                    Group(
+                        id = "123",
+                        title = "Awesome Group",
+                        participants =
+                            setOf(
+                                Participant("123", "Dmitrii", isMe = true),
+                                Participant("124", "Ivan"),
+                                Participant("125", "Marko"),
+                                Participant("126", "Tanya"),
+                            ),
+                    ),
+                expense =
+                    Expense(
+                        id = null,
+                        title = "Some expense",
+                        payedBy = Participant("12#", "Dmitrii"),
+                        shares =
+                            listOf(
+                                Share(
+                                    participant = Participant("123", "Dmitrii", isMe = true),
+                                    amount = Amount(25f, "USD"),
+                                ),
+                                Share(
+                                    participant = Participant("124", "Ivan"),
+                                    amount = Amount(25f, "USD"),
+                                ),
+                                Share(
+                                    participant = Participant("126", "Tanya"),
+                                    amount = Amount(25f, "USD"),
+                                ),
+                            ),
+                        totalAmount =
+                            Amount(
+                                value = 75f,
+                                currencyCode = "USD",
+                            ),
+                        ExpenseType.EXPENSE,
+                        date = Clock.System.now(),
+                    ),
             )
         }
     }
@@ -65,11 +107,9 @@ class AddExpenseViewModel(
             }
         }
 
-        // TODO: We should have expense on domain layer
-        data class Expense(
-            val id: String?,
-            val title: String?,
-            val total: Amount,
+        data class Data(
+            val group: Group,
+            val expense: Expense,
         ) : State
     }
 }

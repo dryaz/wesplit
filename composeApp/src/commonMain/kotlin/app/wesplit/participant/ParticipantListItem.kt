@@ -55,6 +55,7 @@ fun ParticipantListItem(
                 Text(
                     text = it,
                     style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline,
                 )
             }
         }
