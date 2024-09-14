@@ -2,6 +2,9 @@ package app.wesplit.expense
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.expense.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
@@ -13,14 +16,30 @@ import app.wesplit.domain.model.group.Participant
 import app.wesplit.routing.RightPane
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
+
+sealed interface UpdateAction {
+    // TODO: Update currency, FX feature and paywall - only for payed
+    data class Title(val title: String) : UpdateAction
+
+    data class TotalAmount(val value: Float) : UpdateAction
+
+    data object Commit : UpdateAction
+
+    sealed interface Split : UpdateAction {
+        data class Equal(val participant: Participant, val isIncluded: Boolean) : Split
+    }
+}
 
 class AddExpenseViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
     private val expenseRepository: ExpenseRepository,
+    private val analyticsManager: AnalyticsManager,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support add expense inside group
     private val groupId: String =
@@ -50,50 +69,110 @@ class AddExpenseViewModel(
     private val _state = MutableStateFlow<State>(State.Loading)
 
     init {
-        _state.update {
-            State.Data(
-                group =
-                    Group(
-                        id = "123",
-                        title = "Awesome Group",
-                        participants =
-                            setOf(
-                                Participant("123", "Dmitrii", isMe = true),
-                                Participant("124", "Ivan"),
-                                Participant("125", "Marko"),
-                                Participant("126", "Tanya"),
-                            ),
-                    ),
-                expense =
-                    Expense(
-                        id = null,
-                        title = "Some expense",
-                        payedBy = Participant("12#", "Dmitrii"),
-                        shares =
-                            listOf(
-                                Share(
-                                    participant = Participant("123", "Dmitrii", isMe = true),
-                                    amount = Amount(25f, "USD"),
-                                ),
-                                Share(
-                                    participant = Participant("124", "Ivan"),
-                                    amount = Amount(25f, "USD"),
-                                ),
-                                Share(
-                                    participant = Participant("126", "Tanya"),
-                                    amount = Amount(25f, "USD"),
-                                ),
-                            ),
-                        totalAmount =
-                            Amount(
-                                value = 75f,
-                                currencyCode = "USD",
-                            ),
-                        ExpenseType.EXPENSE,
-                        date = Clock.System.now(),
-                    ),
-            )
+        viewModelScope.launch {
+            groupRepository.get(groupId).collectLatest { groupResult ->
+                if (groupResult.isFailure) {
+                    groupResult.exceptionOrNull()?.let {
+                        analyticsManager.log(it)
+                    }
+                    // TODO: Check how to define error type.
+                    // TODO: Error type should be at least base on 'caues of fetch_error, unauth, not_exists
+                    _state.update { State.Error(State.Error.Type.FETCH_ERROR) }
+                } else {
+                    val group = groupResult.getOrNull()
+                    if (group != null) {
+                        _state.update {
+                            State.Data(
+                                group = group,
+                                expense =
+                                    Expense(
+                                        id = null,
+                                        title = "",
+                                        payedBy = group.participants.find { it.isMe } ?: group.participants.first(),
+                                        // TODO: Currency model/set not to have hardcoded USD, map to sybmol etc
+                                        totalAmount = Amount(0f, "USD"),
+                                        shares =
+                                            group.participants.map { participant ->
+                                                Share(
+                                                    participant = participant,
+                                                    // TODO: Currency should be first defined on the group level to have base currency for the group
+                                                    //  and in future implement FX. Meanwhile disable currency chooser on expense lvl.
+                                                    amount = Amount(0f, "USD"),
+                                                )
+                                            }.toSet(),
+                                        date = Clock.System.now(),
+                                        expenseType = ExpenseType.EXPENSE,
+                                    ),
+                            )
+                        }
+                    } else {
+                        // TODO: Maybe we could have extension toData(?) which do fetch_error, not exists and other errors, log and/or return data
+                        _state.update { State.Error(State.Error.Type.NOT_EXISTS) }
+                    }
+                }
+            }
         }
+    }
+
+    fun update(action: UpdateAction) {
+        val currentData = (_state.value as? State.Data)
+        currentData?.let { data ->
+            _state.update {
+                val expense = data.expense
+                when (action) {
+                    is UpdateAction.Title -> data.copy(expense = expense.copy(title = action.title))
+                    is UpdateAction.TotalAmount ->
+                        data.copy(
+                            expense = calculateShares(expense.copy(totalAmount = expense.totalAmount.copy(value = action.value))),
+                        )
+
+                    is UpdateAction.Split.Equal -> data.copy(expense = calculateShares(expense, action))
+                    UpdateAction.Commit -> TODO("Save etc.")
+                }
+            }
+        } ?: {
+            // TODO: Show error on UI
+            analyticsManager.log("Try to perform $action when current stats is yet ${_state.value}", LogLevel.ERROR)
+        }
+    }
+
+    // TODO: Extract to usecase, cover by tests
+    // TODO: When new split option supported -> need to use base UpdateCation.Split and do different calculations
+    private fun calculateShares(
+        expense: Expense,
+        action: UpdateAction.Split.Equal? = null,
+    ): Expense {
+        val sum = expense.totalAmount.value
+        val currency = expense.totalAmount.currencyCode
+        val currentParticiapants =
+            (expense.shares).filter {
+                if (it.participant == action?.participant) {
+                    action.isIncluded
+                } else {
+                    true
+                }
+            }.map { it.participant }.toHashSet()
+
+        val totalParticipants =
+            action?.let {
+                if (it.isIncluded) currentParticiapants + it.participant else currentParticiapants
+            } ?: currentParticiapants
+
+        // TODO: It will fail in some case, maaaybe need to use bigdecimal etc.
+        val sharePerPart = sum / totalParticipants.size
+        return expense.copy(
+            shares =
+                totalParticipants.map {
+                    Share(
+                        participant = it,
+                        amount =
+                            Amount(
+                                value = sharePerPart,
+                                currencyCode = currency,
+                            ),
+                    )
+                }.toSet(),
+        )
     }
 
     sealed interface State {

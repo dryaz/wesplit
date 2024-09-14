@@ -45,11 +45,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.wesplit.domain.model.expense.Expense
+import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.format
+import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
@@ -68,6 +68,7 @@ private sealed interface AddExpenseTollbarAction {
     data object Commit : AddExpenseTollbarAction
 }
 
+// TODO: Clear hardcoded strings
 @Composable
 fun AddExpenseScreen(
     modifier: Modifier = Modifier,
@@ -81,7 +82,7 @@ fun AddExpenseScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                // TODO: Commit
+                viewModel.update(UpdateAction.Commit)
             }) {
                 Icon(
                     Icons.Filled.Done,
@@ -95,7 +96,7 @@ fun AddExpenseScreen(
                 onAction = onAction,
                 onToolbarAction = { action ->
                     when (action) {
-                        AddExpenseTollbarAction.Commit -> TODO()
+                        AddExpenseTollbarAction.Commit -> viewModel.update(UpdateAction.Commit)
                     }
                 },
             )
@@ -107,11 +108,8 @@ fun AddExpenseScreen(
                 AddExpenseScreenView(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
                     data = expenseState,
-                    onDone = {
-                        TODO("Commit group")
-                    },
-                ) { group ->
-                    TODO("Update group")
+                ) { action ->
+                    viewModel.update(action)
                 }
             // TODO: Shimmer?
             AddExpenseViewModel.State.Loading -> Text("Loading")
@@ -119,13 +117,11 @@ fun AddExpenseScreen(
     }
 }
 
-@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun AddExpenseScreenView(
     modifier: Modifier = Modifier,
     data: AddExpenseViewModel.State.Data,
-    onDone: () -> Unit,
-    onUpdated: (Expense) -> Unit,
+    onUpdated: (UpdateAction) -> Unit,
 ) {
     Column(
         modifier =
@@ -134,147 +130,164 @@ private fun AddExpenseScreenView(
                 .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Card(
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                ),
+        ExpenseDetails(data, onUpdated)
+        Spacer(modifier = Modifier.height(16.dp))
+        SharesDetails(data, onUpdated)
+    }
+}
+
+@Composable
+private fun SharesDetails(
+    data: AddExpenseViewModel.State.Data,
+    onUpdated: (UpdateAction) -> Unit,
+) {
+    Card(
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        modifier =
+            Modifier
+                .widthIn(max = 450.dp)
+                .fillMaxWidth(1f)
+                .padding(horizontal = 16.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "We split in",
+                modifier = Modifier.padding(vertical = 16.dp).padding(start = 16.dp),
+                color = MaterialTheme.colorScheme.outline,
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = data.group.uiTitle(),
+                modifier = Modifier.padding(vertical = 16.dp).padding(end = 16.dp),
+            )
+        }
+        HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
+
+        data.group.participants.forEach { participant ->
+            ParticipantListItem(
+                participant = participant,
+                onClick = { item ->
+                    onUpdated(
+                        UpdateAction.Split.Equal(
+                            participant = item,
+                            isIncluded = data.expense.shares.none { it.participant == item },
+                        ),
+                    )
+                },
+                action = {
+                    Checkbox(
+                        checked = data.expense.shares.any { it.participant == participant },
+                        onCheckedChange = { isChecked ->
+                            UpdateAction.Split.Equal(
+                                participant = participant,
+                                isIncluded = isChecked,
+                            )
+                        },
+                    )
+                },
+                subTitle =
+                    data.expense.shares.find { it.participant == participant }?.let {
+                        it.amount.format()
+                    } ?: "Not participating",
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExpenseDetails(
+    data: AddExpenseViewModel.State.Data,
+    onUpdated: (UpdateAction) -> Unit,
+) {
+    Card(
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        modifier =
+            Modifier
+                .widthIn(max = 450.dp)
+                .fillMaxWidth(1f)
+                .padding(horizontal = 16.dp),
+    ) {
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
             modifier =
                 Modifier
-                    .widthIn(max = 450.dp)
+                    .fillMaxWidth(1f)
+                    .padding(horizontal = 16.dp),
+            singleLine = true,
+            value = data.expense.title,
+            onValueChange = { value -> onUpdated(UpdateAction.Title(value)) },
+            prefix = {
+                Row {
+                    Icon(
+                        imageVector = Icons.Filled.Create,
+                        contentDescription = "Expense title",
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                }
+            },
+            placeholder = {
+                Text(
+                    text = "Expense title",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier =
+                Modifier
+                    .height(IntrinsicSize.Max)
                     .fillMaxWidth(1f)
                     .padding(horizontal = 16.dp),
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
+            var expanded by remember { mutableStateOf(false) }
+
+            FilledTonalButton(
+                modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
+                onClick = { expanded = true },
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                // TODO: Get currency from group
+                Text("$")
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            TextField(
                 modifier =
                     Modifier
-                        .fillMaxWidth(1f)
-                        .padding(horizontal = 16.dp),
+                        .fillMaxWidth(1f),
                 singleLine = true,
-                value = data.expense.title,
-                onValueChange = { value -> },
-                prefix = {
-                    Row {
-                        Icon(
-                            imageVector = Icons.Filled.Create,
-                            contentDescription = "Expense title",
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                    }
-                },
+                value = data.expense.totalAmount.value.toString(),
+                // TODO: Field should be float based one
+                onValueChange = { value -> onUpdated(UpdateAction.TotalAmount(value.toFloatOrNull() ?: 0f)) },
                 placeholder = {
                     Text(
-                        text = "Expense title",
+                        text = "Amount",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 },
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier =
-                    Modifier
-                        .height(IntrinsicSize.Max)
-                        .fillMaxWidth(1f)
-                        .padding(horizontal = 16.dp),
-            ) {
-                var expanded by remember { mutableStateOf(false) }
-
-                FilledTonalButton(
-                    modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
-                    onClick = { expanded = true },
-                    shape = RoundedCornerShape(10.dp),
-                ) {
-                    Text("$")
-                }
-
-                DropdownMenu(
-                    modifier = Modifier.requiredSizeIn(maxHeight = 250.dp),
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                ) {
-                    (0..20).forEach {
-                        DropdownMenuItem(
-                            // TODO: Currencies in here
-                            text = { Text("Item1") },
-                            onClick = { expanded = false },
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                TextField(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(1f),
-                    singleLine = true,
-                    value = data.expense.totalAmount.value.toString(),
-                    onValueChange = { value -> },
-                    placeholder = {
-                        Text(
-                            text = "Amount",
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    },
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                text = "Payed by",
-                style = MaterialTheme.typography.labelSmall,
-            )
-
-            ParticipantListItem(participant = data.expense.payedBy)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Card(
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                ),
-            modifier =
-                Modifier
-                    .widthIn(max = 450.dp)
-                    .fillMaxWidth(1f)
-                    .padding(horizontal = 16.dp),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "We split in",
-                    modifier = Modifier.padding(vertical = 16.dp).padding(start = 16.dp),
-                    color = MaterialTheme.colorScheme.outline,
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = data.group.title,
-                    modifier = Modifier.padding(vertical = 16.dp).padding(end = 16.dp),
-                )
-            }
-            HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
-            data.group.participants.forEach { participant ->
-                ParticipantListItem(
-                    participant = participant,
-                    action = {
-                        Checkbox(
-                            checked = data.expense.shares.any { it.participant == participant },
-                            onCheckedChange = { },
-                        )
-                    },
-                    subTitle =
-                        data.expense.shares.find { it.participant == participant }?.let {
-                            it.amount.format()
-                        } ?: "Not participating",
-                )
-            }
-        }
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = "Payed by",
+            style = MaterialTheme.typography.labelSmall,
+        )
+
+        // TODO: Change payer action
+        ParticipantListItem(participant = data.expense.payedBy)
     }
 }
 
@@ -343,4 +356,29 @@ private fun TopAppBareByState(
             }
         },
     )
+}
+
+@FutureFeature
+@Composable
+private fun CurrencyChooser(
+    expanded: Boolean,
+    onUpdated: (UpdateAction) -> Unit,
+) {
+    var expanded1 = expanded
+    DropdownMenu(
+        modifier = Modifier.requiredSizeIn(maxHeight = 250.dp),
+        expanded = expanded1,
+        onDismissRequest = { expanded1 = false },
+    ) {
+        (0..20).forEach {
+            DropdownMenuItem(
+                // TODO: Currencies in here
+                text = { Text("Item1") },
+                onClick = {
+                    // TODO: Change selected currency
+                    expanded1 = false
+                },
+            )
+        }
+    }
 }

@@ -41,7 +41,7 @@ fun fakeData() =
             id = "$it",
             title = "Expense #$it",
             shares =
-                listOf(
+                setOf(
                     Share(
                         participant = Participant(name = "User 1", isMe = Random.nextFloat() > 0.5f),
                         amount =
@@ -72,7 +72,7 @@ fun fakeData() =
                     value = total.toFloat() / 100f,
                     currencyCode = "USD",
                 ),
-            type = ExpenseType.EXPENSE,
+            expenseType = ExpenseType.EXPENSE,
             date = Clock.System.now().plus((12 * it).days),
             payedBy = Participant(name = "User 1", isMe = Random.nextFloat() > 0.5f),
         )

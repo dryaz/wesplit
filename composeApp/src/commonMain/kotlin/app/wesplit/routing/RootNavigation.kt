@@ -413,6 +413,7 @@ fun RootNavigation(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
                                 expenseRepository,
+                                analyticsManager,
                             )
                         }
 

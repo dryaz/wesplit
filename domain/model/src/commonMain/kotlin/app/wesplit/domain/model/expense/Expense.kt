@@ -8,10 +8,12 @@ data class Expense(
     val title: String,
     // TODO: Possible support paying by shares
     val payedBy: Participant,
-    val shares: List<Share>,
+    val shares: Set<Share>,
     val totalAmount: Amount,
-    val type: ExpenseType,
+    val expenseType: ExpenseType,
     val date: Instant,
+    // TODO: Yet support only equal split in v1
+    val splitType: SplitType = SplitType.EQUAL,
     // TODO: Itemization
     // TODO: Comments
 )
