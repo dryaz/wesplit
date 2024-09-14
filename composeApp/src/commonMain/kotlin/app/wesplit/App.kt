@@ -7,9 +7,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import app.wesplit.data.firebase.domainModule
 import app.wesplit.data.firebase.firebaseDataModule
 import app.wesplit.di.appModule
+import app.wesplit.domain.di.domainModule
 import app.wesplit.routing.MenuItem
 import app.wesplit.routing.RootNavigation
 import app.wesplit.theme.AppTheme

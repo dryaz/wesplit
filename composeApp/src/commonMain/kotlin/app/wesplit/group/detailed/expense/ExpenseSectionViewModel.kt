@@ -2,6 +2,7 @@ package app.wesplit.group.detailed.expense
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,18 +33,25 @@ class ExpenseSectionViewModel(
     fun refresh() {
         viewModelScope.launch {
             expenseRepository.getByGroupId(groupId).collectLatest { expenses ->
-                _dataState.update {
-                    State.Expenses(
-                        expenses.groupBy {
-                            val localDate = it.date.toLocalDateTime(TimeZone.currentSystemDefault())
-                            "${localDate.month} ${localDate.year}"
-                        },
-                    )
+                if (expenses.isNullOrEmpty()) {
+                    _dataState.update {
+                        State.Empty
+                    }
+                } else {
+                    _dataState.update {
+                        State.Expenses(
+                            expenses.groupBy {
+                                val localDate = it.date.toLocalDateTime(TimeZone.currentSystemDefault())
+                                "${localDate.month} ${localDate.year}"
+                            },
+                        )
+                    }
                 }
             }
         }
     }
 
+    @FutureFeature
     fun loadNextPage() {
         TODO("Implement")
     }

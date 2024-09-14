@@ -1,4 +1,4 @@
-package app.wesplit.data.firebase
+package app.wesplit.domain.di
 
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module

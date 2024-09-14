@@ -44,5 +44,6 @@
     <string name="close_picker">Apply and close</string>
     <string name="new_expense">New Expense</string>
     <string name="add_expense_to_group">Add new expense to the current group</string>
-
+    <string name="empty_transactions_cd">No trasactions image</string>
+    <string name="empty_transaction_description">No transactions recorder yet.\nAdd New expense to see stats here!</string>
 </resources>
