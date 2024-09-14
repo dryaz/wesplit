@@ -12,13 +12,12 @@ import androidx.compose.ui.Modifier
 fun BalanceSection(viewModel: BalanceSectionViewModel) {
     val dataState = viewModel.dataState.collectAsState()
     when (val state = dataState.value) {
-        BalanceSectionViewModel.State.Empty -> Text("Empty") // TODO: Empty state
         is BalanceSectionViewModel.State.Data -> BalanceList(state.balance)
         BalanceSectionViewModel.State.Loading ->
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()
             }
 
-        BalanceSectionViewModel.State.Unauthorized -> Text("Not auth") // TOOD: Non-auth state
+        BalanceSectionViewModel.State.Error -> Text("Error") // TOOD: Non-auth state
     }
 }

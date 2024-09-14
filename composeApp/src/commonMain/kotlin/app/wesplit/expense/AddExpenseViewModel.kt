@@ -117,18 +117,24 @@ class AddExpenseViewModel(
     fun update(action: UpdateAction) {
         val currentData = (_state.value as? State.Data)
         currentData?.let { data ->
-            _state.update {
-                val expense = data.expense
-                when (action) {
-                    is UpdateAction.Title -> data.copy(expense = expense.copy(title = action.title))
-                    is UpdateAction.TotalAmount ->
+            val expense = data.expense
+            when (action) {
+                is UpdateAction.Title -> _state.update { data.copy(expense = expense.copy(title = action.title)) }
+                is UpdateAction.TotalAmount ->
+                    _state.update {
                         data.copy(
                             expense = calculateShares(expense.copy(totalAmount = expense.totalAmount.copy(value = action.value))),
                         )
+                    }
 
-                    is UpdateAction.Split.Equal -> data.copy(expense = calculateShares(expense, action))
-                    UpdateAction.Commit -> TODO("Save etc.")
-                }
+                is UpdateAction.Split.Equal -> _state.update { data.copy(expense = calculateShares(expense, action)) }
+
+                UpdateAction.Commit ->
+                    (_state.value as? State.Data)?.expense?.let { exp ->
+                        expenseRepository.addExpense(groupId, exp)
+                        // TODO: should we check for success event from here to close the screen of Firebase could handle it properly
+                        //  saving first in local and only then pushing to remote?
+                    }
             }
         } ?: {
             // TODO: Show error on UI

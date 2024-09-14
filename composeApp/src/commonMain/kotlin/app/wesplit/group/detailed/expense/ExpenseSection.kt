@@ -35,7 +35,7 @@ fun ExpenseSection(viewModel: ExpenseSectionViewModel) {
                 CircularProgressIndicator()
             }
 
-        ExpenseSectionViewModel.State.Unauthorized -> Text("Not auth") // TOOD: Non-auth state
+        ExpenseSectionViewModel.State.Error -> Text("Error") // TOOD: Non-auth state
     }
 }
 

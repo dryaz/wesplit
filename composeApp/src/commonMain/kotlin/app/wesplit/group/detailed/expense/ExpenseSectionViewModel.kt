@@ -32,15 +32,19 @@ class ExpenseSectionViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            expenseRepository.getByGroupId(groupId).collectLatest { expenses ->
-                if (expenses.isNullOrEmpty()) {
+            expenseRepository.getByGroupId(groupId).collectLatest { expensesResult ->
+                if (expensesResult.isFailure) {
+                    _dataState.update {
+                        State.Error
+                    }
+                } else if (expensesResult.getOrNull().isNullOrEmpty()) {
                     _dataState.update {
                         State.Empty
                     }
                 } else {
                     _dataState.update {
                         State.Expenses(
-                            expenses.groupBy {
+                            expensesResult.getOrThrow().groupBy {
                                 val localDate = it.date.toLocalDateTime(TimeZone.currentSystemDefault())
                                 "${localDate.month} ${localDate.year}"
                             },
@@ -61,7 +65,7 @@ class ExpenseSectionViewModel(
 
         data object Empty : State
 
-        data object Unauthorized : State
+        data object Error : State
 
         data class Expenses(
             val groupedExpenses: Map<String, List<Expense>>,

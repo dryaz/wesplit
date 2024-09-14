@@ -77,12 +77,17 @@ fun AddExpenseScreen(
 ) {
     val state = viewModel.state.collectAsState()
 
+    fun commit() {
+        viewModel.update(UpdateAction.Commit)
+        onAction(AddExpenseAction.Back)
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                viewModel.update(UpdateAction.Commit)
+                commit()
             }) {
                 Icon(
                     Icons.Filled.Done,
@@ -96,7 +101,7 @@ fun AddExpenseScreen(
                 onAction = onAction,
                 onToolbarAction = { action ->
                     when (action) {
-                        AddExpenseTollbarAction.Commit -> viewModel.update(UpdateAction.Commit)
+                        AddExpenseTollbarAction.Commit -> commit()
                     }
                 },
             )
@@ -185,7 +190,7 @@ private fun SharesDetails(
                         onCheckedChange = { isChecked ->
                             UpdateAction.Split.Equal(
                                 participant = participant,
-                                isIncluded = isChecked,
+                                isIncluded = !isChecked,
                             )
                         },
                     )

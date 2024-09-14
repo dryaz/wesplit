@@ -14,8 +14,7 @@ import org.koin.core.component.KoinComponent
 class BalanceSectionViewModel(
     private val groupId: String,
     private val balanceRepository: BalanceRepository,
-) : ViewModel(),
-    KoinComponent {
+) : ViewModel(), KoinComponent {
     val dataState: StateFlow<State>
         get() = _dataState
 
@@ -28,9 +27,13 @@ class BalanceSectionViewModel(
     // TODO: We show only balances for ppl which are not settled, should probably show all ppl with 0 balance
     fun refresh() {
         viewModelScope.launch {
-            balanceRepository.getByGroupId(groupId).collectLatest { balance ->
-                _dataState.update {
-                    State.Data(balance)
+            balanceRepository.getByGroupId(groupId).collectLatest { balanceResult ->
+                if (balanceResult.isFailure) {
+                    _dataState.update { State.Error }
+                } else {
+                    _dataState.update {
+                        State.Data(balanceResult.getOrThrow())
+                    }
                 }
             }
         }
@@ -39,9 +42,7 @@ class BalanceSectionViewModel(
     sealed interface State {
         data object Loading : State
 
-        data object Empty : State
-
-        data object Unauthorized : State
+        data object Error : State
 
         data class Data(
             val balance: Balance?,

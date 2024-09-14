@@ -8,5 +8,5 @@ interface BalanceRepository {
      *
      * @param groupId id of the group to fetch expenses.
      */
-    fun getByGroupId(groupId: String): Flow<Balance?>
+    fun getByGroupId(groupId: String): Flow<Result<Balance>>
 }

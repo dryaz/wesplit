@@ -17,7 +17,8 @@ class ExpenseFirebaseRepository(
 
     // TODO: Check if firebase get local balances or maybe need to cache expenses by group id in order
     //  not to fetch this multiple times, e.g. for showing trxs and for computing balances.
-    override fun getByGroupId(groupId: String): Flow<List<Expense>> = expenses.map { it.sortedByDescending { it.date } }
+    override fun getByGroupId(groupId: String): Flow<Result<List<Expense>>> =
+        expenses.map { Result.success(it.sortedByDescending { it.date }) }
 
     override fun addExpense(
         groupId: String,
