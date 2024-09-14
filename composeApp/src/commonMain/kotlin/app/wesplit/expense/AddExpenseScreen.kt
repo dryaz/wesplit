@@ -47,17 +47,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.format
+import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.create
+import split.composeapp.generated.resources.ic_down
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_expense
 import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
+import split.composeapp.generated.resources.select_payer_cd
 import split.composeapp.generated.resources.settings
 
 sealed interface AddExpenseAction {
@@ -253,11 +257,9 @@ private fun ExpenseDetails(
                     .fillMaxWidth(1f)
                     .padding(horizontal = 16.dp),
         ) {
-            var expanded by remember { mutableStateOf(false) }
-
             FilledTonalButton(
                 modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
-                onClick = { expanded = true },
+                onClick = { },
                 shape = RoundedCornerShape(10.dp),
             ) {
                 // TODO: Get currency from group
@@ -291,8 +293,27 @@ private fun ExpenseDetails(
             style = MaterialTheme.typography.labelSmall,
         )
 
+        var payerSelection by remember { mutableStateOf(false) }
+
         // TODO: Change payer action
-        ParticipantListItem(participant = data.expense.payedBy)
+        ParticipantListItem(
+            participant = data.expense.payedBy,
+            onClick = { payerSelection = true },
+            action = {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_down),
+                    contentDescription = stringResource(Res.string.select_payer_cd),
+                )
+            },
+        )
+
+        PayerChooser(
+            expanded = payerSelection,
+            payer = data.expense.payedBy,
+            allParticipants = data.group.participants,
+            onDismiss = { payerSelection = false },
+            onUpdated = onUpdated,
+        )
     }
 }
 
@@ -361,6 +382,32 @@ private fun TopAppBareByState(
             }
         },
     )
+}
+
+@FutureFeature
+@Composable
+private fun PayerChooser(
+    expanded: Boolean,
+    payer: Participant,
+    allParticipants: Set<Participant>,
+    onDismiss: () -> Unit,
+    onUpdated: (UpdateAction) -> Unit,
+) {
+    DropdownMenu(
+        modifier = Modifier.requiredSizeIn(maxHeight = 250.dp, minWidth = 360.dp),
+        expanded = expanded,
+        onDismissRequest = { onDismiss() },
+    ) {
+        allParticipants.forEach { participant ->
+            DropdownMenuItem(
+                text = { ParticipantListItem(participant) },
+                onClick = {
+                    onUpdated(UpdateAction.NewPayer(participant))
+                    onDismiss()
+                },
+            )
+        }
+    }
 }
 
 @FutureFeature

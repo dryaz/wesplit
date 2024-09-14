@@ -22,14 +22,15 @@ import split.composeapp.generated.resources.you
 @Composable
 fun ParticipantListItem(
     participant: Participant,
+    modifier: Modifier = Modifier,
     subTitle: String? = null,
     action: @Composable (() -> Unit)? = null,
     onClick: ((Participant) -> Unit)? = null,
 ) {
-    val modifier = onClick?.let { Modifier.clickable { onClick(participant) } } ?: Modifier
+    val internalModifier = onClick?.let { modifier.clickable { onClick(participant) } } ?: modifier
     Row(
         modifier =
-            modifier
+            internalModifier
                 .fillMaxWidth(1f)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,

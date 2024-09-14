@@ -30,6 +30,8 @@ sealed interface UpdateAction {
 
     data object Commit : UpdateAction
 
+    data class NewPayer(val participant: Participant) : UpdateAction
+
     sealed interface Split : UpdateAction {
         data class Equal(val participant: Participant, val isIncluded: Boolean) : Split
     }
@@ -135,6 +137,8 @@ class AddExpenseViewModel(
                         // TODO: should we check for success event from here to close the screen of Firebase could handle it properly
                         //  saving first in local and only then pushing to remote?
                     }
+
+                is UpdateAction.NewPayer -> _state.update { data.copy(expense = expense.copy(payedBy = action.participant)) }
             }
         } ?: {
             // TODO: Show error on UI
