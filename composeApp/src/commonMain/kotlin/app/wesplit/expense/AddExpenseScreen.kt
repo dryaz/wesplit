@@ -192,9 +192,11 @@ private fun SharesDetails(
                     Checkbox(
                         checked = data.expense.shares.any { it.participant == participant },
                         onCheckedChange = { isChecked ->
-                            UpdateAction.Split.Equal(
-                                participant = participant,
-                                isIncluded = !isChecked,
+                            onUpdated(
+                                UpdateAction.Split.Equal(
+                                    participant = participant,
+                                    isIncluded = isChecked,
+                                ),
                             )
                         },
                     )
