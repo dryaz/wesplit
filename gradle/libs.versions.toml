@@ -1,6 +1,6 @@
 [versions]
 versionName = "1.0.0"
-android-versionCode = "4"
+android-versionCode = "5"
 
 agp = "8.5.2"
 android-compileSdk = "34"
