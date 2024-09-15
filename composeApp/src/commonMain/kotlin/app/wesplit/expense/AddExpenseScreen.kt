@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
@@ -44,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.format
@@ -215,6 +217,10 @@ private fun ExpenseDetails(
     data: AddExpenseViewModel.State.Data,
     onUpdated: (UpdateAction) -> Unit,
 ) {
+    var amount by remember {
+        mutableStateOf(if (data.expense.totalAmount.value != 0f) data.expense.totalAmount.value.toString() else "")
+    }
+
     Card(
         colors =
             CardDefaults.cardColors(
@@ -275,9 +281,25 @@ private fun ExpenseDetails(
                     Modifier
                         .fillMaxWidth(1f),
                 singleLine = true,
-                value = data.expense.totalAmount.value.toString(),
+                value = amount,
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                    ),
                 // TODO: Field should be float based one
-                onValueChange = { value -> onUpdated(UpdateAction.TotalAmount(value.toFloatOrNull() ?: 0f)) },
+                onValueChange = { value ->
+                    if (value.isNullOrBlank()) {
+                        amount = ""
+                        onUpdated(UpdateAction.TotalAmount(0f))
+                    } else {
+                        val floatValue = value.toFloatOrNull()
+                        val filtered = if (floatValue != null) value else amount
+                        amount = filtered
+                        floatValue?.let {
+                            onUpdated(UpdateAction.TotalAmount(it))
+                        }
+                    }
+                },
                 placeholder = {
                     Text(
                         text = "Amount",
