@@ -1,7 +1,5 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -17,22 +15,22 @@ kotlin {
         browser {}
     }
 
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser {
-            val projectDirPath = project.projectDir.path
-            commonWebpackConfig {
-                devServer =
-                    (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                        static =
-                            (static ?: mutableListOf()).apply {
-                                // Serve sources to debug inside browser
-                                add(projectDirPath)
-                            }
-                    }
-            }
-        }
-    }
+//    @OptIn(ExperimentalWasmDsl::class)
+//    wasmJs {
+//        browser {
+//            val projectDirPath = project.projectDir.path
+//            commonWebpackConfig {
+//                devServer =
+//                    (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+//                        static =
+//                            (static ?: mutableListOf()).apply {
+//                                 Serve sources to debug inside browser
+//                                add(projectDirPath)
+//                            }
+//                    }
+//            }
+//        }
+//    }
 
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -51,8 +49,7 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-//            implementation(projects.domain.model)
-
+                implementation(projects.domain.model)
                 implementation(libs.koin.core)
                 implementation(libs.koin.annotations)
             }

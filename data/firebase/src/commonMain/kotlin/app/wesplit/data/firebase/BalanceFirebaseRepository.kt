@@ -1,5 +1,6 @@
 package app.wesplit.data.firebase
 
+import app.wesplit.domain.balance.CalculateBalanceUsecase
 import app.wesplit.domain.model.expense.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
@@ -16,6 +17,7 @@ import org.koin.core.annotation.Single
 class BalanceFirebaseRepository(
     private val expenseRepository: ExpenseRepository,
     private val groupRepository: GroupRepository,
+    private val calculateBalanceUsecase: CalculateBalanceUsecase,
 ) : BalanceRepository {
     // TODO: For now we support only 1 currency per group without possibility for FX
     // TODO: Cover by test
@@ -25,7 +27,7 @@ class BalanceFirebaseRepository(
                 Result.failure(groupResult.exceptionOrNull() ?: expenseResult.exceptionOrNull() ?: RuntimeException("Unkown exception"))
             } else {
                 Result.success(
-                    calculateBalances(
+                    calculateBalanceUsecase(
                         group = groupResult.getOrThrow(),
                         expenses = expenseResult.getOrThrow(),
                     ),

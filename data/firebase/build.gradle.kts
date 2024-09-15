@@ -53,6 +53,7 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
+                implementation(projects.domain)
                 implementation(projects.domain.model)
 
                 implementation(libs.koin.core)
