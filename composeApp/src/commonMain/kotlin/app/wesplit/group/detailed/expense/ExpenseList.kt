@@ -79,7 +79,7 @@ private fun ExpenseItem(expense: Expense) {
         // Title + balance
         Column {
             Text(
-                text = "Payed by ${expense.payedBy.name}",
+                text = if (expense.payedBy.isMe) "Payed by You" else "Payed by ${expense.payedBy.name}",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.secondary,
             )

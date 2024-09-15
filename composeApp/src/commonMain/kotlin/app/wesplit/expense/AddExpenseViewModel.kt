@@ -105,6 +105,7 @@ class AddExpenseViewModel(
                                         date = Clock.System.now(),
                                         expenseType = ExpenseType.EXPENSE,
                                     ),
+                                isComplete = false,
                             )
                         }
                     } else {
@@ -143,6 +144,17 @@ class AddExpenseViewModel(
         } ?: {
             // TODO: Show error on UI
             analyticsManager.log("Try to perform $action when current stats is yet ${_state.value}", LogLevel.ERROR)
+        }
+        validateComletion()
+    }
+
+    private fun validateComletion() {
+        (_state.value as? State.Data)?.let { data ->
+            _state.update {
+                data.copy(
+                    isComplete = !data.expense.title.isNullOrBlank() && data.expense.totalAmount.value != 0f,
+                )
+            }
         }
     }
 
@@ -199,6 +211,7 @@ class AddExpenseViewModel(
         data class Data(
             val group: Group,
             val expense: Expense,
+            val isComplete: Boolean,
         ) : State
     }
 }

@@ -87,14 +87,18 @@ fun AddExpenseScreen(
         viewModel.update(UpdateAction.Commit)
         onAction(AddExpenseAction.Back)
     }
-
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                commit()
-            }) {
+            FloatingActionButton(
+                onClick = {
+                    (state.value as? AddExpenseViewModel.State.Data)?.let {
+                        if (it.isComplete) commit()
+                    }
+                    // TODO: Show error in case of it not yet ready?
+                },
+            ) {
                 Icon(
                     Icons.Filled.Done,
                     contentDescription = stringResource(Res.string.add_expense_to_group),
@@ -240,6 +244,10 @@ private fun ExpenseDetails(
                     .padding(horizontal = 16.dp),
             singleLine = true,
             value = data.expense.title,
+            isError = data.expense.title.isNullOrBlank(),
+            supportingText = {
+                if (data.expense.title.isNullOrBlank()) Text("Title should be filled")
+            },
             onValueChange = { value -> onUpdated(UpdateAction.Title(value)) },
             prefix = {
                 Row {
@@ -286,7 +294,7 @@ private fun ExpenseDetails(
                     KeyboardOptions(
                         keyboardType = KeyboardType.Decimal,
                     ),
-                // TODO: Field should be float based one
+                isError = amount.isNullOrBlank() || amount.toFloatOrNull() == 0f,
                 onValueChange = { value ->
                     if (value.isNullOrBlank()) {
                         amount = ""
@@ -357,7 +365,7 @@ private fun TopAppBareByState(
                         if (state.expense.id == null) {
                             stringResource(Res.string.new_expense)
                         } else {
-                            state.expense.title ?: ""
+                            state.expense.title
                         }
                 },
             )
@@ -371,9 +379,7 @@ private fun TopAppBareByState(
                             is AddExpenseViewModel.State.Error -> {}
 
                             is AddExpenseViewModel.State.Data ->
-                                onToolbarAction(
-                                    AddExpenseTollbarAction.Commit,
-                                )
+                                if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
 
                             AddExpenseViewModel.State.Loading -> {}
                         }
