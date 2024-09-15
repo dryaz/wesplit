@@ -28,6 +28,7 @@ class CalculateBalanceUsecase {
                 }
                 residual -= share.amount.value
             }
+            participantBalance[expense.payedBy] = (participantBalance[expense.payedBy] ?: 0f) + residual
             nonDistributed += residual
         }
 
