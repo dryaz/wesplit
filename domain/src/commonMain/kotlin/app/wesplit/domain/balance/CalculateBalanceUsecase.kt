@@ -18,7 +18,6 @@ class CalculateBalanceUsecase {
         var nonDistributed = 0f
 
         expenses.forEach { expense ->
-            var residual = expense.totalAmount.value
             expense.shares.forEach { share ->
                 val currentBalance = participantBalance.get(share.participant) ?: 0f
                 val currentPayerBalance = participantBalance.get(expense.payedBy) ?: 0f
@@ -26,8 +25,8 @@ class CalculateBalanceUsecase {
                     participantBalance[share.participant] = currentBalance - share.amount.value
                     participantBalance[expense.payedBy] = currentPayerBalance + share.amount.value
                 }
-                residual -= share.amount.value
             }
+            val residual = expense.undistributedAmount?.value ?: 0f
             participantBalance[expense.payedBy] = (participantBalance[expense.payedBy] ?: 0f) + residual
             nonDistributed += residual
         }

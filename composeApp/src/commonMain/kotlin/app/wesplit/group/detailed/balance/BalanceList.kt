@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -20,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.group.balance.Balance
 import app.wesplit.participant.ParticipantListItem
+import org.jetbrains.compose.resources.painterResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.ic_flag
 import kotlin.math.roundToInt
 
 @Composable
@@ -55,7 +56,7 @@ fun BalanceList(balance: Balance?) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        Icons.Filled.Info,
+                        painter = painterResource(Res.drawable.ic_flag),
                         contentDescription = "Undistributed",
                     )
 

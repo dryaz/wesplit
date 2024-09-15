@@ -10,6 +10,7 @@ data class Expense(
     val payedBy: Participant,
     val shares: Set<Share>,
     val totalAmount: Amount,
+    val undistributedAmount: Amount?,
     val expenseType: ExpenseType,
     val date: Instant,
     // TODO: Yet support only equal split in v1

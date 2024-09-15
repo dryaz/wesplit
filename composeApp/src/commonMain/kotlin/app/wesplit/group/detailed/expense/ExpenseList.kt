@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +26,11 @@ import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.expense.myAmount
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.ic_flag
+import split.composeapp.generated.resources.non_distr_cd
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -101,7 +108,7 @@ private fun ExpenseItem(expense: Expense) {
             )
             Text(
                 text = "You: ${expense.myAmount().value}",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color =
                     if (expense.myAmount().value != 0f) {
                         MaterialTheme.colorScheme.tertiary
@@ -109,6 +116,22 @@ private fun ExpenseItem(expense: Expense) {
                         MaterialTheme.colorScheme.outlineVariant
                     },
             )
+            expense.undistributedAmount?.let { undistributed ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        modifier = Modifier.size(16.dp),
+                        painter = painterResource(Res.drawable.ic_flag),
+                        contentDescription = stringResource(Res.string.non_distr_cd),
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Not split: ${undistributed.value}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
         }
     }
 }

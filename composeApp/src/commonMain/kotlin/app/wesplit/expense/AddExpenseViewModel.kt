@@ -104,6 +104,7 @@ class AddExpenseViewModel(
                                             }.toSet(),
                                         date = Clock.System.now(),
                                         expenseType = ExpenseType.EXPENSE,
+                                        undistributedAmount = null,
                                     ),
                                 isComplete = false,
                             )
@@ -182,18 +183,24 @@ class AddExpenseViewModel(
 
         // TODO: It will fail in some case, maaaybe need to use bigdecimal etc.
         val sharePerPart = sum / totalParticipants.size
+        val shares =
+            totalParticipants.map {
+                Share(
+                    participant = it,
+                    amount =
+                        Amount(
+                            value = sharePerPart,
+                            currencyCode = currency,
+                        ),
+                )
+            }.toSet()
+        val distributed = shares.map { it.amount.value }.sum()
+        val residual = sum - distributed
+        val undistributed = if (residual != 0f) Amount(residual, currency) else null
+
         return expense.copy(
-            shares =
-                totalParticipants.map {
-                    Share(
-                        participant = it,
-                        amount =
-                            Amount(
-                                value = sharePerPart,
-                                currencyCode = currency,
-                            ),
-                    )
-                }.toSet(),
+            shares = shares,
+            undistributedAmount = undistributed,
         )
     }
 
