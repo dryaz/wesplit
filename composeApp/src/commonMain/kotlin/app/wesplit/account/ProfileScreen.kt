@@ -1,8 +1,11 @@
 package app.wesplit.account
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,10 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -27,19 +32,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
 import app.wesplit.ui.AdaptiveTopAppBar
 import com.seiko.imageloader.rememberImagePainter
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
+import split.composeapp.generated.resources.img_construct
 import split.composeapp.generated.resources.login
-import split.composeapp.generated.resources.logout
 import split.composeapp.generated.resources.profile
+import split.composeapp.generated.resources.profile_under_construction
 
 sealed interface ProfileAction {
     data object Login : ProfileAction
@@ -98,18 +106,6 @@ fun ProfileScreen(
                 title = {
                     Text(stringResource(Res.string.profile))
                 },
-                actions = {
-                    if (accountState is Account.Authorized) {
-                        AdaptiveIconButton(onClick = { onAction(ProfileAction.Logout) }) {
-                            Icon(
-                                // TODO: Rework logout
-                                Icons.AutoMirrored.Outlined.ExitToApp,
-                                contentDescription = stringResource(Res.string.logout),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                },
             )
         },
     ) { paddings ->
@@ -118,6 +114,7 @@ fun ProfileScreen(
                 AccountInfo(
                     modifier = Modifier.padding(paddings),
                     account = accountState,
+                    onAction = onAction,
                 )
 
             Account.Unknown -> {
@@ -140,6 +137,7 @@ fun ProfileScreen(
     }
 }
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun Unregistered(
     modifier: Modifier = Modifier,
@@ -162,11 +160,13 @@ private fun Unregistered(
 private fun AccountInfo(
     modifier: Modifier = Modifier,
     account: Account.Authorized,
+    onAction: (ProfileAction) -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Spacer(modifier = Modifier.height(16.dp))
         val painter = rememberImagePainter(account.user.photoURL ?: "")
         Image(
             modifier = Modifier.size(64.dp).clip(CircleShape),
@@ -185,7 +185,95 @@ private fun AccountInfo(
             Text(
                 text = email,
                 style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline,
             )
         }
+        UnderConstruction()
+        val uriHandler = LocalUriHandler.current
+        ListItem(
+            modifier =
+                Modifier.clickable {
+                    uriHandler.openUri("https://wesplit.app/")
+                },
+            colors =
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+            trailingContent = {
+                Icon(
+                    Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = "Go to privacy policy",
+                    tint = MaterialTheme.colorScheme.outline,
+                )
+            },
+            headlineContent = {
+                Text(
+                    text = "Privacy policy",
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            },
+        )
+
+        ListItem(
+            modifier =
+                Modifier.clickable {
+                    uriHandler.openUri("https://wesplit.app/")
+                },
+            colors =
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+            trailingContent = {
+                Icon(
+                    Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    contentDescription = "Go to terms and conditions",
+                    tint = MaterialTheme.colorScheme.outline,
+                )
+            },
+            headlineContent = {
+                Text(
+                    text = "Terms&conditions",
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            },
+        )
+
+        ListItem(
+            modifier = Modifier.clickable { onAction(ProfileAction.Logout) },
+            colors =
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    headlineColor = MaterialTheme.colorScheme.error,
+                ),
+            headlineContent = {
+                Text(
+                    modifier = Modifier.fillMaxWidth(1f),
+                    textAlign = TextAlign.Center,
+                    text = "Logout",
+                )
+            },
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun ColumnScope.UnderConstruction() {
+    Column(
+        modifier = Modifier.weight(1f).padding(horizontal = 32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Image(
+            modifier = Modifier,
+            painter = painterResource(Res.drawable.img_construct),
+            contentDescription = stringResource(Res.string.profile_under_construction),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(Res.string.profile_under_construction),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+        )
     }
 }
