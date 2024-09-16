@@ -14,15 +14,16 @@ import app.wesplit.routing.MenuItem
 import app.wesplit.routing.RootNavigation
 import app.wesplit.theme.AppTheme
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.KoinApplication
+import org.koin.compose.KoinContext
 import org.koin.core.module.Module
+import org.koin.dsl.koinApplication
 
 @Composable
 @Preview
 fun App(vararg platformModule: Module) {
-    KoinApplication(application = {
+    KoinContext(context = koinApplication {
         modules(domainModule() + firebaseDataModule() + appModule() + platformModule)
-    }) {
+    }.koin) {
         val firstPaneNavController: NavHostController = rememberNavController()
         val secondPaneNavController: NavHostController = rememberNavController()
 
