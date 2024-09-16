@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
@@ -19,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.expense.Amount
 import app.wesplit.domain.model.expense.Expense
@@ -42,10 +44,10 @@ fun ExpenseList(expenses: Map<String, List<Expense>>) {
             stickyHeader {
                 Text(
                     modifier =
-                        Modifier
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .fillMaxWidth(1f),
+                    Modifier
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .fillMaxWidth(1f),
                     text = "${entry.key}",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.outline,
@@ -84,7 +86,9 @@ private fun ExpenseItem(expense: Expense) {
         Spacer(modifier = Modifier.width(16.dp))
         // TODO: Support category image
         // Title + balance
-        Column {
+        Column(
+            modifier = Modifier.weight(1f),
+        ) {
             Text(
                 text = if (expense.payedBy.isMe) "Payed by You" else "Payed by ${expense.payedBy.name}",
                 style = MaterialTheme.typography.labelSmall,
@@ -93,12 +97,15 @@ private fun ExpenseItem(expense: Expense) {
             Text(
                 text = expense.title,
                 style = MaterialTheme.typography.bodyLarge,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             LentString(expense)
         }
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.width(16.dp))
         // Total sum + your cat
         Column(
+            modifier = Modifier.widthIn(min = 96.dp),
             horizontalAlignment = Alignment.End,
         ) {
             Text(
@@ -110,11 +117,11 @@ private fun ExpenseItem(expense: Expense) {
                 text = "You: ${expense.myAmount().value}",
                 style = MaterialTheme.typography.bodySmall,
                 color =
-                    if (expense.myAmount().value != 0f) {
-                        MaterialTheme.colorScheme.tertiary
-                    } else {
-                        MaterialTheme.colorScheme.outlineVariant
-                    },
+                if (expense.myAmount().value != 0f) {
+                    MaterialTheme.colorScheme.tertiary
+                } else {
+                    MaterialTheme.colorScheme.outlineVariant
+                },
             )
         }
     }
