@@ -193,7 +193,7 @@ private fun AccountInfo(
         ListItem(
             modifier =
                 Modifier.clickable {
-                    uriHandler.openUri("https://wesplit.app/")
+                    uriHandler.openUri("https://wesplit.app/privacypolicy/")
                 },
             colors =
                 ListItemDefaults.colors(
@@ -217,7 +217,7 @@ private fun AccountInfo(
         ListItem(
             modifier =
                 Modifier.clickable {
-                    uriHandler.openUri("https://wesplit.app/")
+                    uriHandler.openUri("https://wesplit.app/terms/")
                 },
             colors =
                 ListItemDefaults.colors(
