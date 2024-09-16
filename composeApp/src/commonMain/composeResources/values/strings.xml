@@ -7,7 +7,7 @@
     <string name="login_button_cd">Login</string>
     <string name="group_list_title">Groups</string>
     <string name="group_list_empty_description_unregistered">Create your first group</string>
-    <string name="group_list_empty_description_authorized">Create new group or add expense to have it listed here.</string>
+    <string name="group_list_empty_description_authorized">Create new group to have it listed here.</string>
     <string name="or">or</string>
     <string name="group_detailed_empty_description">Select group in group list to see\nexpenses, participants and more.</string>
     <string name="back">Back</string>
