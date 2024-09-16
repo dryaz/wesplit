@@ -21,9 +21,12 @@ import org.koin.dsl.koinApplication
 @Composable
 @Preview
 fun App(vararg platformModule: Module) {
-    KoinContext(context = koinApplication {
-        modules(domainModule() + firebaseDataModule() + appModule() + platformModule)
-    }.koin) {
+    KoinContext(
+        context =
+            koinApplication {
+                modules(domainModule() + firebaseDataModule() + appModule() + platformModule)
+            }.koin,
+    ) {
         val firstPaneNavController: NavHostController = rememberNavController()
         val secondPaneNavController: NavHostController = rememberNavController()
 

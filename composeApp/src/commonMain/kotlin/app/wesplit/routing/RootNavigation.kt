@@ -272,6 +272,10 @@ fun RootNavigation(
                                             navOptions =
                                                 navOptions {
                                                     launchSingleTop = true
+                                                    popUpTo(
+                                                        RightPane.Empty.route,
+                                                        popUpToBuilder = { inclusive = false },
+                                                    )
                                                 },
                                         )
 
@@ -285,6 +289,10 @@ fun RootNavigation(
                                             navOptions =
                                                 navOptions {
                                                     launchSingleTop = true
+                                                    popUpTo(
+                                                        RightPane.Empty.route,
+                                                        popUpToBuilder = { inclusive = false },
+                                                    )
                                                 },
                                         )
                                     }
@@ -340,17 +348,26 @@ fun RootNavigation(
                         ),
                 ) {
                     val groupRepository: GroupRepository = koinInject()
-
+                    println("Compose RootNavigation with ${it.arguments}")
+                    val idParam =
+                        it.arguments?.getString(
+                            RightPane
+                                .Group
+                                .Param
+                                .GROUP_ID
+                                .paramName,
+                        )
+                    println("Compose RootNavigation with id $idParam")
                     val viewModel: GroupInfoViewModel =
                         viewModel(
-                            key = it.arguments.toString(),
+                            key = idParam ?: it.arguments.toString(),
                         ) {
                             GroupInfoViewModel(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
                             )
                         }
-
+                    println("Viewmodel is $viewModel")
                     GroupInfoScreen(
                         viewModel = viewModel,
                     ) { action ->

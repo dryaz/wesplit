@@ -44,10 +44,10 @@ fun ExpenseList(expenses: Map<String, List<Expense>>) {
             stickyHeader {
                 Text(
                     modifier =
-                    Modifier
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .fillMaxWidth(1f),
+                        Modifier
+                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .fillMaxWidth(1f),
                     text = "${entry.key}",
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.outline,
@@ -117,11 +117,11 @@ private fun ExpenseItem(expense: Expense) {
                 text = "You: ${expense.myAmount().value}",
                 style = MaterialTheme.typography.bodySmall,
                 color =
-                if (expense.myAmount().value != 0f) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.outlineVariant
-                },
+                    if (expense.myAmount().value != 0f) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.outlineVariant
+                    },
             )
         }
     }

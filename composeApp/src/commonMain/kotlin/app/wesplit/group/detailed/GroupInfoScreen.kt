@@ -144,14 +144,14 @@ private fun GroupInfoContent(
     val windowSizeClass = calculateWindowSizeClass()
 
     val expenseViewModel: ExpenseSectionViewModel =
-        viewModel {
+        viewModel(key = group.id) {
             ExpenseSectionViewModel(
                 groupId = group.id,
                 expenseRepository = expenseRepository,
             )
         }
     val balanceSectionViewModel: BalanceSectionViewModel =
-        viewModel {
+        viewModel(key = group.id) {
             BalanceSectionViewModel(
                 groupId = group.id,
                 balanceRepository = balanceRepository,
