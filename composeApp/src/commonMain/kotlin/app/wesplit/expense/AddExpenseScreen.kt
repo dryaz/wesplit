@@ -165,7 +165,8 @@ private fun SharesDetails(
             Modifier
                 .widthIn(max = 450.dp)
                 .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 64.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

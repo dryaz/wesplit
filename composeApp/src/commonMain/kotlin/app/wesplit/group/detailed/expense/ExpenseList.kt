@@ -116,29 +116,29 @@ private fun ExpenseItem(expense: Expense) {
                         MaterialTheme.colorScheme.outlineVariant
                     },
             )
-            expense.undistributedAmount?.let { undistributed ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        modifier = Modifier.size(16.dp),
-                        painter = painterResource(Res.drawable.ic_flag),
-                        contentDescription = stringResource(Res.string.non_distr_cd),
-                        tint = MaterialTheme.colorScheme.error,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Not split: ${undistributed.value}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-            }
         }
     }
 }
 
 @Composable
 private fun LentString(expense: Expense) {
-    if (expense.myAmount().value == 0f) {
+    if (expense.undistributedAmount != null && expense.undistributedAmount?.value != 0f) {
+        val undistributed = expense.undistributedAmount
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(Res.drawable.ic_flag),
+                contentDescription = stringResource(Res.string.non_distr_cd),
+                tint = MaterialTheme.colorScheme.error,
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "${undistributed?.format()} not split yet!",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+    } else if (expense.myAmount().value == 0f) {
         Text(
             text = "You're not participating",
             style = MaterialTheme.typography.bodyMedium,
@@ -150,11 +150,19 @@ private fun LentString(expense: Expense) {
                 value = expense.totalAmount.value - expense.myAmount().value,
                 currencyCode = expense.totalAmount.currencyCode,
             )
-        Text(
-            text = "You lent: ${lent.format()}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
+        if (lent.value != 0f) {
+            Text(
+                text = "You lent: ${lent.format()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        } else {
+            Text(
+                text = "Settled",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
+        }
     } else {
         Text(
             text = "You borrowed: ${expense.myAmount().format()}",

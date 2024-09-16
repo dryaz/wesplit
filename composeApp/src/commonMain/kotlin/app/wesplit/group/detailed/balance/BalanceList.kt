@@ -1,10 +1,13 @@
 package app.wesplit.group.detailed.balance
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -26,48 +29,53 @@ import kotlin.math.roundToInt
 @Composable
 fun BalanceList(balance: Balance?) {
     if (balance != null) {
-        Card(
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                ),
-            modifier =
-                Modifier
-                    .fillMaxWidth(1f)
-                    .padding(16.dp),
+        Box(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
         ) {
-            balance.participants.forEach { participantItem ->
-                ParticipantListItem(
-                    participant = participantItem.key,
-                    action = {
-                        Text(participantItem.value.balance.format())
-                    },
-                )
-            }
+            Card(
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth(1f)
+                        .padding(16.dp)
+                        .padding(bottom = 64.dp),
+            ) {
+                balance.participants.forEach { participantItem ->
+                    ParticipantListItem(
+                        participant = participantItem.key,
+                        action = {
+                            Text(participantItem.value.balance.format())
+                        },
+                    )
+                }
 
-            val nonDistr = (balance.nonDistributed.value * 100f).roundToInt() / 100f
-            if (nonDistr != 0.0f) {
-                HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
-                Row(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(1f)
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_flag),
-                        contentDescription = "Undistributed",
-                    )
+                val nonDistr = (balance.nonDistributed.value * 100f).roundToInt() / 100f
+                if (nonDistr != 0.0f) {
+                    HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
+                    Row(
+                        modifier =
+                            Modifier
+                                .fillMaxWidth(1f)
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_flag),
+                            contentDescription = "Undistributed",
+                        )
 
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = "Undistributed",
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = balance.nonDistributed.format(),
-                    )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Undistributed",
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = balance.nonDistributed.format(),
+                        )
+                    }
                 }
             }
         }
