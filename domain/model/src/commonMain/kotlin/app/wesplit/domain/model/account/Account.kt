@@ -10,25 +10,17 @@ sealed interface Account {
     data object Anonymous : Account
 
     data class Authorized(
-        val user: FirebaseUser,
+        val user: User,
+        val authUser: FirebaseUser,
     ) : Account
 }
 
 fun Account.participant(): Participant? =
-    (this as? Account.Authorized)?.user?.let { authUser ->
+    (this as? Account.Authorized)?.user?.let { user ->
         Participant(
-            id = authUser.uid,
-            name = authUser.displayName ?: authUser.email ?: authUser.phoneNumber ?: authUser.uid,
-            user = this.user(),
+            id = user.id,
+            name = user.name,
+            user = user,
             isMe = true,
-        )
-    }
-
-private fun Account.user(): User? =
-    (this as? Account.Authorized)?.user?.let { authUser ->
-        User(
-            id = authUser.uid,
-            name = authUser.displayName ?: authUser.email ?: authUser.phoneNumber ?: authUser.uid,
-            photoUrl = authUser.photoURL,
         )
     }

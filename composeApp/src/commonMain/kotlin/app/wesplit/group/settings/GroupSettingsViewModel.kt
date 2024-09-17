@@ -3,6 +3,7 @@ package app.wesplit.group.settings
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.participant
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
@@ -98,7 +99,7 @@ class GroupSettingsViewModel(
             title = "",
             participants =
                 linkedSetOf(
-                    accountRepository.getCurrent().participant(),
+                    (accountRepository.get().value as? Account.Authorized)?.participant(),
                 ).filterNotNull().toSet(),
         )
 

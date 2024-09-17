@@ -5,9 +5,12 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.LoginDelegate
 import app.wesplit.domain.model.account.LoginType
+import app.wesplit.domain.model.user.Contact
+import app.wesplit.domain.model.user.User
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
+import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +20,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
+
+private const val USER_COLLECTION = "users"
 
 private const val LOGIN_ATTEMPT_EVENT = "login_attempt"
 private const val LOGIN_SUCCEED_EVENT = "login"
@@ -33,19 +38,14 @@ class AccountFirebaseRepository(
     private val accountState = MutableStateFlow<Account>(Account.Unknown)
     private val coroutinScope = CoroutineScope(coroutineDispatcher)
 
-    private val authListener =
+    private val authListener: StateFlow<Account> =
         Firebase.auth.authStateChanged.map { user ->
-            val account = getAccount(user)
-            // TODO: Enabled anon here creates a lot of users AND leave user images empty.
-            //  Maybe need to create user just when user want to create group/expense, TBD.
-            account
+            getAccount(user)
         }.stateIn(
             scope = coroutinScope,
             started = SharingStarted.Lazily,
             initialValue = Account.Unknown,
         )
-
-    override fun getCurrent(): Account = getAccount(Firebase.auth.currentUser)
 
     override fun get(): StateFlow<Account> = authListener
 
@@ -70,14 +70,42 @@ class AccountFirebaseRepository(
         }
     }
 
-    private fun getAccount(user: FirebaseUser?) =
-        if (user == null) {
-            Account.Anonymous
-        } else {
-            if (user.isAnonymous) {
-                Account.Anonymous
-            } else {
-                Account.Authorized(user)
-            }
+    private suspend fun getAccount(authUser: FirebaseUser?): Account {
+        if (authUser == null || authUser.isAnonymous) {
+            return Account.Anonymous
         }
+
+        // TODO: THIS should return exect 1 document 'cause
+        // TODO: Frozen UI, Dispatcher for Android should be IO
+        val doc = Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).get()
+        if (doc.exists) {
+            val user = doc.data(User.serializer())
+            return Account.Authorized(
+                user = user.copy(id = doc.id),
+                authUser = authUser,
+            )
+        } else {
+            val contactList = mutableListOf<Contact>()
+            authUser.email?.let {
+                if (!it.isNullOrBlank()) contactList.add(Contact.Email(it))
+            }
+            authUser.phoneNumber?.let {
+                if (!it.isNullOrBlank()) contactList.add(Contact.Phone(it))
+            }
+
+            val newUser =
+                User(
+                    name = authUser.displayName ?: authUser.email ?: authUser.phoneNumber ?: authUser.uid,
+                    photoUrl = authUser.photoURL,
+                    contacts = contactList,
+                    authIds = listOf(authUser.uid),
+                )
+
+            Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).set(User.serializer(), newUser)
+            return Account.Authorized(
+                user = newUser.copy(id = authUser.uid),
+                authUser = authUser,
+            )
+        }
+    }
 }

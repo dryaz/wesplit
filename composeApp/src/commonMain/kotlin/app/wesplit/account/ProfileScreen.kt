@@ -36,6 +36,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.user.email
 import app.wesplit.ui.AdaptiveTopAppBar
 import com.seiko.imageloader.rememberImagePainter
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
@@ -167,21 +168,21 @@ private fun AccountInfo(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-        val painter = rememberImagePainter(account.user.photoURL ?: "")
+        val painter = rememberImagePainter(account.user.photoUrl ?: "")
         Image(
             modifier = Modifier.size(64.dp).clip(CircleShape),
             painter = painter,
-            contentDescription = account.user.displayName,
+            contentDescription = account.user.name,
         )
         Spacer(modifier = Modifier.height(8.dp))
-        account.user.displayName?.let { name ->
+        account.user.name?.let { name ->
             Text(
                 text = name,
                 style = MaterialTheme.typography.labelMedium,
             )
             Spacer(modifier = Modifier.height(4.dp))
         }
-        account.user.email?.let { email ->
+        account.user.email()?.let { email ->
             Text(
                 text = email,
                 style = MaterialTheme.typography.labelSmall,

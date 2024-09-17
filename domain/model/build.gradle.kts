@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.serialization)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.ktlint)
 }
@@ -56,6 +57,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
             // TODO: Simplification to have FirebaseUser as is for now
+            implementation(libs.firebase.common.firestore)
             implementation(libs.firebase.common.auth)
             implementation(libs.kotlinx.datetime)
         }
