@@ -10,6 +10,13 @@ interface ExpenseRepository {
      */
     fun getByGroupId(groupId: String): Flow<Result<List<Expense>>>
 
+    /**
+     * Get particular expense by id.
+     *
+     * @param expenseId Expense Id to get details for
+     */
+    fun getById(expenseId: String): Flow<Result<Expense>>
+
     // TODO: Return Result?
     fun addExpense(
         groupId: String,

@@ -2,6 +2,7 @@ package app.wesplit.group.detailed.expense
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,7 +37,10 @@ import split.composeapp.generated.resources.non_distr_cd
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ExpenseList(expenses: Map<String, List<Expense>>) {
+fun ExpenseList(
+    expenses: Map<String, List<Expense>>,
+    onAction: (ExpenseAction) -> Unit,
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(1f),
     ) {
@@ -54,7 +58,10 @@ fun ExpenseList(expenses: Map<String, List<Expense>>) {
                 )
             }
             items(items = entry.value, key = { it.id ?: it.hashCode() }) { expense ->
-                ExpenseItem(expense)
+                ExpenseItem(
+                    expense = expense,
+                    onAction = onAction,
+                )
             }
         }
         item {
@@ -64,10 +71,18 @@ fun ExpenseList(expenses: Map<String, List<Expense>>) {
 }
 
 @Composable
-private fun ExpenseItem(expense: Expense) {
+private fun ExpenseItem(
+    expense: Expense,
+    onAction: (ExpenseAction) -> Unit,
+) {
     val localeDate = expense.date.toLocalDateTime(TimeZone.currentSystemDefault())
     Row(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier =
+            Modifier
+                .clickable {
+                    onAction(ExpenseAction.OpenDetails(expense))
+                }
+                .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Date

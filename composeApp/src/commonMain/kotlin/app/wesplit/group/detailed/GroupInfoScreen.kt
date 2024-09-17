@@ -38,12 +38,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.balance.BalanceRepository
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.group.detailed.balance.BalanceSection
 import app.wesplit.group.detailed.balance.BalanceSectionViewModel
+import app.wesplit.group.detailed.expense.ExpenseAction
 import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.participant.ParticipantAvatar
@@ -61,6 +63,8 @@ sealed interface GroupInfoAction {
 
     // TODO: How to share group
     data class Share(val group: Group) : GroupInfoAction
+
+    data class OpenExpenseDetails(val expense: Expense) : GroupInfoAction
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -166,9 +170,9 @@ private fun GroupInfoContent(
         }
 
         if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
-            SplitView(expenseViewModel, balanceSectionViewModel)
+            SplitView(expenseViewModel, balanceSectionViewModel, onAction)
         } else {
-            PaginationView(expenseViewModel, balanceSectionViewModel)
+            PaginationView(expenseViewModel, balanceSectionViewModel, onAction)
         }
     }
 }
@@ -177,6 +181,7 @@ private fun GroupInfoContent(
 private fun SplitView(
     expenseViewModel: ExpenseSectionViewModel,
     balanceSectionViewModel: BalanceSectionViewModel,
+    onAction: (GroupInfoAction) -> Unit,
 ) {
     Column {
         TabRow(
@@ -192,7 +197,11 @@ private fun SplitView(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.TopCenter,
         ) {
-            ExpenseSection(expenseViewModel)
+            ExpenseSection(expenseViewModel) { action ->
+                when (action) {
+                    is ExpenseAction.OpenDetails -> onAction(GroupInfoAction.OpenExpenseDetails(action.expense))
+                }
+            }
         }
         Box(
             modifier = Modifier.weight(1f),
@@ -208,6 +217,7 @@ private fun SplitView(
 private fun PaginationView(
     expenseViewModel: ExpenseSectionViewModel,
     balanceSectionViewModel: BalanceSectionViewModel,
+    onAction: (GroupInfoAction) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -230,7 +240,12 @@ private fun PaginationView(
                 contentAlignment = Alignment.TopCenter,
             ) {
                 when (index) {
-                    0 -> ExpenseSection(expenseViewModel)
+                    0 ->
+                        ExpenseSection(expenseViewModel) { action ->
+                            when (action) {
+                                is ExpenseAction.OpenDetails -> onAction(GroupInfoAction.OpenExpenseDetails(action.expense))
+                            }
+                        }
                     1 -> BalanceSection(balanceSectionViewModel)
                 }
             }

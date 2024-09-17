@@ -76,9 +76,9 @@ private sealed interface AddExpenseTollbarAction {
 
 // TODO: Clear hardcoded strings
 @Composable
-fun AddExpenseScreen(
+fun ExpenseDetailsScreen(
     modifier: Modifier = Modifier,
-    viewModel: AddExpenseViewModel,
+    viewModel: ExpenseDetailsViewModel,
     onAction: (AddExpenseAction) -> Unit,
 ) {
     val state = viewModel.state.collectAsState()
@@ -93,7 +93,7 @@ fun AddExpenseScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    (state.value as? AddExpenseViewModel.State.Data)?.let {
+                    (state.value as? ExpenseDetailsViewModel.State.Data)?.let {
                         if (it.isComplete) commit()
                     }
                     // TODO: Show error in case of it not yet ready?
@@ -118,8 +118,8 @@ fun AddExpenseScreen(
         },
     ) { paddings ->
         when (val expenseState = state.value) {
-            is AddExpenseViewModel.State.Error -> Text("Error")
-            is AddExpenseViewModel.State.Data ->
+            is ExpenseDetailsViewModel.State.Error -> Text("Error")
+            is ExpenseDetailsViewModel.State.Data ->
                 AddExpenseScreenView(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
                     data = expenseState,
@@ -127,7 +127,7 @@ fun AddExpenseScreen(
                     viewModel.update(action)
                 }
             // TODO: Shimmer?
-            AddExpenseViewModel.State.Loading -> Text("Loading")
+            ExpenseDetailsViewModel.State.Loading -> Text("Loading")
         }
     }
 }
@@ -135,7 +135,7 @@ fun AddExpenseScreen(
 @Composable
 private fun AddExpenseScreenView(
     modifier: Modifier = Modifier,
-    data: AddExpenseViewModel.State.Data,
+    data: ExpenseDetailsViewModel.State.Data,
     onUpdated: (UpdateAction) -> Unit,
 ) {
     Column(
@@ -153,7 +153,7 @@ private fun AddExpenseScreenView(
 
 @Composable
 private fun SharesDetails(
-    data: AddExpenseViewModel.State.Data,
+    data: ExpenseDetailsViewModel.State.Data,
     onUpdated: (UpdateAction) -> Unit,
 ) {
     Card(
@@ -219,7 +219,7 @@ private fun SharesDetails(
 
 @Composable
 private fun ExpenseDetails(
-    data: AddExpenseViewModel.State.Data,
+    data: ExpenseDetailsViewModel.State.Data,
     onUpdated: (UpdateAction) -> Unit,
 ) {
     var amount by remember {
@@ -352,7 +352,7 @@ private fun ExpenseDetails(
 
 @Composable
 private fun TopAppBareByState(
-    state: AddExpenseViewModel.State,
+    state: ExpenseDetailsViewModel.State,
     onAction: (AddExpenseAction) -> Unit,
     onToolbarAction: (AddExpenseTollbarAction) -> Unit,
 ) {
@@ -360,9 +360,9 @@ private fun TopAppBareByState(
         title = {
             Text(
                 when (state) {
-                    AddExpenseViewModel.State.Loading -> stringResource(Res.string.loading)
-                    is AddExpenseViewModel.State.Error -> stringResource(Res.string.settings)
-                    is AddExpenseViewModel.State.Data ->
+                    ExpenseDetailsViewModel.State.Loading -> stringResource(Res.string.loading)
+                    is ExpenseDetailsViewModel.State.Error -> stringResource(Res.string.settings)
+                    is ExpenseDetailsViewModel.State.Data ->
                         if (state.expense.id == null) {
                             stringResource(Res.string.new_expense)
                         } else {
@@ -377,24 +377,24 @@ private fun TopAppBareByState(
                 modifier =
                     Modifier.fillMaxHeight(1f).clickable {
                         when (state) {
-                            is AddExpenseViewModel.State.Error -> {}
+                            is ExpenseDetailsViewModel.State.Error -> {}
 
-                            is AddExpenseViewModel.State.Data ->
+                            is ExpenseDetailsViewModel.State.Data ->
                                 if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
 
-                            AddExpenseViewModel.State.Loading -> {}
+                            ExpenseDetailsViewModel.State.Loading -> {}
                         }
                     }.padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 when (state) {
-                    is AddExpenseViewModel.State.Error ->
+                    is ExpenseDetailsViewModel.State.Error ->
                         Text(
                             // TODO: Add leading icon retry icon
                             text = stringResource(Res.string.retry),
                         )
 
-                    is AddExpenseViewModel.State.Data ->
+                    is ExpenseDetailsViewModel.State.Data ->
                         if (state.expense.id == null) {
                             // TODO: Add leading icon OK
                             Text(
@@ -408,7 +408,7 @@ private fun TopAppBareByState(
                             )
                         }
 
-                    AddExpenseViewModel.State.Loading -> CircularProgressIndicator()
+                    ExpenseDetailsViewModel.State.Loading -> CircularProgressIndicator()
                 }
             }
         },

@@ -32,8 +32,8 @@ import app.wesplit.domain.model.account.LoginType
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.expense.AddExpenseAction
-import app.wesplit.expense.AddExpenseScreen
-import app.wesplit.expense.AddExpenseViewModel
+import app.wesplit.expense.ExpenseDetailsScreen
+import app.wesplit.expense.ExpenseDetailsViewModel
 import app.wesplit.group.detailed.GroupInfoAction
 import app.wesplit.group.detailed.GroupInfoScreen
 import app.wesplit.group.detailed.GroupInfoViewModel
@@ -44,7 +44,6 @@ import app.wesplit.group.list.GroupListViewModel
 import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
-import app.wesplit.routing.RightPane.Group.Param
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.CoroutineDispatcher
@@ -95,7 +94,7 @@ sealed class RightPane(
 
     data object NewGroup : RightPane("newGroup")
 
-    data object AddExpense : RightPane("group/{${Param.GROUP_ID.paramName}}/{${Param.EXPENSE_ID.paramName}}") {
+    data object ExpenseDetails : RightPane("group/{${Param.GROUP_ID.paramName}}/{${Param.EXPENSE_ID.paramName}}") {
         enum class Param(
             val paramName: String,
         ) {
@@ -106,7 +105,7 @@ sealed class RightPane(
         fun destination(
             groupId: String,
             expenseId: String? = null,
-        ): String = "group/$groupId/${expenseId ?: "new"}"
+        ): String = "group/$groupId/$expenseId"
 
         override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId, expenseId) instead")
     }
@@ -348,26 +347,25 @@ fun RootNavigation(
                         ),
                 ) {
                     val groupRepository: GroupRepository = koinInject()
-                    println("Compose RootNavigation with ${it.arguments}")
-                    val idParam =
-                        it.arguments?.getString(
-                            RightPane
-                                .Group
-                                .Param
-                                .GROUP_ID
-                                .paramName,
+                    val groupId =
+                        checkNotNull(
+                            it.arguments?.getString(
+                                RightPane
+                                    .Group
+                                    .Param
+                                    .GROUP_ID
+                                    .paramName,
+                            ),
                         )
-                    println("Compose RootNavigation with id $idParam")
                     val viewModel: GroupInfoViewModel =
                         viewModel(
-                            key = idParam ?: it.arguments.toString(),
+                            key = groupId ?: it.arguments.toString(),
                         ) {
                             GroupInfoViewModel(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
                             )
                         }
-                    println("Viewmodel is $viewModel")
                     GroupInfoScreen(
                         viewModel = viewModel,
                     ) { action ->
@@ -379,7 +377,17 @@ fun RootNavigation(
 
                             is GroupInfoAction.AddExpense -> {
                                 secondPaneNavController.navigate(
-                                    RightPane.AddExpense.destination(action.group.id),
+                                    RightPane.ExpenseDetails.destination(action.group.id),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                        },
+                                )
+                            }
+
+                            is GroupInfoAction.OpenExpenseDetails -> {
+                                secondPaneNavController.navigate(
+                                    RightPane.ExpenseDetails.destination(groupId, action.expense.id),
                                     navOptions =
                                         navOptions {
                                             launchSingleTop = true
@@ -410,11 +418,15 @@ fun RootNavigation(
                 }
 
                 composable(
-                    route = RightPane.AddExpense.route,
+                    route = RightPane.ExpenseDetails.route,
                     arguments =
                         listOf(
-                            navArgument(RightPane.Group.Param.GROUP_ID.paramName) {
+                            navArgument(RightPane.ExpenseDetails.Param.GROUP_ID.paramName) {
                                 type = NavType.StringType
+                            },
+                            navArgument(RightPane.ExpenseDetails.Param.EXPENSE_ID.paramName) {
+                                type = NavType.StringType
+                                nullable = true
                             },
                         ),
                 ) {
@@ -422,11 +434,32 @@ fun RootNavigation(
                     val groupRepository: GroupRepository = koinInject()
                     val expenseRepository: ExpenseRepository = koinInject()
 
-                    val viewModel: AddExpenseViewModel =
+                    val groupId =
+                        checkNotNull(
+                            it.arguments?.getString(
+                                RightPane
+                                    .ExpenseDetails
+                                    .Param
+                                    .GROUP_ID
+                                    .paramName,
+                            ),
+                        )
+
+                    val expenseId =
+                        it.arguments?.getString(
+                            RightPane
+                                .ExpenseDetails
+                                .Param
+                                .EXPENSE_ID
+                                .paramName,
+                        )
+
+                    val viewModel: ExpenseDetailsViewModel =
                         viewModel(
-                            key = it.arguments.toString(),
+                            // TODO: Provide arguments extension to probably check changes based on generic internals
+                            key = groupId + expenseId,
                         ) {
-                            AddExpenseViewModel(
+                            ExpenseDetailsViewModel(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
                                 expenseRepository,
@@ -434,7 +467,7 @@ fun RootNavigation(
                             )
                         }
 
-                    AddExpenseScreen(
+                    ExpenseDetailsScreen(
                         viewModel = viewModel,
                     ) { action ->
                         when (action) {

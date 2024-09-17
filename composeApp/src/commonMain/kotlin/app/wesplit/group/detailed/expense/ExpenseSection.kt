@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.expense.Expense
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -24,12 +25,19 @@ import split.composeapp.generated.resources.empty_transaction_description
 import split.composeapp.generated.resources.empty_transactions_cd
 import split.composeapp.generated.resources.img_search_empty
 
+sealed interface ExpenseAction {
+    data class OpenDetails(val expense: Expense) : ExpenseAction
+}
+
 @Composable
-fun ExpenseSection(viewModel: ExpenseSectionViewModel) {
+fun ExpenseSection(
+    viewModel: ExpenseSectionViewModel,
+    onAction: (ExpenseAction) -> Unit,
+) {
     val dataState = viewModel.dataState.collectAsState()
     when (val state = dataState.value) {
         ExpenseSectionViewModel.State.Empty -> EmptyExpenseSection(modifier = Modifier.fillMaxSize())
-        is ExpenseSectionViewModel.State.Expenses -> ExpenseList(state.groupedExpenses)
+        is ExpenseSectionViewModel.State.Expenses -> ExpenseList(state.groupedExpenses, onAction)
         ExpenseSectionViewModel.State.Loading ->
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()

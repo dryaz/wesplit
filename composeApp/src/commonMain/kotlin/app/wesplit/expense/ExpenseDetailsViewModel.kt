@@ -17,6 +17,8 @@ import app.wesplit.routing.RightPane
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -37,7 +39,7 @@ sealed interface UpdateAction {
     }
 }
 
-class AddExpenseViewModel(
+class ExpenseDetailsViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
     private val expenseRepository: ExpenseRepository,
@@ -48,7 +50,7 @@ class AddExpenseViewModel(
         checkNotNull(
             savedStateHandle[
                 RightPane
-                    .AddExpense
+                    .ExpenseDetails
                     .Param
                     .GROUP_ID
                     .paramName,
@@ -59,7 +61,7 @@ class AddExpenseViewModel(
     val expenseId: String? =
         savedStateHandle[
             RightPane
-                .AddExpense
+                .ExpenseDetails
                 .Param
                 .EXPENSE_ID
                 .paramName,
@@ -72,48 +74,64 @@ class AddExpenseViewModel(
 
     init {
         viewModelScope.launch {
-            groupRepository.get(groupId).collectLatest { groupResult ->
-                if (groupResult.isFailure) {
+            val expenseFlow =
+                if (expenseId != null) {
+                    expenseRepository.getById(expenseId)
+                } else {
+                    flow<Result<Expense?>> {
+                        emit(
+                            Result.success(null),
+                        )
+                    }
+                }
+
+            groupRepository.get(groupId).combine(expenseFlow) { groupResult, expenseResult ->
+                if (groupResult.isFailure || expenseResult.isFailure) {
                     groupResult.exceptionOrNull()?.let {
                         analyticsManager.log(it)
                     }
-                    // TODO: Check how to define error type.
-                    // TODO: Error type should be at least base on 'caues of fetch_error, unauth, not_exists
-                    _state.update { State.Error(State.Error.Type.FETCH_ERROR) }
+
+                    expenseResult.exceptionOrNull()?.let {
+                        analyticsManager.log(it)
+                    }
+
+                    return@combine State.Error(State.Error.Type.FETCH_ERROR)
                 } else {
                     val group = groupResult.getOrNull()
-                    if (group != null) {
-                        _state.update {
-                            State.Data(
-                                group = group,
-                                expense =
-                                    Expense(
-                                        id = null,
-                                        title = "",
-                                        payedBy = group.participants.find { it.isMe } ?: group.participants.first(),
-                                        // TODO: Currency model/set not to have hardcoded USD, map to sybmol etc
-                                        totalAmount = Amount(0f, "USD"),
-                                        shares =
-                                            group.participants.map { participant ->
-                                                Share(
-                                                    participant = participant,
-                                                    // TODO: Currency should be first defined on the group level to have base currency for the group
-                                                    //  and in future implement FX. Meanwhile disable currency chooser on expense lvl.
-                                                    amount = Amount(0f, "USD"),
-                                                )
-                                            }.toSet(),
-                                        date = Clock.System.now(),
-                                        expenseType = ExpenseType.EXPENSE,
-                                        undistributedAmount = null,
-                                    ),
-                                isComplete = false,
-                            )
-                        }
-                    } else {
-                        // TODO: Maybe we could have extension toData(?) which do fetch_error, not exists and other errors, log and/or return data
-                        _state.update { State.Error(State.Error.Type.NOT_EXISTS) }
+
+                    if (group == null) {
+                        return@combine State.Error(State.Error.Type.NOT_EXISTS)
                     }
+
+                    val expense =
+                        expenseResult.getOrNull() ?: Expense(
+                            id = null,
+                            title = "",
+                            payedBy = group.participants.find { it.isMe } ?: group.participants.first(),
+                            // TODO: Currency model/set not to have hardcoded USD, map to sybmol etc
+                            totalAmount = Amount(0f, "USD"),
+                            shares =
+                                group.participants.map { participant ->
+                                    Share(
+                                        participant = participant,
+                                        // TODO: Currency should be first defined on the group level to have base currency for the group
+                                        //  and in future implement FX. Meanwhile disable currency chooser on expense lvl.
+                                        amount = Amount(0f, "USD"),
+                                    )
+                                }.toSet(),
+                            date = Clock.System.now(),
+                            expenseType = ExpenseType.EXPENSE,
+                            undistributedAmount = null,
+                        )
+
+                    return@combine State.Data(
+                        group = group,
+                        expense = expense,
+                        isComplete = isComplete(expense),
+                    )
                 }
+            }.collectLatest { state ->
+                _state.update { state }
             }
         }
     }
@@ -153,11 +171,13 @@ class AddExpenseViewModel(
         (_state.value as? State.Data)?.let { data ->
             _state.update {
                 data.copy(
-                    isComplete = !data.expense.title.isNullOrBlank() && data.expense.totalAmount.value != 0f,
+                    isComplete = isComplete(data.expense),
                 )
             }
         }
     }
+
+    private fun isComplete(expense: Expense) = !expense.title.isNullOrBlank() && expense.totalAmount.value != 0f
 
     // TODO: Extract to usecase, cover by tests
     // TODO: When new split option supported -> need to use base UpdateCation.Split and do different calculations
