@@ -68,8 +68,6 @@ sealed interface GroupListAction {
     data object OpenMenu : GroupListAction
 
     data object Login : GroupListAction
-
-    data object Logout : GroupListAction
 }
 
 @Composable

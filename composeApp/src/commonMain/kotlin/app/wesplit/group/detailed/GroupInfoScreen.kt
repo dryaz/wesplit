@@ -13,6 +13,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
@@ -54,6 +55,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
+import split.composeapp.generated.resources.edit_group
 import split.composeapp.generated.resources.share_group
 
 sealed interface GroupInfoAction {
@@ -63,6 +65,8 @@ sealed interface GroupInfoAction {
 
     // TODO: How to share group
     data class Share(val group: Group) : GroupInfoAction
+
+    data class Edit(val group: Group) : GroupInfoAction
 
     data class OpenExpenseDetails(val expense: Expense) : GroupInfoAction
 }
@@ -103,6 +107,20 @@ fun GroupInfoScreen(
                     overflow = TextOverflow.Ellipsis,
                 )
             }, onNavigationIconClick = { onAction(GroupInfoAction.Back) }, actions = {
+                IconButton(onClick = {
+                    // TODO: Proper state handling, not just 1 groupinfo handler
+                    (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
+                        onAction.invoke(
+                            GroupInfoAction.Edit(group),
+                        )
+                    }
+                }) {
+                    Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = stringResource(Res.string.edit_group),
+                    )
+                }
+
                 IconButton(onClick = {
                     // TODO: Proper state handling, not just 1 groupinfo handler
                     (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
@@ -289,6 +307,13 @@ private fun GroupHeader(
                 }
             }
         }
+        IconButton(onClick = { onAction.invoke(GroupInfoAction.Edit(group)) }) {
+            Icon(
+                Icons.Filled.Edit,
+                contentDescription = stringResource(Res.string.edit_group),
+            )
+        }
+
         IconButton(onClick = { onAction.invoke(GroupInfoAction.Share(group)) }) {
             Icon(
                 Icons.Filled.Share,

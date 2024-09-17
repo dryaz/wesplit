@@ -25,7 +25,6 @@ class ExpenseFirebaseRepository(
     override fun getById(expenseId: String): Flow<Result<Expense>> =
         flow {
             val expense = expenses.value.find { it.id != null && it.id == expenseId }
-            print("Open $expense with id ${expense?.id}")
             if (expense != null) {
                 emit(Result.success(expense))
             } else {

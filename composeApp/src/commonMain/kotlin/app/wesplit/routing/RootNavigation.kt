@@ -44,8 +44,7 @@ import app.wesplit.group.list.GroupListViewModel
 import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.auth.auth
+import app.wesplit.routing.RightPane.Group.Param
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
@@ -94,7 +93,19 @@ sealed class RightPane(
 
     data object NewGroup : RightPane("newGroup")
 
-    data object ExpenseDetails : RightPane("group/{${Param.GROUP_ID.paramName}}/{${Param.EXPENSE_ID.paramName}}") {
+    data object GroupSettings : RightPane("group/{${Param.GROUP_ID.paramName}}/settings") {
+        enum class Param(
+            val paramName: String,
+        ) {
+            GROUP_ID("group_id"),
+        }
+
+        fun destination(groupId: String): String = "group/$groupId/settings"
+
+        override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId) instead")
+    }
+
+    data object ExpenseDetails : RightPane("group/{${Param.GROUP_ID.paramName}}/expense/{${Param.EXPENSE_ID.paramName}}") {
         enum class Param(
             val paramName: String,
         ) {
@@ -105,7 +116,7 @@ sealed class RightPane(
         fun destination(
             groupId: String,
             expenseId: String? = null,
-        ): String = "group/$groupId/$expenseId"
+        ): String = "group/$groupId/expense/$expenseId"
 
         override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId, expenseId) instead")
     }
@@ -253,7 +264,20 @@ fun RootNavigation(
                         onAction = { action ->
                             when (action) {
                                 ProfileAction.Login -> accountRepository.login(LoginType.GOOGLE)
-                                ProfileAction.Logout -> accountRepository.logout()
+                                ProfileAction.Logout -> {
+                                    accountRepository.logout()
+                                    secondPaneNavController.navigate(
+                                        RightPane.Empty.destination(),
+                                        navOptions =
+                                            navOptions {
+                                                launchSingleTop = true
+                                                popUpTo(
+                                                    RightPane.Empty.route,
+                                                    popUpToBuilder = { inclusive = true },
+                                                )
+                                            },
+                                    )
+                                }
                                 ProfileAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
                             }
                         },
@@ -294,12 +318,6 @@ fun RootNavigation(
                                                     )
                                                 },
                                         )
-                                    }
-
-                                    GroupListAction.Logout -> {
-                                        coroutineScope.launch {
-                                            Firebase.auth.signOut()
-                                        }
                                     }
 
                                     GroupListAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
@@ -394,17 +412,68 @@ fun RootNavigation(
                                         },
                                 )
                             }
+
+                            is GroupInfoAction.Edit -> {
+                                secondPaneNavController.navigate(
+                                    RightPane.GroupSettings.destination(groupId),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                        },
+                                )
+                            }
                         }
                     }
                 }
 
-                composable(route = RightPane.NewGroup.route) {
+                composable(
+                    route = RightPane.NewGroup.route,
+                ) {
                     val groupRepository: GroupRepository = koinInject()
 
                     val viewModel: GroupSettingsViewModel =
                         viewModel {
                             GroupSettingsViewModel(
                                 SavedStateHandle.createHandle(null, null),
+                                groupRepository,
+                                accountRepository,
+                            )
+                        }
+
+                    GroupSettingsScreen(viewModel = viewModel) { action ->
+                        when (action) {
+                            GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
+                        }
+                    }
+                }
+
+                composable(
+                    route = RightPane.GroupSettings.route,
+                    arguments =
+                        listOf(
+                            navArgument(RightPane.GroupSettings.Param.GROUP_ID.paramName) {
+                                type = NavType.StringType
+                                nullable = true
+                            },
+                        ),
+                ) {
+                    println("C0")
+                    val groupRepository: GroupRepository = koinInject()
+
+                    val groupId =
+                        it.arguments?.getString(
+                            RightPane
+                                .GroupSettings
+                                .Param
+                                .GROUP_ID
+                                .paramName,
+                        )
+                    println("C1: $groupId")
+
+                    val viewModel: GroupSettingsViewModel =
+                        viewModel(key = groupId) {
+                            GroupSettingsViewModel(
+                                SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
                                 accountRepository,
                             )
