@@ -200,16 +200,16 @@ private fun GroupSettingsView(
             }
 
             // TODO: Add/Remove with animation. Lazycolumn?
-            group.participants.forEachIndexed { index, user ->
+            group.participants.forEachIndexed { index, participant ->
                 HorizontalDivider(
                     modifier = Modifier.padding(start = if (index == 0) 0.dp else 80.dp),
                 )
                 ParticipantListItem(
-                    participant = user,
+                    participant = participant,
                     action =
-                        if (!user.isMe) {
+                        if (!participant.isMe) {
                             {
-                                AdaptiveIconButton(onClick = { onUpdated(group.copy(participants = group.participants - user)) }) {
+                                AdaptiveIconButton(onClick = { onUpdated(group.copy(participants = group.participants - participant)) }) {
                                     Icon(
                                         Icons.Filled.Delete,
                                         // TODO: Proper CD

@@ -18,7 +18,7 @@ data class User(
     val name: String,
     // TODO: Ux improvement - if photoUrl is null generate colorful template based on hash of id/name
     @SerialName("photo")
-    val photoUrl: String?,
+    val photoUrl: String? = null,
     @SerialName("contacts")
     val contacts: List<Contact> = emptyList(),
     @SerialName("authIds")

@@ -39,7 +39,7 @@ fun ParticipantListItem(
         val suffix =
             if (participant.isMe) {
                 " (${stringResource(Res.string.you)})"
-            } else if (participant.id == null) {
+            } else if (participant.user == null) {
                 " (${stringResource(Res.string.new)})"
             } else {
                 ""

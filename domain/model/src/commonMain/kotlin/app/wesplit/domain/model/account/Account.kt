@@ -18,7 +18,6 @@ sealed interface Account {
 fun Account.participant(): Participant? =
     (this as? Account.Authorized)?.user?.let { user ->
         Participant(
-            id = user.id,
             name = user.name,
             user = user,
             isMe = true,

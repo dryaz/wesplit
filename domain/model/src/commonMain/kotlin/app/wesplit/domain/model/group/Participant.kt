@@ -12,8 +12,6 @@ import kotlinx.serialization.Transient
 @Serializable
 @SerialName("participant")
 data class Participant(
-    @Transient
-    val id: String? = null,
     @SerialName("name")
     val name: String,
     @SerialName("user")

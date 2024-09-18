@@ -204,7 +204,7 @@ private fun LazyListScope.contatctItem(
                 }
             }
         } else if (state.contacts is ContactListDelegate.State.Contacts) {
-            items(items = state.contacts.data, key = { (it.id ?: "") + it.name }) { participant ->
+            items(items = state.contacts.data, key = { (it.user?.name ?: "") + it.name }) { participant ->
                 ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
                 HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
             }
@@ -226,7 +226,7 @@ private fun LazyListScope.currentConnectionsItem(
             )
         }
 
-        items(items = state.connections, key = { (it.id ?: "") + it.name }) { participant ->
+        items(items = state.connections, key = { (it.user?.id ?: "") + it.name }) { participant ->
             ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
             HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
         }

@@ -88,7 +88,7 @@ private fun EmptyParticipantAvatar(
         contentAlignment = Alignment.Center,
     ) {
         val painter =
-            if (participant.id == null) {
+            if (participant.user == null) {
                 rememberVectorPainter(Icons.Filled.Add)
             } else {
                 painterResource(Res.drawable.ic_user)

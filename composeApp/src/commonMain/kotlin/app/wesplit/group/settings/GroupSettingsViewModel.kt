@@ -41,10 +41,8 @@ class GroupSettingsViewModel(
 
     init {
         if (groupId != null) {
-            println("b2")
             reload()
         } else {
-            println("b1")
             _state.update { emptyGroupState() }
         }
     }
@@ -60,18 +58,13 @@ class GroupSettingsViewModel(
 
     // TODO: Check if we need reload with firebase or it will automatically return data without reloading.
     fun reload() {
-        println("a1")
         if (groupId == null) throw IllegalStateException("Can't reload group without ID")
-        println("a2")
         loadJob?.cancel()
         loadJob =
             viewModelScope.launch {
-                println("a3")
                 groupRepository.get(groupId).collectLatest { groupResult ->
-                    println("a4")
                     val exception = groupResult.exceptionOrNull()
                     _state.update {
-                        println("a5")
                         when (exception) {
                             is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)
                             is NullPointerException -> State.Error(State.Error.Type.NOT_EXISTS)
@@ -79,9 +72,7 @@ class GroupSettingsViewModel(
                                 if (exception != null) {
                                     State.Error(State.Error.Type.FETCH_ERROR)
                                 } else {
-                                    println("a6")
                                     with(groupResult.getOrThrow()) {
-                                        println("a7")
                                         State.Group(
                                             id = this.id,
                                             title = this.title,
