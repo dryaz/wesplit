@@ -75,7 +75,7 @@ class ExpenseDetailsViewModel(
         viewModelScope.launch {
             val expenseFlow =
                 if (expenseId != null) {
-                    expenseRepository.getById(expenseId)
+                    expenseRepository.getById(groupId, expenseId)
                 } else {
                     flow<Result<Expense?>> {
                         emit(
@@ -151,7 +151,9 @@ class ExpenseDetailsViewModel(
 
                 UpdateAction.Commit ->
                     (_state.value as? State.Data)?.expense?.let { exp ->
-                        expenseRepository.addExpense(groupId, exp)
+                        viewModelScope.launch {
+                            expenseRepository.commitExpense(groupId, exp)
+                        }
                         // TODO: should we check for success event from here to close the screen of Firebase could handle it properly
                         //  saving first in local and only then pushing to remote?
                     }

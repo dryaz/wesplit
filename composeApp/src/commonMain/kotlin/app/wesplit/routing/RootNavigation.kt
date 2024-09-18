@@ -278,6 +278,7 @@ fun RootNavigation(
                                             },
                                     )
                                 }
+
                                 ProfileAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
                             }
                         },
@@ -377,7 +378,7 @@ fun RootNavigation(
                         )
                     val viewModel: GroupInfoViewModel =
                         viewModel(
-                            key = groupId ?: it.arguments.toString(),
+                            key = "GroupInfoViewModel $groupId",
                         ) {
                             GroupInfoViewModel(
                                 SavedStateHandle.createHandle(null, it.arguments),
@@ -471,7 +472,7 @@ fun RootNavigation(
                     println("C1: $groupId")
 
                     val viewModel: GroupSettingsViewModel =
-                        viewModel(key = groupId) {
+                        viewModel(key = "GroupSettingsViewModel $groupId") {
                             GroupSettingsViewModel(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
@@ -526,7 +527,7 @@ fun RootNavigation(
                     val viewModel: ExpenseDetailsViewModel =
                         viewModel(
                             // TODO: Provide arguments extension to probably check changes based on generic internals
-                            key = groupId + expenseId,
+                            key = "ExpenseDetailsViewModel ${groupId + expenseId}",
                         ) {
                             ExpenseDetailsViewModel(
                                 SavedStateHandle.createHandle(null, it.arguments),

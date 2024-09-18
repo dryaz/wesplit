@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Group
@@ -162,18 +163,20 @@ private fun GroupInfoContent(
 ) {
     val expenseRepository: ExpenseRepository = koinInject()
     val balanceRepository: BalanceRepository = koinInject()
+    val analyticsManager: AnalyticsManager = koinInject()
 
     val windowSizeClass = calculateWindowSizeClass()
 
     val expenseViewModel: ExpenseSectionViewModel =
-        viewModel(key = group.id) {
+        viewModel(key = "ExpenseSectionViewModel ${group.id}") {
             ExpenseSectionViewModel(
                 groupId = group.id,
                 expenseRepository = expenseRepository,
             )
         }
+
     val balanceSectionViewModel: BalanceSectionViewModel =
-        viewModel(key = group.id) {
+        viewModel(key = "BalanceSectionViewModel ${group.id}") {
             BalanceSectionViewModel(
                 groupId = group.id,
                 balanceRepository = balanceRepository,
@@ -264,6 +267,7 @@ private fun PaginationView(
                                 is ExpenseAction.OpenDetails -> onAction(GroupInfoAction.OpenExpenseDetails(action.expense))
                             }
                         }
+
                     1 -> BalanceSection(balanceSectionViewModel)
                 }
             }

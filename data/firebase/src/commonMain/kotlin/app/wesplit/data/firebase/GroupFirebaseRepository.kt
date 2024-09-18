@@ -9,12 +9,14 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.firestore
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 
-private const val GROUP_COLLECTION = "groups"
+val GROUP_COLLECTION = "groups"
 
 private const val GROUP_CREATE_EVENT = "group_create"
 private const val GROUP_UPDATE_EVENT = "group_update"
@@ -40,58 +42,65 @@ class GroupFirebaseRepository(
                 val group = it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
                 Result.success(group.copy(id = it.id))
             } else {
-                Result.failure(NullPointerException("No group found"))
+                val exception = NullPointerException("No group found with id: $groupId")
+                analyticsManager.log(exception)
+                // TODO: Check what if there is not enough permission
+                Result.failure(exception)
             }
         }
 
+    // TODO: Add currency to UI + DB, one currency set per group as of now.
+    //  Multiple currencies + FX sholuld be a premium feature.
     override suspend fun commit(
         id: String?,
         title: String,
         participants: Set<Participant>,
-    ) {
-        val eventName = if (id != null) GROUP_UPDATE_EVENT else GROUP_CREATE_EVENT
+    ): Unit =
+        withContext(NonCancellable) {
+            val eventName = if (id != null) GROUP_UPDATE_EVENT else GROUP_CREATE_EVENT
 
-        analyticsManager.track(
-            eventName,
-            mapOf(
-                GROUP_COMMIT_PARAM_USERS to participants.size.toString(),
-                GROUP_COMMIT_PARAM_TITLE to title,
-            ),
-        )
-
-        if (id == null) {
-            // TODO: Extract firestore logic to groupDataSource 'cause repository will behave as usecase,
-            //  e.g. when user creates group all participants should be treated as contacts and also
-            //  stored in user relations as possible contacts to fetch in future!
-            //  If not extract -> hard to test ==> cover with tests!
-            Firebase.firestore.collection(GROUP_COLLECTION).add(
-                strategy = Group.serializer(),
-                data =
-                    Group(
-                        title = title,
-                        participants = participants,
-                        createdAt = Timestamp.ServerTimestamp,
-                    ),
+            analyticsManager.track(
+                eventName,
+                mapOf(
+                    GROUP_COMMIT_PARAM_USERS to participants.size.toString(),
+                    GROUP_COMMIT_PARAM_TITLE to title,
+                ),
             )
-        } else {
-            val doc = Firebase.firestore.collection(GROUP_COLLECTION).document(id).get()
-            if (doc.exists) {
-                val existingGroup = doc.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
-                Firebase.firestore.collection(GROUP_COLLECTION).document(id).update(
+
+            if (id == null) {
+                // TODO: Extract firestore logic to groupDataSource 'cause repository will behave as usecase,
+                //  e.g. when user creates group all participants should be treated as contacts and also
+                //  stored in user relations as possible contacts to fetch in future!
+                //  If not extract -> hard to test ==> cover with tests!
+                Firebase.firestore.collection(GROUP_COLLECTION).add(
                     strategy = Group.serializer(),
                     data =
                         Group(
                             title = title,
                             participants = participants,
-                            createdAt = existingGroup.createdAt,
+                            createdAt = Timestamp.ServerTimestamp,
                         ),
                 )
             } else {
-                // TODO: DOC should be exists, maybe not enough rights or what not?
-                throw IllegalStateException("Document with id: $id should be exists")
+                val doc = Firebase.firestore.collection(GROUP_COLLECTION).document(id).get()
+                if (doc.exists) {
+                    val existingGroup = doc.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
+                    Firebase.firestore.collection(GROUP_COLLECTION).document(id).update(
+                        strategy = Group.serializer(),
+                        data =
+                            Group(
+                                title = title,
+                                participants = participants,
+                                createdAt = existingGroup.createdAt,
+                            ),
+                    )
+                } else {
+                    // TODO: Fire back and error to ui
+                    val exception = IllegalStateException("Try to edit group document with id $id which not exists")
+                    analyticsManager.log(exception)
+                }
             }
         }
-    }
 
     // TODO: Implement, current is mock
     override fun getSuggestedParticipants(searchQuery: String): Flow<List<Participant>> =
