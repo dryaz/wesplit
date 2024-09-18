@@ -5,6 +5,7 @@ import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.auth.externals.GoogleAuthProvider
 import dev.gitlive.firebase.auth.externals.signInWithPopup
+import dev.gitlive.firebase.auth.js
 
 class LoginJsDelegate : LoginDelegate {
     override fun login(
