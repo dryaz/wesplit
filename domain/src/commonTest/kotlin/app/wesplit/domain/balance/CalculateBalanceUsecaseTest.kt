@@ -12,7 +12,7 @@ import kotlin.test.Test
 class CalculateBalanceUsecaseTest {
     @Test
     fun not_shared_exp_undistributed() {
-        val p1 = Participant("1", "U1")
+        val p1 = Participant("U1")
         val group =
             Group(
                 id = "123",
@@ -20,7 +20,7 @@ class CalculateBalanceUsecaseTest {
                 participants =
                     setOf(
                         p1,
-                        Participant("2", "U2"),
+                        Participant("U2"),
                     ),
             )
         val expenseList =
@@ -42,7 +42,7 @@ class CalculateBalanceUsecaseTest {
 
     @Test
     fun not_shared_exp_recorded_to_payer() {
-        val p1 = Participant("1", "U1")
+        val p1 = Participant("U1")
         val group =
             Group(
                 id = "123",
@@ -50,7 +50,7 @@ class CalculateBalanceUsecaseTest {
                 participants =
                     setOf(
                         p1,
-                        Participant("2", "U2"),
+                        Participant("U2"),
                     ),
             )
         val expenseList =
@@ -72,8 +72,8 @@ class CalculateBalanceUsecaseTest {
 
     @Test
     fun equal_payment_should_lead_to_0_balance() {
-        val p1 = Participant("1", "U1")
-        val p2 = Participant("2", "U2")
+        val p1 = Participant("U1")
+        val p2 = Participant("U2")
         val group =
             Group(
                 id = "123",
