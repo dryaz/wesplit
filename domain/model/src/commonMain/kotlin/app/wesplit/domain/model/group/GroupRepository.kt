@@ -1,10 +1,9 @@
 package app.wesplit.domain.model.group
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 interface GroupRepository {
-    fun get(): StateFlow<List<Group>>
+    fun get(): Flow<List<Group>>
 
     // TODO: Flow? Cause first cached thing could be returned.
 
@@ -23,7 +22,7 @@ interface GroupRepository {
      *
      * @param id if null passed new group will be created.
      */
-    fun commit(
+    suspend fun commit(
         id: String?,
         title: String,
         participants: Set<Participant>,

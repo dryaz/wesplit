@@ -3,6 +3,7 @@ package app.wesplit.data.firebase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.expense.toInstant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -20,7 +21,7 @@ class ExpenseFirebaseRepository(
     // TODO: Check if firebase get local balances or maybe need to cache expenses by group id in order
     //  not to fetch this multiple times, e.g. for showing trxs and for computing balances.
     override fun getByGroupId(groupId: String): Flow<Result<List<Expense>>> =
-        expenses.map { Result.success(it.sortedByDescending { it.date }) }
+        expenses.map { Result.success(it.sortedByDescending { it.date.toInstant() }) }
 
     override fun getById(expenseId: String): Flow<Result<Expense>> =
         flow {

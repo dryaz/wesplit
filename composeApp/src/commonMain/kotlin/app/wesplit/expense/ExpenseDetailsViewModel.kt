@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
 sealed interface UpdateAction {
@@ -119,7 +118,6 @@ class ExpenseDetailsViewModel(
                                         amount = Amount(0f, "USD"),
                                     )
                                 }.toSet(),
-                            date = Clock.System.now(),
                             expenseType = ExpenseType.EXPENSE,
                             undistributedAmount = null,
                         )

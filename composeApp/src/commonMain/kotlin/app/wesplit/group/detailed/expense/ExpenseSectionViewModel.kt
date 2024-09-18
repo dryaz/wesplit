@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.expense.toInstant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -45,7 +46,7 @@ class ExpenseSectionViewModel(
                     _dataState.update {
                         State.Expenses(
                             expensesResult.getOrThrow().groupBy {
-                                val localDate = it.date.toLocalDateTime(TimeZone.currentSystemDefault())
+                                val localDate = it.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
                                 "${localDate.month} ${localDate.year}"
                             },
                         )

@@ -7,7 +7,6 @@ import app.wesplit.domain.model.expense.Share
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.Participant
 import io.kotest.matchers.shouldBe
-import kotlinx.datetime.Clock
 import kotlin.test.Test
 
 class CalculateBalanceUsecaseTest {
@@ -33,7 +32,6 @@ class CalculateBalanceUsecaseTest {
                     shares = emptySet(),
                     totalAmount = Amount(100f, "USD"),
                     expenseType = ExpenseType.EXPENSE,
-                    date = Clock.System.now(),
                     undistributedAmount = Amount(100f, "USD"),
                 ),
             )
@@ -64,7 +62,6 @@ class CalculateBalanceUsecaseTest {
                     shares = emptySet(),
                     totalAmount = Amount(100f, "USD"),
                     expenseType = ExpenseType.EXPENSE,
-                    date = Clock.System.now(),
                     undistributedAmount = Amount(100f, "USD"),
                 ),
             )
@@ -100,7 +97,6 @@ class CalculateBalanceUsecaseTest {
                         ),
                     totalAmount = Amount(100f, "USD"),
                     expenseType = ExpenseType.EXPENSE,
-                    date = Clock.System.now(),
                     undistributedAmount = null,
                 ),
                 Expense(
@@ -114,7 +110,6 @@ class CalculateBalanceUsecaseTest {
                         ),
                     totalAmount = Amount(100f, "USD"),
                     expenseType = ExpenseType.EXPENSE,
-                    date = Clock.System.now(),
                     undistributedAmount = null,
                 ),
             )

@@ -51,7 +51,9 @@ class GroupSettingsViewModel(
 
     fun commit() =
         with(state.value as State.Group) {
-            groupRepository.commit(id, title, participants)
+            viewModelScope.launch {
+                groupRepository.commit(id, title, participants)
+            }
         }
 
     fun update(group: State.Group) = _state.update { group }

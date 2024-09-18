@@ -5,13 +5,16 @@ import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.User
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.firestore.ServerTimestampBehavior
+import dev.gitlive.firebase.firestore.Timestamp
+import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
-import kotlin.random.Random
+
+private const val GROUP_COLLECTION = "groups"
 
 private const val GROUP_CREATE_EVENT = "group_create"
 private const val GROUP_UPDATE_EVENT = "group_update"
@@ -22,21 +25,26 @@ private const val GROUP_COMMIT_PARAM_USERS = "users_num"
 class GroupFirebaseRepository(
     private val analyticsManager: AnalyticsManager,
 ) : GroupRepository {
-    private val groups = MutableStateFlow<List<Group>>(emptyList())
-
-    override fun get(): StateFlow<List<Group>> = groups
-
-    override fun get(groupId: String): Flow<Result<Group>> =
-        flow {
-            val existingGroup = groups.value.find { it.id == groupId }
-            if (existingGroup != null) {
-                emit(Result.success(existingGroup))
-            } else {
-                emit(Result.failure(NullPointerException("No group found")))
+    override fun get(): Flow<List<Group>> =
+        Firebase.firestore.collection(GROUP_COLLECTION).snapshots.map {
+            it.documents.map {
+                it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
+                    id = it.id,
+                )
             }
         }
 
-    override fun commit(
+    override fun get(groupId: String): Flow<Result<Group>> =
+        Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).snapshots.map {
+            if (it.exists) {
+                val group = it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
+                Result.success(group.copy(id = it.id))
+            } else {
+                Result.failure(NullPointerException("No group found"))
+            }
+        }
+
+    override suspend fun commit(
         id: String?,
         title: String,
         participants: Set<Participant>,
@@ -51,10 +59,37 @@ class GroupFirebaseRepository(
             ),
         )
 
-        groups.getAndUpdate { existingGroups ->
-            // TODO: Support updating for internal memory impl
-            val randItn = Random.nextInt()
-            existingGroups + Group(randItn.toString(), "$title", participants)
+        if (id == null) {
+            // TODO: Extract firestore logic to groupDataSource 'cause repository will behave as usecase,
+            //  e.g. when user creates group all participants should be treated as contacts and also
+            //  stored in user relations as possible contacts to fetch in future!
+            //  If not extract -> hard to test ==> cover with tests!
+            Firebase.firestore.collection(GROUP_COLLECTION).add(
+                strategy = Group.serializer(),
+                data =
+                    Group(
+                        title = title,
+                        participants = participants,
+                        createdAt = Timestamp.ServerTimestamp,
+                    ),
+            )
+        } else {
+            val doc = Firebase.firestore.collection(GROUP_COLLECTION).document(id).get()
+            if (doc.exists) {
+                val existingGroup = doc.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
+                Firebase.firestore.collection(GROUP_COLLECTION).document(id).update(
+                    strategy = Group.serializer(),
+                    data =
+                        Group(
+                            title = title,
+                            participants = participants,
+                            createdAt = existingGroup.createdAt,
+                        ),
+                )
+            } else {
+                // TODO: DOC should be exists, maybe not enough rights or what not?
+                throw IllegalStateException("Document with id: $id should be exists")
+            }
         }
     }
 

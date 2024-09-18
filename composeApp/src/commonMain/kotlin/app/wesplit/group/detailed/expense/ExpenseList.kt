@@ -27,6 +27,7 @@ import app.wesplit.domain.model.expense.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.expense.myAmount
+import app.wesplit.domain.model.expense.toInstant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
@@ -75,7 +76,7 @@ private fun ExpenseItem(
     expense: Expense,
     onAction: (ExpenseAction) -> Unit,
 ) {
-    val localeDate = expense.date.toLocalDateTime(TimeZone.currentSystemDefault())
+    val localeDate = expense.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
     Row(
         modifier =
             Modifier

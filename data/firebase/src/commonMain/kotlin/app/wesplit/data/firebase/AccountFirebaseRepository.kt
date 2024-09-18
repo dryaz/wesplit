@@ -75,8 +75,6 @@ class AccountFirebaseRepository(
             return Account.Anonymous
         }
 
-        // TODO: THIS should return exect 1 document 'cause
-        // TODO: Frozen UI, Dispatcher for Android should be IO
         val doc = Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).get()
         if (doc.exists) {
             val user = doc.data(User.serializer())
