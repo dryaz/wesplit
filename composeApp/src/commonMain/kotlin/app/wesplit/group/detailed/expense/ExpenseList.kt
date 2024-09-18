@@ -28,6 +28,7 @@ import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.expense.myAmount
 import app.wesplit.domain.model.expense.toInstant
+import app.wesplit.domain.model.group.isMe
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
@@ -106,7 +107,7 @@ private fun ExpenseItem(
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = if (expense.payedBy.isMe) "Payed by You" else "Payed by ${expense.payedBy.name}",
+                text = if (expense.payedBy.isMe()) "Payed by You" else "Payed by ${expense.payedBy.name}",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.secondary,
             )
@@ -167,7 +168,7 @@ private fun LentString(expense: Expense) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outlineVariant,
         )
-    } else if (expense.payedBy.isMe) {
+    } else if (expense.payedBy.isMe()) {
         val lent =
             Amount(
                 value = expense.totalAmount.value - expense.myAmount().value,

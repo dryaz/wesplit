@@ -20,6 +20,5 @@ fun Account.participant(): Participant? =
         Participant(
             name = user.name,
             user = user,
-            isMe = true,
         )
     }

@@ -1,6 +1,7 @@
 package app.wesplit.domain.model.expense
 
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isMe
 import dev.gitlive.firebase.firestore.BaseTimestamp
 import dev.gitlive.firebase.firestore.Timestamp
 import kotlinx.datetime.Instant
@@ -44,4 +45,4 @@ data class Share(
     val amount: Amount,
 )
 
-fun Expense.myAmount() = shares.find { it.participant.isMe }?.amount ?: Amount(0f, totalAmount.currencyCode)
+fun Expense.myAmount() = shares.find { it.participant.isMe() }?.amount ?: Amount(0f, totalAmount.currencyCode)

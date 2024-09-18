@@ -13,6 +13,7 @@ import app.wesplit.domain.model.expense.Share
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isMe
 import app.wesplit.routing.RightPane
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -106,7 +107,7 @@ class ExpenseDetailsViewModel(
                         expenseResult.getOrNull() ?: Expense(
                             id = null,
                             title = "",
-                            payedBy = group.participants.find { it.isMe } ?: group.participants.first(),
+                            payedBy = group.participants.find { it.isMe() } ?: group.participants.first(),
                             // TODO: Currency model/set not to have hardcoded USD, map to sybmol etc
                             totalAmount = Amount(0f, "USD"),
                             shares =

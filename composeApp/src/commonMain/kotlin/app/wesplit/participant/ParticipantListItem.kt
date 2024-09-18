@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isMe
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.new
@@ -37,7 +38,7 @@ fun ParticipantListItem(
     ) {
         ParticipantAvatar(participant = participant)
         val suffix =
-            if (participant.isMe) {
+            if (participant.isMe()) {
                 " (${stringResource(Res.string.you)})"
             } else if (participant.user == null) {
                 " (${stringResource(Res.string.new)})"

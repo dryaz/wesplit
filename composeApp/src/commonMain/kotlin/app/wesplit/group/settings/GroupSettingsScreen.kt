@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.group.isMe
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
@@ -207,7 +208,7 @@ private fun GroupSettingsView(
                 ParticipantListItem(
                     participant = participant,
                     action =
-                        if (!participant.isMe) {
+                        if (!participant.isMe()) {
                             {
                                 AdaptiveIconButton(onClick = { onUpdated(group.copy(participants = group.participants - participant)) }) {
                                     Icon(
