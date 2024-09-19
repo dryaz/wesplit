@@ -6,6 +6,7 @@ import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.User
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.firestore
@@ -18,6 +19,8 @@ import org.koin.core.annotation.Single
 
 val GROUP_COLLECTION = "groups"
 
+private const val TOKENS_FIELD = "tokens"
+
 private const val GROUP_CREATE_EVENT = "group_create"
 private const val GROUP_UPDATE_EVENT = "group_update"
 private const val GROUP_COMMIT_PARAM_TITLE = "title"
@@ -28,7 +31,9 @@ class GroupFirebaseRepository(
     private val analyticsManager: AnalyticsManager,
 ) : GroupRepository {
     override fun get(): Flow<List<Group>> =
-        Firebase.firestore.collection(GROUP_COLLECTION).snapshots.map {
+        Firebase.firestore.collection(GROUP_COLLECTION).where {
+            TOKENS_FIELD contains (Firebase.auth.currentUser?.uid ?: "")
+        }.snapshots.map {
             it.documents.map {
                 it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
                     id = it.id,
@@ -72,26 +77,28 @@ class GroupFirebaseRepository(
                 //  e.g. when user creates group all participants should be treated as contacts and also
                 //  stored in user relations as possible contacts to fetch in future!
                 //  If not extract -> hard to test ==> cover with tests!
+                val newGroup =
+                    Group(
+                        title = title,
+                        participants =
+                            participants.map { participant ->
+                                if (participant.user != null) {
+                                    participant
+                                } else {
+                                    participant.copy(
+                                        user =
+                                            User(
+                                                name = participant.name,
+                                            ),
+                                    )
+                                }
+                            }.toSet(),
+                        createdAt = Timestamp.ServerTimestamp,
+                        tokens = participants.flatMap { it.user?.authIds ?: emptyList() },
+                    )
                 Firebase.firestore.collection(GROUP_COLLECTION).add(
                     strategy = Group.serializer(),
-                    data =
-                        Group(
-                            title = title,
-                            participants =
-                                participants.map { participant ->
-                                    if (participant.user != null) {
-                                        participant
-                                    } else {
-                                        participant.copy(
-                                            user =
-                                                User(
-                                                    name = participant.name,
-                                                ),
-                                        )
-                                    }
-                                }.toSet(),
-                            createdAt = Timestamp.ServerTimestamp,
-                        ),
+                    data = newGroup,
                 )
             } else {
                 val doc = Firebase.firestore.collection(GROUP_COLLECTION).document(id).get()
@@ -104,6 +111,7 @@ class GroupFirebaseRepository(
                                 title = title,
                                 participants = participants,
                                 createdAt = existingGroup.createdAt,
+                                tokens = participants.flatMap { it.user?.authIds ?: emptyList() },
                             ),
                     )
                 } else {

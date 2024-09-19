@@ -21,6 +21,10 @@ data class Group(
     val createdAt: BaseTimestamp = Timestamp.ServerTimestamp,
     @SerialName("updatedAt")
     val updatedAt: BaseTimestamp = Timestamp.ServerTimestamp,
+    // TODO: For security rules at the moment we also add auth uid in here, maybe need to split
+    // TODO: Public shares could be done via this
+    @SerialName("tokens")
+    val tokens: List<String> = emptyList(),
 )
 
 fun Group.uiTitle() =

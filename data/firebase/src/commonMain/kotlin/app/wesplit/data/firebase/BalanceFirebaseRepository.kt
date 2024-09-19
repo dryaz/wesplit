@@ -1,6 +1,7 @@
 package app.wesplit.data.firebase
 
 import app.wesplit.domain.balance.CalculateBalanceUsecase
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.expense.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
@@ -18,6 +19,7 @@ class BalanceFirebaseRepository(
     private val expenseRepository: ExpenseRepository,
     private val groupRepository: GroupRepository,
     private val calculateBalanceUsecase: CalculateBalanceUsecase,
+    private val analyticsManager: AnalyticsManager,
 ) : BalanceRepository {
     // TODO: For now we support only 1 currency per group without possibility for FX
     // TODO: Cover by test

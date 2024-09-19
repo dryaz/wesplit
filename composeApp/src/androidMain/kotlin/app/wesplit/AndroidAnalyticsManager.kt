@@ -1,11 +1,16 @@
 package app.wesplit
 
+import android.util.Log
 import app.wesplit.domain.model.LogLevel
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.crashlytics.crashlytics
 
 class AndroidAnalyticsManager : CommonAnalyticsManager() {
     override fun log(throwable: Throwable) {
+        if (BuildConfig.DEBUG) {
+            throwable.printStackTrace()
+        }
+
         Firebase.crashlytics.recordException(throwable)
     }
 
@@ -14,7 +19,13 @@ class AndroidAnalyticsManager : CommonAnalyticsManager() {
         logLevel: LogLevel,
         tag: String,
     ) {
-        if (logLevel != LogLevel.DEBUG) Firebase.crashlytics.log(msg)
+        if (BuildConfig.DEBUG) {
+            Log.e(tag, msg)
+        }
+
+        if (logLevel != LogLevel.DEBUG) {
+            Firebase.crashlytics.log(msg)
+        }
     }
 
     override fun setUserId(userId: String) {
@@ -24,6 +35,10 @@ class AndroidAnalyticsManager : CommonAnalyticsManager() {
 
     override fun track(event: String) {
         super.track(event)
+        if (BuildConfig.DEBUG) {
+            Log.e("EVENT", event)
+        }
+
         Firebase.crashlytics.log(event)
     }
 
@@ -32,6 +47,10 @@ class AndroidAnalyticsManager : CommonAnalyticsManager() {
         params: Map<String, String>,
     ) {
         super.track(event, params)
+        if (BuildConfig.DEBUG) {
+            Log.e("EVENT", event)
+        }
+
         Firebase.crashlytics.log(event)
     }
 }
