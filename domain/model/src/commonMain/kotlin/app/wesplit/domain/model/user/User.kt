@@ -1,5 +1,7 @@
 package app.wesplit.domain.model.user
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -9,6 +11,7 @@ import kotlinx.serialization.Transient
  * If somebody creates groups with anonymous 'user' it treated as participant.
  */
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @SerialName("user")
 data class User(
@@ -20,8 +23,10 @@ data class User(
     @SerialName("photo")
     val photoUrl: String? = null,
     @SerialName("contacts")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     val contacts: List<Contact> = emptyList(),
     @SerialName("authIds")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
     val authIds: List<String> = emptyList(),
 )
 

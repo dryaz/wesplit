@@ -5,10 +5,13 @@ import app.wesplit.domain.model.group.isMe
 import dev.gitlive.firebase.firestore.BaseTimestamp
 import dev.gitlive.firebase.firestore.Timestamp
 import kotlinx.datetime.Instant
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 @SerialName("expense")
 data class Expense(
@@ -20,7 +23,8 @@ data class Expense(
     @SerialName("payedBy")
     val payedBy: Participant,
     @SerialName("shares")
-    val shares: Set<Share>,
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val shares: Set<Share> = emptySet(),
     @SerialName("totalAmount")
     val totalAmount: Amount,
     @SerialName("undistributedAmount")
