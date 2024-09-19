@@ -1,6 +1,8 @@
 package app.wesplit.data.firebase
 
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
@@ -10,8 +12,10 @@ import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.firestore
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -28,16 +32,27 @@ private const val GROUP_COMMIT_PARAM_USERS = "users_num"
 
 @Single
 class GroupFirebaseRepository(
+    private val accountRepository: AccountRepository,
     private val analyticsManager: AnalyticsManager,
 ) : GroupRepository {
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun get(): Flow<List<Group>> =
-        Firebase.firestore.collection(GROUP_COLLECTION).where {
-            TOKENS_FIELD contains (Firebase.auth.currentUser?.uid ?: "")
-        }.snapshots.map {
-            it.documents.map {
-                it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
-                    id = it.id,
-                )
+        accountRepository.get().flatMapLatest { auth ->
+            when (auth) {
+                Account.Anonymous,
+                Account.Unknown,
+                -> flow { emptyList<List<Group>>() }
+
+                is Account.Authorized ->
+                    Firebase.firestore.collection(GROUP_COLLECTION).where {
+                        TOKENS_FIELD contains (Firebase.auth.currentUser?.uid ?: "")
+                    }.snapshots.map {
+                        it.documents.map {
+                            it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
+                                id = it.id,
+                            )
+                        }
+                    }
             }
         }
 
