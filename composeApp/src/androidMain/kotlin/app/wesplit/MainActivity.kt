@@ -17,6 +17,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             App(
+                // TODO: Deepling on android
+                deeplinkUrl = "",
                 AndroidAppModule().module,
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
                 module {
@@ -32,5 +34,5 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App()
+    App("")
 }

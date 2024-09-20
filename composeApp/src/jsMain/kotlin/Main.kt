@@ -27,7 +27,6 @@ fun main() {
             )
         Firebase.initialize(null, options)
 
-        println(window.location)
         // TODO: Parse incoming link as a deeplink
         //  - append UTM to firebase user if any
         //  - map deeplink to destination
@@ -39,6 +38,7 @@ fun main() {
             // TODO: Support initial destination
             // TODO: Provide parsed UTM into Common app to have SSOT for utm tracking
             App(
+                deeplinkUrl = window.location.toString(),
                 module {
                     single<LoginDelegate> { LoginJsDelegate() }
                     single<AnalyticsManager> { JsAnalyticsManager() }

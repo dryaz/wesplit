@@ -4,6 +4,7 @@ import com.motorro.keeplink.deeplink.ActionParser
 import com.motorro.keeplink.deeplink.BranchActionParser
 import com.motorro.keeplink.deeplink.DefaultActionParser
 import com.motorro.keeplink.deeplink.SegmentCheckParser
+import com.motorro.keeplink.uri.data.getValue
 
 internal val ProfileParser =
     SegmentCheckParser(
@@ -13,7 +14,12 @@ internal val ProfileParser =
 
 internal val GropuDetailsIdParser =
     ActionParser { components, pathIndex ->
-        components.getPath().getOrNull(pathIndex)?.takeIf { it.isNotBlank() }?.let { DeeplinkAction.GroupDetails(it) }
+        components.getPath().getOrNull(pathIndex)?.takeIf { it.isNotBlank() }?.let {
+            DeeplinkAction.GroupDetails(
+                groupId = it,
+                token = components.getSearch().getValue(DeeplinkAction.GroupDetails.TOKEN),
+            )
+        }
     }
 
 internal val GroupDetailsParser =

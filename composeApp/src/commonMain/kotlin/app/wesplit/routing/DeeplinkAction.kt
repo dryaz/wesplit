@@ -3,6 +3,7 @@ package app.wesplit.routing
 import com.motorro.keeplink.deeplink.Action
 import com.motorro.keeplink.uri.data.Param
 import com.motorro.keeplink.uri.data.PshComponents
+import com.motorro.keeplink.uri.data.of
 import kotlinx.serialization.Serializable
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
@@ -27,12 +28,24 @@ sealed class DeeplinkAction : Action() {
         override fun getPath(): Array<String> = super.getPath() + SEGMENT
     }
 
-    class GroupDetails(val groupId: String) : DeeplinkAction() {
-        companion object {
+    class GroupDetails(val groupId: String, val token: String?) : DeeplinkAction() {
+        internal companion object {
             const val SEGMENT = "group"
+            const val TOKEN = "token"
         }
 
         override fun getPath(): Array<String> = super.getPath() + SEGMENT + groupId
+
+        override fun getSearch(): Array<Param> {
+            return if (token != null) {
+                super.getSearch() +
+                    arrayOf(
+                        TOKEN of token,
+                    )
+            } else {
+                super.getSearch()
+            }
+        }
     }
 
     class Unknown(private val components: PshComponents) : DeeplinkAction() {
