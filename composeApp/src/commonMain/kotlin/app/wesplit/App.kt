@@ -21,6 +21,7 @@ import app.wesplit.routing.MenuItem
 import app.wesplit.routing.RightPane
 import app.wesplit.routing.RootNavigation
 import app.wesplit.theme.AppTheme
+import com.motorro.keeplink.uri.data.getValue
 import com.motorro.keeplink.uri.data.toMap
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.firestore
@@ -87,7 +88,10 @@ fun App(
                     is DeeplinkAction.GroupDetails ->
                         secondPaneNavController.navigate(
                             // TODO: Support token for sharing
-                            RightPane.Group.destination(action.groupId),
+                            RightPane.Group.destination(
+                                groupId = action.groupId,
+                                token = link.action.getSearch().getValue(DeeplinkAction.GroupDetails.TOKEN),
+                            ),
                             navOptions =
                                 navOptions {
                                     launchSingleTop = true

@@ -79,14 +79,25 @@ sealed class RightPane(
 ) : PaneNavigation(route) {
     data object Empty : RightPane("empty")
 
-    data object Group : RightPane("group/{${Param.GROUP_ID.paramName}}") {
+    data object Group : RightPane("group/{${Param.GROUP_ID.paramName}}?${Param.TOKEN.paramName}={${Param.TOKEN.paramName}}") {
         enum class Param(
             val paramName: String,
         ) {
             GROUP_ID("group_id"),
+            TOKEN("token"),
         }
 
-        fun destination(groupId: String): String = "group/$groupId"
+        fun destination(
+            groupId: String,
+            token: String? = null,
+        ): String {
+            val base = "group/$groupId"
+            return if (token != null) {
+                base + "?${Param.TOKEN.paramName}=$token"
+            } else {
+                base
+            }
+        }
 
         override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId) instead")
     }
@@ -362,6 +373,10 @@ fun RootNavigation(
                         listOf(
                             navArgument(RightPane.Group.Param.GROUP_ID.paramName) {
                                 type = NavType.StringType
+                            },
+                            navArgument(RightPane.Group.Param.TOKEN.paramName) {
+                                type = NavType.StringType
+                                nullable = true
                             },
                         ),
                 ) {

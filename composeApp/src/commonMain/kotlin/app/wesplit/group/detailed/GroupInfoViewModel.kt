@@ -32,6 +32,16 @@ class GroupInfoViewModel(
                     .paramName,
             ],
         )
+
+    private val token: String? =
+        savedStateHandle[
+            RightPane
+                .Group
+                .Param
+                .TOKEN
+                .paramName,
+        ]
+
     private val _dataState = MutableStateFlow<State>(State.Loading)
 
     init {
