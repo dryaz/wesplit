@@ -170,28 +170,6 @@ class GroupFirebaseRepository(
     // TODO: Implement, current is mock
     override fun getSuggestedParticipants(searchQuery: String): Flow<List<Participant>> =
         flow {
-            val data =
-                listOf(
-                    Participant("Ivan", User("1", "Ivan", "https://randomuser.me/api/portraits/med/men/74.jpg")),
-                    Participant("Dima", User("2", "Dima", "https://randomuser.me/api/portraits/med/men/73.jpg")),
-                    Participant("Marko", User("3", "Marko", "https://randomuser.me/api/portraits/med/men/72.jpg")),
-                    Participant("John Smith", User("4", "John Smith", "https://randomuser.me/api/portraits/med/men/71.jpg")),
-                    Participant("Pedro", User("5", "Pedro", "https://randomuser.me/api/portraits/med/men/70.jpg")),
-                    Participant("Huan Gonsales", User("6", "Huan Gonsales", "https://randomuser.me/api/portraits/med/men/75.jpg")),
-                    Participant("Daria", User("7", "Ivan", "https://randomuser.me/api/portraits/med/men/61.jpg")),
-                    Participant("Tanya", User("8", "Dima", "https://randomuser.me/api/portraits/med/men/60.jpg")),
-                    Participant("Anna", User("9", "Marko", "https://randomuser.me/api/portraits/med/men/59.jpg")),
-                    Participant("Zarina", User("10", "John Smith", "https://randomuser.me/api/portraits/med/men/58.jpg")),
-                    Participant("Jim", User("11", "Pedro", "https://randomuser.me/api/portraits/med/men/57.jpg")),
-                    Participant("James", User("12", "Huan Gonsales", "https://randomuser.me/api/portraits/med/men/56.jpg")),
-                    Participant("Petr", User("13", "Ivan", "https://randomuser.me/api/portraits/med/men/55.jpg")),
-                    Participant("Vlad", User("14", "Dima", "https://randomuser.me/api/portraits/med/men/54.jpg")),
-                    Participant("Nikola", User("15", "Marko", "https://randomuser.me/api/portraits/med/men/53.jpg")),
-                    Participant("Nobody", User("16", "John Smith", "https://randomuser.me/api/portraits/med/men/52.jpg")),
-                    Participant("Othe name's", User("17", "Pedro", "https://randomuser.me/api/portraits/med/men/51.jpg")),
-                    Participant("Last item", User("18", "Huan Gonsales", "https://randomuser.me/api/portraits/med/men/50.jpg")),
-                )
-            // TODO: Probably we soulc query firebase with some query
-            emit(data.filter { !it.name.isNullOrBlank() && it.name.lowercase().contains(searchQuery.lowercase()) })
+            emit(emptyList())
         }
 }

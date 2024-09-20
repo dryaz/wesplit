@@ -246,7 +246,7 @@ private fun SharesDetails(
         }
         HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
 
-        data.group.participants.forEach { participant ->
+        (data.group.participants + data.expense.shares.map { it.participant }).forEach { participant ->
             ParticipantListItem(
                 participant = participant,
                 onClick = { item ->
@@ -405,7 +405,7 @@ private fun ExpenseDetails(
         PayerChooser(
             expanded = payerSelection,
             payer = data.expense.payedBy,
-            allParticipants = data.group.participants,
+            allParticipants = data.group.participants + data.expense.shares.map { it.participant },
             onDismiss = { payerSelection = false },
             onUpdated = onUpdated,
         )
