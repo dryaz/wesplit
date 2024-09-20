@@ -444,6 +444,18 @@ fun RootNavigation(
                     GroupSettingsScreen(viewModel = viewModel) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
+                            GroupSettingsAction.Home ->
+                                secondPaneNavController.navigate(
+                                    RightPane.Empty.destination(),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                            popUpTo(
+                                                RightPane.Empty.route,
+                                                popUpToBuilder = { inclusive = true },
+                                            )
+                                        },
+                                )
                         }
                     }
                 }
@@ -483,6 +495,18 @@ fun RootNavigation(
                     GroupSettingsScreen(viewModel = viewModel) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
+                            GroupSettingsAction.Home ->
+                                secondPaneNavController.navigate(
+                                    RightPane.Empty.destination(),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                            popUpTo(
+                                                RightPane.Empty.route,
+                                                popUpToBuilder = { inclusive = true },
+                                            )
+                                        },
+                                )
                         }
                     }
                 }

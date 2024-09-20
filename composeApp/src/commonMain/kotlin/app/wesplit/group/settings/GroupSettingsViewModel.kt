@@ -54,6 +54,17 @@ class GroupSettingsViewModel(
             }
         }
 
+    // TODO: MVI appraoch like in ExpenseDetailsViewModel
+    fun leave() {
+        with(state.value as State.Group) {
+            viewModelScope.launch {
+                id?.let {
+                    groupRepository.leave(it)
+                }
+            }
+        }
+    }
+
     fun update(group: State.Group) = _state.update { group }
 
     // TODO: Check if we need reload with firebase or it will automatically return data without reloading.

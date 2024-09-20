@@ -28,6 +28,8 @@ interface GroupRepository {
         participants: Set<Participant>,
     )
 
+    suspend fun leave(groupId: String)
+
     /**
      * Get suggestions about users when user suppose to add new user to the group.
      */

@@ -6,9 +6,11 @@ import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.User
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
+import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.firestore
@@ -19,6 +21,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.builtins.nullable
 import org.koin.core.annotation.Single
 
 val GROUP_COLLECTION = "groups"
@@ -27,6 +30,7 @@ private const val TOKENS_FIELD = "tokens"
 
 private const val GROUP_CREATE_EVENT = "group_create"
 private const val GROUP_UPDATE_EVENT = "group_update"
+private const val GROUP_LEAVE_EVENT = "group_leave"
 private const val GROUP_COMMIT_PARAM_TITLE = "title"
 private const val GROUP_COMMIT_PARAM_USERS = "users_num"
 
@@ -120,7 +124,7 @@ class GroupFirebaseRepository(
                 if (doc.exists) {
                     val existingGroup = doc.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
                     Firebase.firestore.collection(GROUP_COLLECTION).document(id).update(
-                        strategy = Group.serializer(),
+                        strategy = Group.serializer().nullable,
                         data =
                             Group(
                                 title = title,
@@ -136,6 +140,32 @@ class GroupFirebaseRepository(
                 }
             }
         }
+
+    override suspend fun leave(groupId: String) {
+        analyticsManager.track(GROUP_LEAVE_EVENT)
+        val doc = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).get()
+        if (doc.exists) {
+            val existingGroup = doc.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
+            val myTokens = existingGroup.participants.firstOrNull { it.isMe() }?.user?.authIds
+            if (myTokens == null) return
+
+            val newTokens = existingGroup.tokens.filterNot { it in myTokens }
+            // TODO: Check if it's accurate (spoiler: probably not)
+            if (newTokens.isNotEmpty()) {
+                Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).update(
+                    strategy = Group.serializer(),
+                    data =
+                        existingGroup.copy(
+                            tokens = newTokens,
+                        ),
+                )
+            } else {
+                Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).update(
+                    mapOf(TOKENS_FIELD to FieldValue.delete),
+                )
+            }
+        }
+    }
 
     // TODO: Implement, current is mock
     override fun getSuggestedParticipants(searchQuery: String): Flow<List<Participant>> =
