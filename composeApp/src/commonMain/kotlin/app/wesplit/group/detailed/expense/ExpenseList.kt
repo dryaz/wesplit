@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.expense.Amount
@@ -148,18 +150,25 @@ private fun ExpenseItem(
 private fun LentString(expense: Expense) {
     if (expense.undistributedAmount != null && expense.undistributedAmount?.value != 0f) {
         val undistributed = expense.undistributedAmount
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier =
+                Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 8.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Icon(
                 modifier = Modifier.size(16.dp),
                 painter = painterResource(Res.drawable.ic_flag),
                 contentDescription = stringResource(Res.string.non_distr_cd),
-                tint = MaterialTheme.colorScheme.error,
+                tint = MaterialTheme.colorScheme.onErrorContainer,
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "${undistributed?.format()} not split yet!",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
+                text = "Not split: ${undistributed?.format()}!",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer,
             )
         }
     } else if (expense.myAmount().value == 0f) {
