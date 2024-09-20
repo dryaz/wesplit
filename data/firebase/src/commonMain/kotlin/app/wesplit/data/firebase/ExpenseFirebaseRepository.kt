@@ -1,6 +1,7 @@
 package app.wesplit.data.firebase
 
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import dev.gitlive.firebase.Firebase
@@ -16,6 +17,7 @@ private const val EXPENSE_COLLECTION = "expenses"
 
 private const val EXPENSE_CREATE_EVENT = "expense_create"
 private const val EXPENSE_UPDATE_EVENT = "expense_update"
+private const val EXPENSE_DELETE_EVENT = "expense_delete"
 private const val EXPENSE_SPLIT_TYPE_PARAM = "split_type"
 
 @Single
@@ -55,7 +57,7 @@ class ExpenseFirebaseRepository(
             }
         }
 
-    override suspend fun commitExpense(
+    override suspend fun commit(
         groupId: String,
         expense: Expense,
     ): Unit =
@@ -95,4 +97,21 @@ class ExpenseFirebaseRepository(
                 )
             }
         }
+
+    override suspend fun delete(
+        groupId: String,
+        expense: Expense,
+    ) {
+        withContext(NonCancellable) {
+            analyticsManager.track(EXPENSE_DELETE_EVENT)
+            val expenseId = expense.id
+            if (expenseId != null) {
+                Firebase.firestore.collection(
+                    GROUP_COLLECTION,
+                ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).delete()
+            } else {
+                analyticsManager.log("Try to delete expense with null ID", LogLevel.ERROR)
+            }
+        }
+    }
 }

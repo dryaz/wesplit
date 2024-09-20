@@ -22,7 +22,12 @@ interface ExpenseRepository {
     ): Flow<Result<Expense>>
 
     // TODO: Return Result?
-    suspend fun commitExpense(
+    suspend fun commit(
+        groupId: String,
+        expense: Expense,
+    )
+
+    suspend fun delete(
         groupId: String,
         expense: Expense,
     )

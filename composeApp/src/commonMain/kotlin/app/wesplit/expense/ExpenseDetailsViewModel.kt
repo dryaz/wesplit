@@ -32,6 +32,8 @@ sealed interface UpdateAction {
 
     data object Commit : UpdateAction
 
+    data object Delete : UpdateAction
+
     data class NewPayer(val participant: Participant) : UpdateAction
 
     sealed interface Split : UpdateAction {
@@ -150,10 +152,17 @@ class ExpenseDetailsViewModel(
 
                 is UpdateAction.Split.Equal -> _state.update { data.copy(expense = calculateShares(expense, action)) }
 
+                UpdateAction.Delete ->
+                    (_state.value as? State.Data)?.expense?.let { exp ->
+                        viewModelScope.launch {
+                            expenseRepository.delete(groupId, exp)
+                        }
+                    }
+
                 UpdateAction.Commit ->
                     (_state.value as? State.Data)?.expense?.let { exp ->
                         viewModelScope.launch {
-                            expenseRepository.commitExpense(groupId, exp)
+                            expenseRepository.commit(groupId, exp)
                         }
                         // TODO: should we check for success event from here to close the screen of Firebase could handle it properly
                         //  saving first in local and only then pushing to remote?

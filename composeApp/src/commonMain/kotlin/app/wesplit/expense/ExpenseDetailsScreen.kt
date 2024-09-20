@@ -21,6 +21,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -32,9 +35,11 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -87,6 +92,7 @@ fun ExpenseDetailsScreen(
         viewModel.update(UpdateAction.Commit)
         onAction(AddExpenseAction.Back)
     }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -125,6 +131,9 @@ fun ExpenseDetailsScreen(
                     data = expenseState,
                 ) { action ->
                     viewModel.update(action)
+                    if (action == UpdateAction.Delete) {
+                        onAction(AddExpenseAction.Back)
+                    }
                 }
             // TODO: Shimmer?
             ExpenseDetailsViewModel.State.Loading -> Text("Loading")
@@ -138,6 +147,8 @@ private fun AddExpenseScreenView(
     data: ExpenseDetailsViewModel.State.Data,
     onUpdated: (UpdateAction) -> Unit,
 ) {
+    var deleteDialogShown by remember { mutableStateOf(false) }
+
     Column(
         modifier =
             modifier
@@ -148,6 +159,58 @@ private fun AddExpenseScreenView(
         ExpenseDetails(data, onUpdated)
         Spacer(modifier = Modifier.height(16.dp))
         SharesDetails(data, onUpdated)
+        if (data.expense.id != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedButton(
+                // TODO: Confirmation
+                onClick = { deleteDialogShown = true },
+                modifier =
+                    Modifier.widthIn(max = 450.dp)
+                        .fillMaxWidth(1f)
+                        .padding(horizontal = 16.dp),
+                colors =
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+            ) {
+                Text("Delete expense")
+            }
+        }
+        Spacer(modifier = Modifier.height(64.dp))
+    }
+
+    if (deleteDialogShown) {
+        AlertDialog(
+            modifier = Modifier.widthIn(max = 450.dp),
+            onDismissRequest = { deleteDialogShown = false },
+            title = { Text("Delete ${data.expense.title}?") },
+            text = { Text("Are you sure you want to delete this expense from '${data.group.title}'?") },
+            icon = {
+                Icon(
+                    Icons.Outlined.Delete,
+                    contentDescription = "Delete expense from group",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { onUpdated(UpdateAction.Delete) },
+                ) {
+                    Text(
+                        text = "Yes, Delete",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        deleteDialogShown = false
+                    },
+                ) {
+                    Text("No, Wait")
+                }
+            },
+        )
     }
 }
 
@@ -165,8 +228,7 @@ private fun SharesDetails(
             Modifier
                 .widthIn(max = 450.dp)
                 .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 64.dp),
+                .padding(horizontal = 16.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
