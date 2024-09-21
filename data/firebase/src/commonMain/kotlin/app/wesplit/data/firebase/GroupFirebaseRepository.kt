@@ -147,7 +147,7 @@ class GroupFirebaseRepository(
                                         }
                                     }.toSet(),
                                 createdAt = existingGroup.createdAt,
-                                tokens = participants.flatMap { it.user?.authIds ?: emptyList() },
+                                tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + existingGroup.publicToken,
                                 publicToken = existingGroup.publicToken,
                             ),
                     )
