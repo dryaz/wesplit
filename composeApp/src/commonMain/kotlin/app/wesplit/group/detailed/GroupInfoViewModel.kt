@@ -7,6 +7,8 @@ import app.wesplit.domain.model.exception.UnauthorizeAcceessException
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.routing.RightPane
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -50,6 +52,10 @@ class GroupInfoViewModel(
 
     fun refresh() =
         viewModelScope.launch {
+            if (Firebase.auth.currentUser == null && token != null) {
+                Firebase.auth.signInWithCustomToken(token)
+            }
+
             groupRepository.get(groupId).collectLatest { groupResult ->
                 val exception = groupResult.exceptionOrNull()
                 _dataState.update {

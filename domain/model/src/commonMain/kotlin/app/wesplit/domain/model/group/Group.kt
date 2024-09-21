@@ -31,7 +31,7 @@ data class Group(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val tokens: List<String> = emptyList(),
     @SerialName("publicToken")
-    val publicToken: String,
+    val publicToken: String? = null,
 )
 
 fun Group.uiTitle() =

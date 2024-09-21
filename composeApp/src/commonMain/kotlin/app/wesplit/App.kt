@@ -85,7 +85,7 @@ fun App(
 
             link?.let {
                 when (val action = link.action) {
-                    is DeeplinkAction.GroupDetails ->
+                    is DeeplinkAction.GroupDetails -> {
                         secondPaneNavController.navigate(
                             // TODO: Support token for sharing
                             RightPane.Group.destination(
@@ -101,7 +101,7 @@ fun App(
                                     )
                                 },
                         )
-
+                    }
                     is DeeplinkAction.Home -> {}
                     is DeeplinkAction.Profile ->
                         firstPaneNavController.navigate(

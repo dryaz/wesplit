@@ -89,12 +89,13 @@ fun GroupInfoScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // TODO: Doesnt work for some reason
     val shareMsg = stringResource(Res.string.share_link_copied)
 
     // TODO: Improve - on mobile show share intent, check what is better on web
     fun showLinkCopiedSnackbar() {
         scope.launch {
-            snackbarHostState.showSnackbar(shareMsg)
+            snackbarHostState.showSnackbar("Sharable link copied!")
         }
     }
 
