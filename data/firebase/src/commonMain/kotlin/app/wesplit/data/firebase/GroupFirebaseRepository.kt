@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.builtins.nullable
 import org.koin.core.annotation.Single
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 val GROUP_COLLECTION = "groups"
 
@@ -75,6 +77,7 @@ class GroupFirebaseRepository(
 
     // TODO: Add currency to UI + DB, one currency set per group as of now.
     //  Multiple currencies + FX sholuld be a premium feature.
+    @OptIn(ExperimentalUuidApi::class)
     override suspend fun commit(
         id: String?,
         title: String,
@@ -96,6 +99,7 @@ class GroupFirebaseRepository(
                 //  e.g. when user creates group all participants should be treated as contacts and also
                 //  stored in user relations as possible contacts to fetch in future!
                 //  If not extract -> hard to test ==> cover with tests!
+                val publicToken = Uuid.random().toString()
                 val newGroup =
                     Group(
                         title = title,
@@ -113,7 +117,8 @@ class GroupFirebaseRepository(
                                 }
                             }.toSet(),
                         createdAt = Timestamp.ServerTimestamp,
-                        tokens = participants.flatMap { it.user?.authIds ?: emptyList() },
+                        tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + publicToken,
+                        publicToken = publicToken,
                     )
                 Firebase.firestore.collection(GROUP_COLLECTION).add(
                     strategy = Group.serializer(),
@@ -128,9 +133,22 @@ class GroupFirebaseRepository(
                         data =
                             Group(
                                 title = title,
-                                participants = participants,
+                                participants =
+                                    participants.map { participant ->
+                                        if (participant.user != null) {
+                                            participant
+                                        } else {
+                                            participant.copy(
+                                                user =
+                                                    User(
+                                                        name = participant.name,
+                                                    ),
+                                            )
+                                        }
+                                    }.toSet(),
                                 createdAt = existingGroup.createdAt,
                                 tokens = participants.flatMap { it.user?.authIds ?: emptyList() },
+                                publicToken = existingGroup.publicToken,
                             ),
                     )
                 } else {

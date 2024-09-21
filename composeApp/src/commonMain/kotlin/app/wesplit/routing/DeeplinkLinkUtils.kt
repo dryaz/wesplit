@@ -10,14 +10,14 @@ import kotlin.js.JsExport
 
 object DeeplinkParsers {
     val LOCALHOST_8080: LinkParser<DeeplinkAction> = SchemeHostLinkParser(RootActionParser, "http", "localhost:8080")
-    val PROD: LinkParser<DeeplinkAction> = SchemeHostLinkParser(RootActionParser, "https", "wesplit.app")
+    val PROD: LinkParser<DeeplinkAction> = SchemeHostLinkParser(RootActionParser, "https", "web.wesplit.app")
 }
 
 @JsExport
 @OptIn(ExperimentalJsExport::class)
 object DeeplinkBuilders {
     val LOCALHOST_8080: LinkBuilder<DeeplinkAction> = SchemeHostLinkBuilder("http", "localhost:8080")
-    val PROD: LinkBuilder<DeeplinkAction> = SchemeHostLinkBuilder("https", "wesplit.app")
+    val PROD: LinkBuilder<DeeplinkAction> = SchemeHostLinkBuilder("https", "web.wesplit.app")
 }
 
 object DeeplinkSerializers {

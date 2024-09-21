@@ -50,5 +50,6 @@
     <string name="non_distr_cd">Not distributed expense</string>
     <string name="profile_under_construction">More features coming soon!</string>
     <string name="edit_group">Edit group</string>
+    <string name="share_link_copied">Sharable link copied!</string>
 
 </resources>

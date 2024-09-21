@@ -10,6 +10,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.core.bundle.Bundle
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,6 +47,7 @@ import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
 import app.wesplit.routing.RightPane.Group.Param
+import com.motorro.keeplink.deeplink.deepLink
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
@@ -160,6 +163,7 @@ fun RootNavigation(
     val analyticsManager: AnalyticsManager = koinInject()
     val accountRepository: AccountRepository = koinInject()
     val coroutineScope = rememberCoroutineScope()
+    val clipboardManager = LocalClipboardManager.current
 
     val menuItems =
         remember {
@@ -406,7 +410,19 @@ fun RootNavigation(
                         when (action) {
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
                             is GroupInfoAction.Share -> {
-                                // TODO: Implement share, here is add expense for test purposes
+                                val detailsAction =
+                                    DeeplinkAction.GroupDetails(
+                                        groupId = action.group.id,
+                                        token = action.group.publicToken,
+                                    )
+                                val link = deepLink(detailsAction)
+                                val groupDetailsUrl = DeeplinkBuilders.PROD.build(link)
+                                clipboardManager.setText(
+                                    annotatedString =
+                                        buildAnnotatedString {
+                                            append(text = groupDetailsUrl)
+                                        },
+                                )
                             }
 
                             is GroupInfoAction.AddExpense -> {
