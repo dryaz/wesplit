@@ -7,5 +7,5 @@ interface AccountRepository {
 
     fun logout()
 
-    fun login(loginType: LoginType)
+    fun login(login: Login)
 }

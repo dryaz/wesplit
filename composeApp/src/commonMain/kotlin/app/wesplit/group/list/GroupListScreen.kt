@@ -166,7 +166,7 @@ private fun EmptyGroupList(
 ) {
     AnimatedVisibility(
         modifier = modifier.fillMaxSize(1f),
-        visible = accountState is Account.Anonymous,
+        visible = accountState is Account.Anonymous || accountState is Account.Restricted,
     ) {
         LoginSection(
             modifier = modifier,

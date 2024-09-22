@@ -85,6 +85,7 @@ fun GroupInfoScreen(
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val data = viewModel.dataState.collectAsState()
+
     val windowSizeClass = calculateWindowSizeClass()
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }

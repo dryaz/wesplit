@@ -3,22 +3,29 @@ package app.wesplit.group.detailed
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.routing.RightPane
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.auth.auth
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 class GroupInfoViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
+    private val accountRepository: AccountRepository,
 ) : ViewModel(),
     KoinComponent {
     val dataState: StateFlow<State>
@@ -50,27 +57,49 @@ class GroupInfoViewModel(
         refresh()
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun refresh() =
         viewModelScope.launch {
-            if (Firebase.auth.currentUser == null && token != null) {
-                Firebase.auth.signInWithCustomToken(token)
-            }
+            accountRepository
+                .get()
+                .onEach {
+                    if (it !is Account.Existing && token != null) {
+                        accountRepository.login(
+                            Login.GroupToken(
+                                groupId = groupId,
+                                token = token,
+                            ),
+                        )
+                    }
+                }
+                .distinctUntilChanged()
+                .flatMapLatest {
+                    when (it) {
+                        Account.Unknown,
+                        Account.Anonymous,
+                        -> flow { emit(State.Loading) }
 
-            groupRepository.get(groupId).collectLatest { groupResult ->
-                val exception = groupResult.exceptionOrNull()
-                _dataState.update {
-                    when (exception) {
-                        is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)
-                        is NullPointerException -> State.Error(State.Error.Type.NOT_EXISTS)
-                        else ->
-                            if (exception != null) {
-                                State.Error(State.Error.Type.FETCH_ERROR)
-                            } else {
-                                State.GroupInfo(groupResult.getOrThrow())
+                        is Account.Authorized,
+                        Account.Restricted,
+                        ->
+                            groupRepository.get(groupId).mapLatest { groupResult ->
+                                val exception = groupResult.exceptionOrNull()
+                                when (exception) {
+                                    is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)
+                                    is NullPointerException -> State.Error(State.Error.Type.NOT_EXISTS)
+                                    else ->
+                                        if (exception != null) {
+                                            State.Error(State.Error.Type.FETCH_ERROR)
+                                        } else {
+                                            State.GroupInfo(groupResult.getOrThrow())
+                                        }
+                                }
                             }
                     }
                 }
-            }
+                .collectLatest {
+                    _dataState.value = it
+                }
         }
 
     sealed interface State {

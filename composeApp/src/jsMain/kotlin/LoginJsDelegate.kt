@@ -1,5 +1,5 @@
+import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.account.LoginDelegate
-import app.wesplit.domain.model.account.LoginType
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
@@ -8,8 +8,8 @@ import dev.gitlive.firebase.auth.externals.signInWithPopup
 import dev.gitlive.firebase.auth.js
 
 class LoginJsDelegate : LoginDelegate {
-    override fun login(
-        type: LoginType,
+    override fun socialLogin(
+        type: Login.Social.Type,
         onLogin: (Result<FirebaseUser>) -> Unit,
     ) {
         // TODO: Gitlive yet not supported linkWithPopup for anon user, but worth to have it

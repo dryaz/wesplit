@@ -5,14 +5,22 @@ import app.wesplit.domain.model.user.User
 import dev.gitlive.firebase.auth.FirebaseUser
 
 sealed interface Account {
+    sealed interface Existing
+
     data object Unknown : Account
 
     data object Anonymous : Account
 
+    /**
+     * Not yet full account but restircted to explicit entities.
+     * E.g. Acces to the group by public token.
+     */
+    data object Restricted : Account, Existing
+
     data class Authorized(
         val user: User,
         val authUser: FirebaseUser,
-    ) : Account
+    ) : Account, Existing
 }
 
 fun Account.participant(): Participant? =

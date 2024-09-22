@@ -7,8 +7,8 @@ import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
 import app.wesplit.di.ActivityProvider
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.account.LoginDelegate
-import app.wesplit.domain.model.account.LoginType
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -28,8 +28,8 @@ class LoginAndroidDelegate(
     private val activityProvider: ActivityProvider,
     private val analyticsManager: AnalyticsManager,
 ) : LoginDelegate {
-    override fun login(
-        type: LoginType,
+    override fun socialLogin(
+        type: Login.Social.Type,
         onLogin: (Result<FirebaseUser>) -> Unit,
     ) {
         val signInWithGoogleOption: GetSignInWithGoogleOption =

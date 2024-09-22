@@ -123,7 +123,7 @@ fun ProfileScreen(
                     CircularProgressIndicator()
                 }
             }
-
+            Account.Restricted,
             is Account.Anonymous,
             ->
                 LoginSection(

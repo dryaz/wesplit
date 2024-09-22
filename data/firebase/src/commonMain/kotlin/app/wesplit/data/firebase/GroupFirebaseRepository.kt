@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.builtins.nullable
 import org.koin.core.annotation.Single
 import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 val GROUP_COLLECTION = "groups"
 
@@ -46,6 +47,7 @@ class GroupFirebaseRepository(
             when (auth) {
                 Account.Anonymous,
                 Account.Unknown,
+                Account.Restricted, // TODO: In case of restriction to group -> return this gropu in list
                 -> flow { emptyList<List<Group>>() }
 
                 is Account.Authorized ->
@@ -98,6 +100,7 @@ class GroupFirebaseRepository(
                 //  e.g. when user creates group all participants should be treated as contacts and also
                 //  stored in user relations as possible contacts to fetch in future!
                 //  If not extract -> hard to test ==> cover with tests!
+                val publicToken = Uuid.random().toString()
                 val newGroup =
                     Group(
                         title = title,
@@ -115,7 +118,8 @@ class GroupFirebaseRepository(
                                 }
                             }.toSet(),
                         createdAt = Timestamp.ServerTimestamp,
-                        tokens = participants.flatMap { it.user?.authIds ?: emptyList() },
+                        tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + publicToken,
+                        publicToken = publicToken,
                     )
                 Firebase.firestore.collection(GROUP_COLLECTION).add(
                     strategy = Group.serializer(),
@@ -144,7 +148,7 @@ class GroupFirebaseRepository(
                                         }
                                     }.toSet(),
                                 createdAt = existingGroup.createdAt,
-                                tokens = participants.flatMap { it.user?.authIds ?: emptyList() },
+                                tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + existingGroup.publicToken,
                                 publicToken = existingGroup.publicToken,
                             ),
                     )

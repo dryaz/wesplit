@@ -30,7 +30,7 @@ import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.AccountRepository
-import app.wesplit.domain.model.account.LoginType
+import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.expense.AddExpenseAction
@@ -278,7 +278,7 @@ fun RootNavigation(
                         viewModel = viewModel,
                         onAction = { action ->
                             when (action) {
-                                ProfileAction.Login -> accountRepository.login(LoginType.GOOGLE)
+                                ProfileAction.Login -> accountRepository.login(Login.Social(Login.Social.Type.GOOGLE))
                                 ProfileAction.Logout -> {
                                     accountRepository.logout()
                                     secondPaneNavController.navigate(
@@ -319,7 +319,7 @@ fun RootNavigation(
                                         )
 
                                     GroupListAction.Login -> {
-                                        accountRepository.login(LoginType.GOOGLE)
+                                        accountRepository.login(Login.Social(Login.Social.Type.GOOGLE))
                                     }
 
                                     GroupListAction.CreateNewGroup -> {
@@ -402,6 +402,7 @@ fun RootNavigation(
                             GroupInfoViewModel(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
+                                accountRepository,
                             )
                         }
                     GroupInfoScreen(
