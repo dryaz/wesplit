@@ -12,8 +12,11 @@ import app.wesplit.domain.model.group.Participant
 import app.wesplit.routing.RightPane
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -33,22 +36,32 @@ class GroupSettingsViewModel(
                 .paramName,
         ]
 
-    val state: StateFlow<State>
-        get() = _state
-
+    private val dataState = MutableStateFlow<DataState>(DataState.Loading)
     private var loadJob: Job? = null
-    private val _state = MutableStateFlow<State>(State.Loading)
 
     init {
         if (groupId != null) {
             reload()
         } else {
-            _state.update { emptyGroupState() }
+            dataState.update { emptyGroupState() }
         }
     }
 
+    val state: StateFlow<UiState> =
+        combine(dataState, accountRepository.get()) { value1, value2 ->
+            UiState(value1, value2)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue =
+                UiState(
+                    DataState.Loading,
+                    Account.Unknown,
+                ),
+        )
+
     fun commit() =
-        with(state.value as State.Group) {
+        with(dataState.value as DataState.Group) {
             viewModelScope.launch {
                 groupRepository.commit(id, title, participants)
             }
@@ -56,7 +69,7 @@ class GroupSettingsViewModel(
 
     // TODO: MVI appraoch like in ExpenseDetailsViewModel
     fun leave() {
-        with(state.value as State.Group) {
+        with(dataState.value as DataState.Group) {
             viewModelScope.launch {
                 id?.let {
                     groupRepository.leave(it)
@@ -65,7 +78,7 @@ class GroupSettingsViewModel(
         }
     }
 
-    fun update(group: State.Group) = _state.update { group }
+    fun update(group: DataState.Group) = dataState.update { group }
 
     // TODO: Check if we need reload with firebase or it will automatically return data without reloading.
     fun reload() {
@@ -75,16 +88,16 @@ class GroupSettingsViewModel(
             viewModelScope.launch {
                 groupRepository.get(groupId).collectLatest { groupResult ->
                     val exception = groupResult.exceptionOrNull()
-                    _state.update {
+                    dataState.update {
                         when (exception) {
-                            is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)
-                            is NullPointerException -> State.Error(State.Error.Type.NOT_EXISTS)
+                            is UnauthorizeAcceessException -> DataState.Error(DataState.Error.Type.UNAUTHORIZED)
+                            is NullPointerException -> DataState.Error(DataState.Error.Type.NOT_EXISTS)
                             else ->
                                 if (exception != null) {
-                                    State.Error(State.Error.Type.FETCH_ERROR)
+                                    DataState.Error(DataState.Error.Type.FETCH_ERROR)
                                 } else {
                                     with(groupResult.getOrThrow()) {
-                                        State.Group(
+                                        DataState.Group(
                                             id = this.id,
                                             title = this.title,
                                             participants = this.participants,
@@ -98,7 +111,7 @@ class GroupSettingsViewModel(
     }
 
     private fun emptyGroupState() =
-        State.Group(
+        DataState.Group(
             id = null,
             title = "",
             participants =
@@ -107,10 +120,15 @@ class GroupSettingsViewModel(
                 ).filterNotNull().toSet(),
         )
 
-    sealed interface State {
-        data object Loading : State
+    data class UiState(
+        val dataState: DataState,
+        val account: Account,
+    )
 
-        data class Error(val type: Type) : State {
+    sealed interface DataState {
+        data object Loading : DataState
+
+        data class Error(val type: Type) : DataState {
             enum class Type {
                 NOT_EXISTS,
                 UNAUTHORIZED,
@@ -123,6 +141,6 @@ class GroupSettingsViewModel(
             val id: String?,
             val title: String,
             val participants: Set<Participant>,
-        ) : State
+        ) : DataState
     }
 }

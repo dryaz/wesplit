@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
@@ -89,7 +90,7 @@ fun GroupSettingsScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
             TopAppBareByState(
-                state = state.value,
+                dataState = state.value.dataState,
                 onAction = onAction,
                 onToolbarAction = { action ->
                     when (action) {
@@ -104,11 +105,12 @@ fun GroupSettingsScreen(
             )
         },
     ) { paddings ->
-        when (val groupState = state.value) {
-            is GroupSettingsViewModel.State.Error -> Text("Error")
-            is GroupSettingsViewModel.State.Group ->
+        when (val groupState = state.value.dataState) {
+            is GroupSettingsViewModel.DataState.Error -> Text("Error")
+            is GroupSettingsViewModel.DataState.Group ->
                 GroupSettingsView(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
+                    account = state.value.account,
                     group = groupState,
                     onDone = {
                         viewModel.commit()
@@ -122,7 +124,7 @@ fun GroupSettingsScreen(
                     viewModel.update(group)
                 }
             // TODO: Shimmer?
-            GroupSettingsViewModel.State.Loading -> Text("Loading")
+            GroupSettingsViewModel.DataState.Loading -> Text("Loading")
         }
     }
 }
@@ -131,10 +133,11 @@ fun GroupSettingsScreen(
 @Composable
 private fun GroupSettingsView(
     modifier: Modifier = Modifier,
-    group: GroupSettingsViewModel.State.Group,
+    group: GroupSettingsViewModel.DataState.Group,
+    account: Account,
     onDone: () -> Unit,
     onLeave: () -> Unit,
-    onUpdated: (GroupSettingsViewModel.State.Group) -> Unit,
+    onUpdated: (GroupSettingsViewModel.DataState.Group) -> Unit,
 ) {
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
@@ -223,7 +226,7 @@ private fun GroupSettingsView(
                 ParticipantListItem(
                     participant = participant,
                     action =
-                        if (!participant.isMe()) {
+                        if (!participant.isMe() && (account is Account.Authorized || participant.user == null)) {
                             {
                                 AdaptiveIconButton(onClick = { onUpdated(group.copy(participants = group.participants - participant)) }) {
                                     Icon(
@@ -241,7 +244,7 @@ private fun GroupSettingsView(
             }
         }
 
-        if (group.id != null) {
+        if (group.id != null && account is Account.Authorized) {
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(
                 // TODO: Confirmation
@@ -317,7 +320,7 @@ private fun GroupSettingsView(
 
 @Composable
 private fun TopAppBareByState(
-    state: GroupSettingsViewModel.State,
+    dataState: GroupSettingsViewModel.DataState,
     onAction: (GroupSettingsAction) -> Unit,
     onToolbarAction: (GroupSettingTollbarAction) -> Unit,
 ) {
@@ -325,11 +328,11 @@ private fun TopAppBareByState(
         title = {
             Text(
                 stringResource(
-                    when (state) {
-                        GroupSettingsViewModel.State.Loading -> Res.string.loading
-                        is GroupSettingsViewModel.State.Error -> Res.string.settings
-                        is GroupSettingsViewModel.State.Group ->
-                            if (state.id == null) {
+                    when (dataState) {
+                        GroupSettingsViewModel.DataState.Loading -> Res.string.loading
+                        is GroupSettingsViewModel.DataState.Error -> Res.string.settings
+                        is GroupSettingsViewModel.DataState.Group ->
+                            if (dataState.id == null) {
                                 Res.string.new_group
                             } else {
                                 Res.string.settings
@@ -343,31 +346,31 @@ private fun TopAppBareByState(
             Box(
                 modifier =
                     Modifier.fillMaxHeight(1f).clickable {
-                        when (state) {
-                            is GroupSettingsViewModel.State.Error ->
+                        when (dataState) {
+                            is GroupSettingsViewModel.DataState.Error ->
                                 onToolbarAction(
                                     GroupSettingTollbarAction.Reload,
                                 )
 
-                            is GroupSettingsViewModel.State.Group ->
+                            is GroupSettingsViewModel.DataState.Group ->
                                 onToolbarAction(
                                     GroupSettingTollbarAction.Commit,
                                 )
 
-                            GroupSettingsViewModel.State.Loading -> {}
+                            GroupSettingsViewModel.DataState.Loading -> {}
                         }
                     }.padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                when (state) {
-                    is GroupSettingsViewModel.State.Error ->
+                when (dataState) {
+                    is GroupSettingsViewModel.DataState.Error ->
                         Text(
                             // TODO: Add leading icon retry icon
                             text = stringResource(Res.string.retry),
                         )
 
-                    is GroupSettingsViewModel.State.Group ->
-                        if (state.id == null) {
+                    is GroupSettingsViewModel.DataState.Group ->
+                        if (dataState.id == null) {
                             // TODO: Add leading icon OK
                             Text(
                                 text = stringResource(Res.string.create),
@@ -380,7 +383,7 @@ private fun TopAppBareByState(
                             )
                         }
 
-                    GroupSettingsViewModel.State.Loading -> CircularProgressIndicator()
+                    GroupSettingsViewModel.DataState.Loading -> CircularProgressIndicator()
                 }
             }
         },
