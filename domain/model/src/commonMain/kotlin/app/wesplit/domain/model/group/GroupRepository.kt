@@ -11,8 +11,14 @@ interface GroupRepository {
      * Get group by id. First cached result could be returned.
      * Also try to retrieve group from cloud and Result could be unsuccessfull in case of
      * e.g. network error or current user is not authorized to access the group.
+     *
+     * @param token If provided user should get access to the group.
+     *      If not this token is used to add access for current user.
      */
-    fun get(groupId: String): Flow<Result<Group>>
+    fun get(
+        groupId: String,
+        token: String? = null,
+    ): Flow<Result<Group>>
 
     // TODO: Support image
     // TODO: Define if current user must be in the users list

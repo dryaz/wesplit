@@ -11,8 +11,11 @@ import app.wesplit.domain.model.user.User
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.FieldValue
+import dev.gitlive.firebase.firestore.FirebaseFirestoreException
+import dev.gitlive.firebase.firestore.FirestoreExceptionCode
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.Timestamp
+import dev.gitlive.firebase.firestore.code
 import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
@@ -20,8 +23,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.builtins.nullable
 import org.koin.core.annotation.Single
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -29,10 +32,13 @@ import kotlin.uuid.Uuid
 val GROUP_COLLECTION = "groups"
 
 private const val TOKENS_FIELD = "tokens"
+private const val PUBLIC_TOKEN_FIELD = "publicToken"
+private const val PARTICIPANTS_FIELD = "participants"
 
 private const val GROUP_CREATE_EVENT = "group_create"
 private const val GROUP_UPDATE_EVENT = "group_update"
 private const val GROUP_LEAVE_EVENT = "group_leave"
+private const val GROUP_JOIN_EVENT = "group_join"
 private const val GROUP_COMMIT_PARAM_TITLE = "title"
 private const val GROUP_COMMIT_PARAM_USERS = "users_num"
 
@@ -63,8 +69,11 @@ class GroupFirebaseRepository(
             }
         }
 
-    override fun get(groupId: String): Flow<Result<Group>> =
-        Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).snapshots.map {
+    override fun get(
+        groupId: String,
+        token: String?,
+    ): Flow<Result<Group>> {
+        return Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).snapshots.map {
             if (it.exists) {
                 val group = it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
                 Result.success(group.copy(id = it.id))
@@ -74,7 +83,28 @@ class GroupFirebaseRepository(
                 // TODO: Check what if there is not enough permission
                 Result.failure(exception)
             }
+        }.retryWhen { cause, attempt ->
+            if (attempt > 3) return@retryWhen false
+            cause.printStackTrace()
+            analyticsManager.log(cause)
+            return@retryWhen if (cause is FirebaseFirestoreException &&
+                cause.code == FirestoreExceptionCode.PERMISSION_DENIED
+            ) {
+                val uid = Firebase.auth.currentUser?.uid
+                if (uid != null && token != null) {
+                    Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).update(
+                        mapOf(
+                            TOKENS_FIELD to FieldValue.arrayUnion(uid),
+                            PUBLIC_TOKEN_FIELD to token,
+                        ),
+                    )
+                }
+                true
+            } else {
+                false
+            }
         }
+    }
 
     // TODO: Add currency to UI + DB, one currency set per group as of now.
     //  Multiple currencies + FX sholuld be a premium feature.
@@ -130,7 +160,7 @@ class GroupFirebaseRepository(
                 if (doc.exists) {
                     val existingGroup = doc.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
                     Firebase.firestore.collection(GROUP_COLLECTION).document(id).update(
-                        strategy = Group.serializer().nullable,
+                        strategy = Group.serializer(),
                         data =
                             Group(
                                 title = title,

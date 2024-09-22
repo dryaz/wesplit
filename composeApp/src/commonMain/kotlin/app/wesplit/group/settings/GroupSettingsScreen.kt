@@ -120,6 +120,9 @@ fun GroupSettingsScreen(
                         viewModel.leave()
                         onAction(GroupSettingsAction.Home)
                     },
+                    onJoin = {
+                        viewModel.join()
+                    },
                 ) { group ->
                     viewModel.update(group)
                 }
@@ -129,6 +132,7 @@ fun GroupSettingsScreen(
     }
 }
 
+// TODO: Move to actions
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun GroupSettingsView(
@@ -136,6 +140,7 @@ private fun GroupSettingsView(
     group: GroupSettingsViewModel.DataState.Group,
     account: Account,
     onDone: () -> Unit,
+    onJoin: () -> Unit,
     onLeave: () -> Unit,
     onUpdated: (GroupSettingsViewModel.DataState.Group) -> Unit,
 ) {
@@ -245,9 +250,26 @@ private fun GroupSettingsView(
         }
 
         if (group.id != null && account is Account.Authorized) {
+            val isMeParticipating = group.participants.any { it.isMe() }
             Spacer(modifier = Modifier.height(16.dp))
+            if (!isMeParticipating) {
+                OutlinedButton(
+                    onClick = { onJoin() },
+                    modifier =
+                        Modifier.widthIn(max = 450.dp)
+                            .fillMaxWidth(1f)
+                            .padding(horizontal = 16.dp),
+                    colors =
+                        ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                ) {
+                    Text(
+                        "Join group",
+                    )
+                }
+            }
             OutlinedButton(
-                // TODO: Confirmation
                 onClick = { leaveDialogShown = true },
                 modifier =
                     Modifier.widthIn(max = 450.dp)
@@ -258,7 +280,9 @@ private fun GroupSettingsView(
                         contentColor = MaterialTheme.colorScheme.error,
                     ),
             ) {
-                Text("Leave group")
+                Text(
+                    if (isMeParticipating) "Leave group" else "Forget group",
+                )
             }
         }
     }

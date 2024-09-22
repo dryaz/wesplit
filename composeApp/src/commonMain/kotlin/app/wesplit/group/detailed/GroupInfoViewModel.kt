@@ -63,7 +63,7 @@ class GroupInfoViewModel(
             accountRepository
                 .get()
                 .onEach {
-                    if (it !is Account.Existing && token != null) {
+                    if (it is Account.Anonymous && token != null) {
                         accountRepository.login(
                             Login.GroupToken(
                                 groupId = groupId,
@@ -82,7 +82,7 @@ class GroupInfoViewModel(
                         is Account.Authorized,
                         Account.Restricted,
                         ->
-                            groupRepository.get(groupId).mapLatest { groupResult ->
+                            groupRepository.get(groupId, token).mapLatest { groupResult ->
                                 val exception = groupResult.exceptionOrNull()
                                 when (exception) {
                                     is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)

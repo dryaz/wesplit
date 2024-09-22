@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -73,6 +74,17 @@ class GroupSettingsViewModel(
             viewModelScope.launch {
                 id?.let {
                     groupRepository.leave(it)
+                }
+            }
+        }
+    }
+
+    fun join() {
+        with(dataState.value as DataState.Group) {
+            viewModelScope.launch {
+                val me = accountRepository.get().first { it is Account.Authorized }.participant()
+                me?.let {
+                    groupRepository.commit(id, title, participants + it)
                 }
             }
         }
