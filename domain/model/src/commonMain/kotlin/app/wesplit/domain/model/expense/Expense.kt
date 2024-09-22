@@ -1,5 +1,6 @@
 package app.wesplit.domain.model.expense
 
+import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import dev.gitlive.firebase.firestore.BaseTimestamp
@@ -50,3 +51,5 @@ data class Share(
 )
 
 fun Expense.myAmount() = shares.find { it.participant.isMe() }?.amount ?: Amount(0f, totalAmount.currencyCode)
+
+fun Expense.myAmount(group: Group) = shares.find { it.participant.isMe(group) }?.amount ?: Amount(0f, totalAmount.currencyCode)

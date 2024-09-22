@@ -502,7 +502,6 @@ fun RootNavigation(
                             },
                         ),
                 ) {
-                    println("C0")
                     val groupRepository: GroupRepository = koinInject()
 
                     val groupId =
@@ -513,7 +512,6 @@ fun RootNavigation(
                                 .GROUP_ID
                                 .paramName,
                         )
-                    println("C1: $groupId")
 
                     val viewModel: GroupSettingsViewModel =
                         viewModel(key = "GroupSettingsViewModel $groupId") {

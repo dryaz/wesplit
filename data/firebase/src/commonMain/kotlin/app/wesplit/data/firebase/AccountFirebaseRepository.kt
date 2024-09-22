@@ -117,11 +117,8 @@ class AccountFirebaseRepository(
         }
 
         if (authUser.uid.startsWith("group")) {
-            println("USER: $authUser")
             return Account.Restricted
         }
-
-        println(authUser.toString())
 
         val doc = Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).get()
         if (doc.exists) {

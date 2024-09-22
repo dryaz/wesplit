@@ -46,6 +46,7 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Group
+import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.balance.BalanceRepository
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.group.detailed.balance.BalanceSection
@@ -197,6 +198,7 @@ private fun GroupInfoContent(
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val expenseRepository: ExpenseRepository = koinInject()
+    val groupRepository: GroupRepository = koinInject()
     val balanceRepository: BalanceRepository = koinInject()
     val analyticsManager: AnalyticsManager = koinInject()
 
@@ -207,6 +209,7 @@ private fun GroupInfoContent(
             ExpenseSectionViewModel(
                 groupId = group.id,
                 expenseRepository = expenseRepository,
+                groupRepository = groupRepository,
             )
         }
 

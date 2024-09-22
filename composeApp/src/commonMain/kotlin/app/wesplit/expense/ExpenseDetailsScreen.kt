@@ -56,6 +56,7 @@ import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
+import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import org.jetbrains.compose.resources.painterResource
@@ -246,20 +247,20 @@ private fun SharesDetails(
         }
         HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
 
-        (data.group.participants + data.expense.shares.map { it.participant }).forEach { participant ->
+        data.allParticipants().forEach { participant ->
             ParticipantListItem(
                 participant = participant,
                 onClick = { item ->
                     onUpdated(
                         UpdateAction.Split.Equal(
                             participant = item,
-                            isIncluded = data.expense.shares.none { it.participant == item },
+                            isIncluded = data.expense.shares.none { it.participant.id == item.id },
                         ),
                     )
                 },
                 action = {
                     Checkbox(
-                        checked = data.expense.shares.any { it.participant == participant },
+                        checked = data.expense.shares.any { it.participant.id == participant.id },
                         onCheckedChange = { isChecked ->
                             onUpdated(
                                 UpdateAction.Split.Equal(
@@ -271,7 +272,7 @@ private fun SharesDetails(
                     )
                 },
                 subTitle =
-                    data.expense.shares.find { it.participant == participant }?.let {
+                    data.expense.shares.find { it.participant.id == participant.id }?.let {
                         it.amount.format()
                     } ?: "Not participating",
             )
@@ -405,7 +406,7 @@ private fun ExpenseDetails(
         PayerChooser(
             expanded = payerSelection,
             payer = data.expense.payedBy,
-            allParticipants = data.group.participants + data.expense.shares.map { it.participant },
+            allParticipants = data.allParticipants(),
             onDismiss = { payerSelection = false },
             onUpdated = onUpdated,
         )

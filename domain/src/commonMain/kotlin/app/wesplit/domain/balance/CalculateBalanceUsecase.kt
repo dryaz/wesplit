@@ -13,21 +13,22 @@ class CalculateBalanceUsecase {
         group: Group,
         expenses: List<Expense>,
     ): Balance {
-        val participantBalance = group.participants.associateWith { 0f }.toMutableMap()
+        val participantBalance = group.participants.map { it.id }.associateWith { 0f }.toMutableMap()
 
         var nonDistributed = 0f
 
         expenses.forEach { expense ->
+            var residual = expense.totalAmount.value
             expense.shares.forEach { share ->
-                val currentBalance = participantBalance.get(share.participant) ?: 0f
-                val currentPayerBalance = participantBalance.get(expense.payedBy) ?: 0f
-                if (share.participant != expense.payedBy) {
-                    participantBalance[share.participant] = currentBalance - share.amount.value
-                    participantBalance[expense.payedBy] = currentPayerBalance + share.amount.value
+                val currentBalance = participantBalance.get(share.participant.id) ?: 0f
+                val currentPayerBalance = participantBalance.get(expense.payedBy.id) ?: 0f
+                if (share.participant.id != expense.payedBy.id) {
+                    participantBalance[share.participant.id] = currentBalance - share.amount.value
+                    participantBalance[expense.payedBy.id] = currentPayerBalance + share.amount.value
                 }
+                residual -= share.amount.value
             }
-            val residual = expense.undistributedAmount?.value ?: 0f
-            participantBalance[expense.payedBy] = (participantBalance[expense.payedBy] ?: 0f) + residual
+            participantBalance[expense.payedBy.id] = (participantBalance[expense.payedBy.id] ?: 0f) + residual
             nonDistributed += residual
         }
 
@@ -35,10 +36,10 @@ class CalculateBalanceUsecase {
 
         return Balance(
             participants =
-                participantBalance.keys.map {
+                group.participants.map {
                     it to
                         ParticipantStat(
-                            balance = Amount(value = participantBalance[it] ?: 0f, currencyCode = currencyCode),
+                            balance = Amount(value = participantBalance[it.id] ?: 0f, currencyCode = currencyCode),
                         )
                 }.toMap(),
             nonDistributed = Amount(nonDistributed, currencyCode),

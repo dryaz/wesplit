@@ -199,7 +199,7 @@ class ExpenseDetailsViewModel(
         val currency = expense.totalAmount.currencyCode
         val currentParticiapants =
             (expense.shares).filter {
-                if (it.participant == action?.participant) {
+                if (it.participant.id == action?.participant?.id) {
                     action.isIncluded
                 } else {
                     true
@@ -250,5 +250,10 @@ class ExpenseDetailsViewModel(
             val expense: Expense,
             val isComplete: Boolean,
         ) : State
+
+        fun Data.allParticipants(): Set<Participant> {
+            val participantsIds = group.participants.map { it.id }
+            return group.participants + expense.shares.map { it.participant }.filterNot { it.id in participantsIds }
+        }
     }
 }

@@ -6,9 +6,12 @@ import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.toInstant
+import app.wesplit.domain.model.group.Group
+import app.wesplit.domain.model.group.GroupRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -20,6 +23,7 @@ private const val PAGE_SIZE = 30
 class ExpenseSectionViewModel(
     private val groupId: String,
     private val expenseRepository: ExpenseRepository,
+    private val groupRepository: GroupRepository,
 ) : ViewModel(),
     KoinComponent {
     val dataState: StateFlow<State>
@@ -33,6 +37,8 @@ class ExpenseSectionViewModel(
 
     fun refresh() {
         viewModelScope.launch {
+            val group = groupRepository.get(groupId).first().getOrThrow()
+
             expenseRepository.getByGroupId(groupId).collectLatest { expensesResult ->
                 if (expensesResult.isFailure) {
                     _dataState.update {
@@ -45,10 +51,12 @@ class ExpenseSectionViewModel(
                 } else {
                     _dataState.update {
                         State.Expenses(
-                            expensesResult.getOrThrow().groupBy {
-                                val localDate = it.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
-                                "${localDate.month} ${localDate.year}"
-                            },
+                            group = group,
+                            groupedExpenses =
+                                expensesResult.getOrThrow().groupBy {
+                                    val localDate = it.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
+                                    "${localDate.month} ${localDate.year}"
+                                },
                         )
                     }
                 }
@@ -69,6 +77,7 @@ class ExpenseSectionViewModel(
         data object Error : State
 
         data class Expenses(
+            val group: Group,
             val groupedExpenses: Map<String, List<Expense>>,
         ) : State
     }

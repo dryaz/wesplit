@@ -30,6 +30,7 @@ import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.expense.myAmount
 import app.wesplit.domain.model.expense.toInstant
+import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.isMe
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -42,6 +43,7 @@ import split.composeapp.generated.resources.non_distr_cd
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExpenseList(
+    group: Group,
     expenses: Map<String, List<Expense>>,
     onAction: (ExpenseAction) -> Unit,
 ) {
@@ -63,6 +65,7 @@ fun ExpenseList(
             }
             items(items = entry.value, key = { it.id ?: it.hashCode() }) { expense ->
                 ExpenseItem(
+                    group = group,
                     expense = expense,
                     onAction = onAction,
                 )
@@ -76,6 +79,7 @@ fun ExpenseList(
 
 @Composable
 private fun ExpenseItem(
+    group: Group,
     expense: Expense,
     onAction: (ExpenseAction) -> Unit,
 ) {
@@ -109,7 +113,7 @@ private fun ExpenseItem(
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = if (expense.payedBy.isMe()) "Payed by You" else "Payed by ${expense.payedBy.name}",
+                text = if (expense.payedBy.isMe(group)) "Payed by You" else "Payed by ${expense.payedBy.name}",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.secondary,
             )
@@ -119,7 +123,7 @@ private fun ExpenseItem(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            LentString(expense)
+            LentString(group, expense)
         }
         Spacer(modifier = Modifier.width(16.dp))
         // Total sum + your cat
@@ -133,7 +137,7 @@ private fun ExpenseItem(
                 color = MaterialTheme.colorScheme.secondary,
             )
             Text(
-                text = "You: ${expense.myAmount().value}",
+                text = "You: ${expense.myAmount(group).value}",
                 style = MaterialTheme.typography.bodySmall,
                 color =
                     if (expense.myAmount().value != 0f) {
@@ -147,7 +151,10 @@ private fun ExpenseItem(
 }
 
 @Composable
-private fun LentString(expense: Expense) {
+private fun LentString(
+    group: Group,
+    expense: Expense,
+) {
     if (expense.undistributedAmount != null && expense.undistributedAmount?.value != 0f) {
         val undistributed = expense.undistributedAmount
         Row(
@@ -171,16 +178,16 @@ private fun LentString(expense: Expense) {
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
         }
-    } else if (expense.myAmount().value == 0f) {
+    } else if (expense.myAmount(group).value == 0f) {
         Text(
             text = "You're not participating",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outlineVariant,
         )
-    } else if (expense.payedBy.isMe()) {
+    } else if (expense.payedBy.isMe(group)) {
         val lent =
             Amount(
-                value = expense.totalAmount.value - expense.myAmount().value,
+                value = expense.totalAmount.value - expense.myAmount(group).value,
                 currencyCode = expense.totalAmount.currencyCode,
             )
         if (lent.value != 0f) {
@@ -198,7 +205,7 @@ private fun LentString(expense: Expense) {
         }
     } else {
         Text(
-            text = "You borrowed: ${expense.myAmount().format()}",
+            text = "You borrowed: ${expense.myAmount(group).format()}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
         )

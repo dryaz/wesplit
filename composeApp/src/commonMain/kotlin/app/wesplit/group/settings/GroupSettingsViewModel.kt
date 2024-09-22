@@ -79,13 +79,25 @@ class GroupSettingsViewModel(
         }
     }
 
-    fun join() {
+    fun join(asParticipant: Participant?) {
         with(dataState.value as DataState.Group) {
             viewModelScope.launch {
-                val me = accountRepository.get().first { it is Account.Authorized }.participant()
-                me?.let {
-                    groupRepository.commit(id, title, participants + it)
-                }
+                val newParticipants =
+                    if (asParticipant == null) {
+                        val newParticipant = accountRepository.get().first { it is Account.Authorized }.participant()
+                        if (newParticipant != null) {
+                            participants + newParticipant
+                        } else {
+                            participants
+                        }
+                    } else {
+                        val me = (accountRepository.get().first { it is Account.Authorized } as Account.Authorized).user
+                        participants.map {
+                            if (it.id != asParticipant.id) it else it.copy(user = me)
+                        }
+                    }
+
+                groupRepository.commit(id, title, newParticipants.toSet())
             }
         }
     }

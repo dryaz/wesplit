@@ -46,6 +46,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
@@ -120,8 +121,8 @@ fun GroupSettingsScreen(
                         viewModel.leave()
                         onAction(GroupSettingsAction.Home)
                     },
-                    onJoin = {
-                        viewModel.join()
+                    onJoin = { participant ->
+                        viewModel.join(participant)
                     },
                 ) { group ->
                     viewModel.update(group)
@@ -140,7 +141,7 @@ private fun GroupSettingsView(
     group: GroupSettingsViewModel.DataState.Group,
     account: Account,
     onDone: () -> Unit,
-    onJoin: () -> Unit,
+    onJoin: (Participant?) -> Unit,
     onLeave: () -> Unit,
     onUpdated: (GroupSettingsViewModel.DataState.Group) -> Unit,
 ) {
@@ -224,6 +225,7 @@ private fun GroupSettingsView(
             }
 
             // TODO: Add/Remove with animation. Lazycolumn?
+            val isMeParticipating = remember(group) { group.participants.any { it.isMe() } }
             group.participants.forEachIndexed { index, participant ->
                 HorizontalDivider(
                     modifier = Modifier.padding(start = if (index == 0) 0.dp else 80.dp),
@@ -231,7 +233,17 @@ private fun GroupSettingsView(
                 ParticipantListItem(
                     participant = participant,
                     action =
-                        if (!participant.isMe() && (account is Account.Authorized || participant.user == null)) {
+                        if (!isMeParticipating && participant.user?.authIds.isNullOrEmpty()) {
+                            {
+                                OutlinedButton(
+                                    onClick = { onJoin(participant) },
+                                ) {
+                                    Text("It's me")
+                                }
+                            }
+                        } else if (isMeParticipating && !participant.isMe() &&
+                            (account is Account.Authorized || participant.user == null)
+                        ) {
                             {
                                 AdaptiveIconButton(onClick = { onUpdated(group.copy(participants = group.participants - participant)) }) {
                                     Icon(
@@ -254,7 +266,7 @@ private fun GroupSettingsView(
             Spacer(modifier = Modifier.height(16.dp))
             if (!isMeParticipating) {
                 OutlinedButton(
-                    onClick = { onJoin() },
+                    onClick = { onJoin(null) },
                     modifier =
                         Modifier.widthIn(max = 450.dp)
                             .fillMaxWidth(1f)
@@ -265,7 +277,7 @@ private fun GroupSettingsView(
                         ),
                 ) {
                     Text(
-                        "Join group",
+                        "Join as new participant",
                     )
                 }
             }
