@@ -195,9 +195,12 @@ android {
     }
     buildTypes {
         getByName("release") {
-            // TODO: Add proguard
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             signingConfig = signingConfigs.getByName("release")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
     compileOptions {
