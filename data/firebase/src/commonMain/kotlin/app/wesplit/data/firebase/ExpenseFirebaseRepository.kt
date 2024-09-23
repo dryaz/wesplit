@@ -5,6 +5,7 @@ import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.NonCancellable
@@ -14,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 
 private const val EXPENSE_COLLECTION = "expenses"
+private const val DATE_FIELD = "date"
 
 private const val EXPENSE_CREATE_EVENT = "expense_create"
 private const val EXPENSE_UPDATE_EVENT = "expense_update"
@@ -28,18 +30,21 @@ class ExpenseFirebaseRepository(
     //  not to fetch this multiple times, e.g. for showing trxs and for computing balances.
     // TODO: Pagination for expenses
     override fun getByGroupId(groupId: String): Flow<Result<List<Expense>>> =
-        Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).collection(EXPENSE_COLLECTION).snapshots.map {
-            // TODO: Exception to failuer result. Group could be not existing, security rules could fail etc.
-            // TODO: Sort by creation date directly on response
-            val expenses =
-                it.documents.map {
-                    it.data(Expense.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
-                        id = it.id,
-                    )
-                }
+        Firebase.firestore.collection(GROUP_COLLECTION)
+            .document(groupId)
+            .collection(EXPENSE_COLLECTION)
+            .orderBy(DATE_FIELD, Direction.DESCENDING).snapshots.map {
+                // TODO: Exception to failuer result. Group could be not existing, security rules could fail etc.
+                // TODO: Sort by creation date directly on response
+                val expenses =
+                    it.documents.map {
+                        it.data(Expense.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
+                            id = it.id,
+                        )
+                    }
 
-            Result.success(expenses)
-        }
+                Result.success(expenses)
+            }
 
     override fun getById(
         groupId: String,
