@@ -1,0 +1,17 @@
+My name is Dmitrii, I'm an Android engineer with 14+ years of experience.
+
+Wesplit started as a side project to showcase power of Kotlin Multiplatform deploying the same codebase across Android (released), Web (https://web.wesplit.app), iOS (preparing for release) and desktop (postponed).
+
+Key differences from Splitwise, Solid etc.
+- User could share protected link within his group in messenger and people could track expenses even without having an account in Wesplit.
+- Seamless experience with same look and feel across native mobile apps, web app on mobile and desktop. 
+- Short Time to market for features 'cause they built in core for all platforms.
+
+I'm a single person yet working on the project on my free time.
+
+Mission of the Wesplit is simple - make expense split as easy as possible for everyone.
+
+References:
+Web app: https://web.wesplit.app
+Google play: https://play.google.com/store/apps/details?id=app.wesplit
+For contacts: dilix90@gmail.com
