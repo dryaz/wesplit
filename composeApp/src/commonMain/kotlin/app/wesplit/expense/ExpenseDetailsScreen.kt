@@ -339,6 +339,7 @@ private fun ExpenseDetails(
         ) {
             FilledTonalButton(
                 modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
+                enabled = false,
                 onClick = { },
                 shape = RoundedCornerShape(10.dp),
             ) {

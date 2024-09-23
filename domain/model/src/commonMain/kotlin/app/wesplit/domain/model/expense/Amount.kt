@@ -14,4 +14,4 @@ data class Amount(
 )
 
 // TODO: KMP amount formatting
-fun Amount.format() = "$currencyCode ${(value * 100f).roundToInt() / 100f}"
+fun Amount.format(withCurrency: Boolean = true) = "${if (withCurrency) "$" else ""}${(value * 100f).roundToInt() / 100f}"

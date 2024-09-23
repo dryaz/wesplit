@@ -137,7 +137,7 @@ private fun ExpenseItem(
                 color = MaterialTheme.colorScheme.secondary,
             )
             Text(
-                text = "You: ${expense.myAmount(group).value}",
+                text = "You: ${expense.myAmount(group).format()}",
                 style = MaterialTheme.typography.bodySmall,
                 color =
                     if (expense.myAmount().value != 0f) {

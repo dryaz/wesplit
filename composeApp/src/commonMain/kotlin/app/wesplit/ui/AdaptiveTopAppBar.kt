@@ -57,7 +57,7 @@ fun AdaptiveTopAppBar(
                 material {
                     colors =
                         TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
                         )
                 }
             },
