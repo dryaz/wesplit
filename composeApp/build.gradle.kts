@@ -89,8 +89,8 @@ kotlin {
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-                implementation(projects.domain)
-                implementation(projects.domain.model)
+                api(projects.domain.model)
+                api(projects.domain)
                 implementation(projects.data.firebase)
 
                 implementation(compose.runtime)
