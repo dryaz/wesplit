@@ -11,7 +11,7 @@ fun mainViewController(iosDiHelper: IosDiHelper): UIViewController {
     return ComposeUIViewController {
         App(
             // TODO: deeplink from ios, probably via diahelper
-            "",
+            iosDiHelper.deeplink,
             module {
                 single<AnalyticsManager> { IosAnalyticsManager() }
                 single<LoginIosNativeDelegate> { iosDiHelper.loginDelegate }

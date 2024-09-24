@@ -1,6 +1,12 @@
 {
   "hosting": {
     "public": "composeApp/build/dist/js/productionExecutable",
+    "headers": [
+      {
+        "source": "/.well-known/apple-app-site-association",
+        "headers": [{"key": "Content-Type", "value": "application/json"}]
+      }
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

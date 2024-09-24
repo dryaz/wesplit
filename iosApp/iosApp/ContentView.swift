@@ -3,22 +3,24 @@ import SwiftUI
 import ComposeApp
 
 struct ComposeView: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> UIViewController {
-      MainViewControllerKt.mainViewController(
-        iosDiHelper: IosDiHelper(
-          loginDelegate: PlatformLoginDelegate()
-        )
+  var deeplink: String = ""
+  func makeUIViewController(context: Context) -> UIViewController {
+    MainViewControllerKt.mainViewController(
+      iosDiHelper: IosDiHelper(
+        loginDelegate: PlatformLoginDelegate(),
+        deeplink: deeplink
       )
-    }
-
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+    )
+  }
+  
+  func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
 struct ContentView: View {
-    var body: some View {
-        ComposeView()
-                .ignoresSafeArea(.keyboard) // Compose has own keyboard handler
-    }
+  var deeplink: String = ""
+  var body: some View {
+    ComposeView(deeplink: deeplink).ignoresSafeArea(.keyboard) // Compose has own keyboard handler
+  }
 }
 
 
