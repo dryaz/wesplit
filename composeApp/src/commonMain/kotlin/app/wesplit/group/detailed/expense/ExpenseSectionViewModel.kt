@@ -2,7 +2,9 @@ package app.wesplit.group.detailed.expense
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.FutureFeature
+import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.toInstant
@@ -10,6 +12,7 @@ import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -24,6 +27,7 @@ class ExpenseSectionViewModel(
     private val groupId: String,
     private val expenseRepository: ExpenseRepository,
     private val groupRepository: GroupRepository,
+    private val analyticsManager: AnalyticsManager,
 ) : ViewModel(),
     KoinComponent {
     val dataState: StateFlow<State>
@@ -37,30 +41,42 @@ class ExpenseSectionViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            val group = groupRepository.get(groupId).first().getOrThrow()
+            val group =
+                groupRepository
+                    .get(groupId)
+                    .first()
+                    .getOrNull()
 
-            expenseRepository.getByGroupId(groupId).collectLatest { expensesResult ->
-                if (expensesResult.isFailure) {
-                    _dataState.update {
-                        State.Error
-                    }
-                } else if (expensesResult.getOrNull().isNullOrEmpty()) {
-                    _dataState.update {
-                        State.Empty
-                    }
-                } else {
-                    _dataState.update {
-                        State.Expenses(
-                            group = group,
-                            groupedExpenses =
-                                expensesResult.getOrThrow().groupBy {
-                                    val localDate = it.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
-                                    "${localDate.month} ${localDate.year}"
-                                },
-                        )
+            if (group == null) return@launch
+
+            expenseRepository.getByGroupId(groupId)
+                .catch {
+                    analyticsManager.log("ExpenseSectionViewModel - refresh()", LogLevel.WARNING)
+                    analyticsManager.log(it)
+                    _dataState.update { State.Error }
+                }
+                .collectLatest { expensesResult ->
+                    if (expensesResult.isFailure) {
+                        _dataState.update {
+                            State.Error
+                        }
+                    } else if (expensesResult.getOrNull().isNullOrEmpty()) {
+                        _dataState.update {
+                            State.Empty
+                        }
+                    } else {
+                        _dataState.update {
+                            State.Expenses(
+                                group = group,
+                                groupedExpenses =
+                                    expensesResult.getOrThrow().groupBy {
+                                        val localDate = it.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
+                                        "${localDate.month} ${localDate.year}"
+                                    },
+                            )
+                        }
                     }
                 }
-            }
         }
     }
 

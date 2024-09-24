@@ -2,6 +2,8 @@ package app.wesplit.group.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.Group
@@ -9,6 +11,7 @@ import app.wesplit.domain.model.group.GroupRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -18,6 +21,7 @@ class GroupListViewModel(
     private val accountRepository: AccountRepository,
     private val groupRepository: GroupRepository,
     private val ioDispatcher: CoroutineDispatcher,
+    private val analyticsManager: AnalyticsManager,
 ) : ViewModel(),
     KoinComponent {
     val dataState: StateFlow<State>
@@ -34,15 +38,21 @@ class GroupListViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            groupRepository.get().collectLatest { groups ->
-                _dataState.update {
-                    if (groups.isEmpty()) {
-                        State.Empty
-                    } else {
-                        State.Groups(groups)
+            groupRepository.get()
+                .catch {
+                    analyticsManager.log("GropuListViewModel - refresh()", LogLevel.WARNING)
+                    analyticsManager.log(it)
+                    _dataState.update { State.Empty }
+                }
+                .collectLatest { groups ->
+                    _dataState.update {
+                        if (groups.isEmpty()) {
+                            State.Empty
+                        } else {
+                            State.Groups(groups)
+                        }
                     }
                 }
-            }
         }
     }
 

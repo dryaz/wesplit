@@ -3,6 +3,8 @@ package app.wesplit.group.settings
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.participant
@@ -14,6 +16,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -26,6 +29,7 @@ class GroupSettingsViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
     private val accountRepository: AccountRepository,
+    private val analyticsManager: AnalyticsManager,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support same settings screen for existing group.
     val groupId: String? =
@@ -110,27 +114,35 @@ class GroupSettingsViewModel(
         loadJob?.cancel()
         loadJob =
             viewModelScope.launch {
-                groupRepository.get(groupId).collectLatest { groupResult ->
-                    val exception = groupResult.exceptionOrNull()
-                    dataState.update {
-                        when (exception) {
-                            is UnauthorizeAcceessException -> DataState.Error(DataState.Error.Type.UNAUTHORIZED)
-                            is NullPointerException -> DataState.Error(DataState.Error.Type.NOT_EXISTS)
-                            else ->
-                                if (exception != null) {
-                                    DataState.Error(DataState.Error.Type.FETCH_ERROR)
-                                } else {
-                                    with(groupResult.getOrThrow()) {
-                                        DataState.Group(
-                                            id = this.id,
-                                            title = this.title,
-                                            participants = this.participants,
-                                        )
+                groupRepository.get(groupId)
+                    .catch {
+                        analyticsManager.log("GroupSettingsViewModel - refresh()", LogLevel.WARNING)
+                        analyticsManager.log(it)
+                        // TODO: improve error handling
+                        dataState.update { DataState.Error(DataState.Error.Type.FETCH_ERROR) }
+                    }
+                    .collectLatest { groupResult ->
+                        val exception = groupResult.exceptionOrNull()
+                        exception?.let { analyticsManager.log(it) }
+                        dataState.update {
+                            when (exception) {
+                                is UnauthorizeAcceessException -> DataState.Error(DataState.Error.Type.UNAUTHORIZED)
+                                is NullPointerException -> DataState.Error(DataState.Error.Type.NOT_EXISTS)
+                                else ->
+                                    if (exception != null) {
+                                        DataState.Error(DataState.Error.Type.FETCH_ERROR)
+                                    } else {
+                                        with(groupResult.getOrThrow()) {
+                                            DataState.Group(
+                                                id = this.id,
+                                                title = this.title,
+                                                participants = this.participants,
+                                            )
+                                        }
                                     }
-                                }
+                            }
                         }
                     }
-                }
             }
     }
 

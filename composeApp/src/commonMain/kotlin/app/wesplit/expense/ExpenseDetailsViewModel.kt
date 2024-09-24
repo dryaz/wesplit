@@ -17,6 +17,7 @@ import app.wesplit.domain.model.group.isMe
 import app.wesplit.routing.RightPane
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
@@ -131,9 +132,16 @@ class ExpenseDetailsViewModel(
                         isComplete = isComplete(expense),
                     )
                 }
-            }.collectLatest { state ->
-                _state.update { state }
             }
+                .catch {
+
+                    analyticsManager.log(it)
+                    // TODO: Improve error handling, e.g. get reason and plot proper data
+                    _state.update { State.Error(State.Error.Type.FETCH_ERROR) }
+                }
+                .collectLatest { state ->
+                    _state.update { state }
+                }
         }
     }
 

@@ -350,6 +350,7 @@ fun RootNavigation(
                                 accountRepository,
                                 groupRepository,
                                 ioDispatcher,
+                                analyticsManager,
                             )
                         }
 
@@ -403,6 +404,7 @@ fun RootNavigation(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
                                 accountRepository,
+                                analyticsManager,
                             )
                         }
                     GroupInfoScreen(
@@ -470,6 +472,7 @@ fun RootNavigation(
                                 SavedStateHandle.createHandle(null, null),
                                 groupRepository,
                                 accountRepository,
+                                analyticsManager,
                             )
                         }
 
@@ -519,6 +522,7 @@ fun RootNavigation(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
                                 accountRepository,
+                                analyticsManager,
                             )
                         }
 

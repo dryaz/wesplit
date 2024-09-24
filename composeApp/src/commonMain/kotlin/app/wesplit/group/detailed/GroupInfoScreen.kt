@@ -210,6 +210,7 @@ private fun GroupInfoContent(
                 groupId = group.id,
                 expenseRepository = expenseRepository,
                 groupRepository = groupRepository,
+                analyticsManager = analyticsManager,
             )
         }
 
@@ -218,6 +219,7 @@ private fun GroupInfoContent(
             BalanceSectionViewModel(
                 groupId = group.id,
                 balanceRepository = balanceRepository,
+                analyticsManager = analyticsManager,
             )
         }
 
