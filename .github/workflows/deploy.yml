@@ -56,5 +56,5 @@ jobs:
         package-name: app.wesplit
         release-file: ./composeApp/build/outputs/bundle/release/composeApp-release.aab
         track: internal
-        status: complete
+        status: draft
         mapping-file: ./composeApp/build/outputs/mapping/release/mapping.txt
