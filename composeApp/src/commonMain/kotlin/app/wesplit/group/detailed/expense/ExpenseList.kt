@@ -178,7 +178,7 @@ private fun LentString(
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
         }
-    } else if (expense.myAmount(group).value == 0f) {
+    } else if (expense.myAmount(group).value == 0f && !expense.payedBy.isMe(group)) {
         Text(
             text = "You're not participating",
             style = MaterialTheme.typography.bodyMedium,
