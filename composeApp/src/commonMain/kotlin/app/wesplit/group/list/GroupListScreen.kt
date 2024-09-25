@@ -135,7 +135,7 @@ fun GroupListScreen(
                             Icon(
                                 Icons.Default.AddCircle,
                                 contentDescription = stringResource(Res.string.add_group_cd),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tint = MaterialTheme.colorScheme.primary,
                             )
                         }
                     }
@@ -182,7 +182,7 @@ private fun EmptyGroupList(
         modifier = modifier.fillMaxSize(1f),
         visible = accountState is Account.Authorized,
     ) {
-        EmptyGroupAuthorized(modifier)
+        EmptyGroupAuthorized(modifier, onAction)
     }
 
     AnimatedVisibility(
@@ -198,14 +198,19 @@ private fun EmptyGroupList(
 }
 
 @Composable
-private fun EmptyGroupAuthorized(modifier: Modifier) {
+private fun EmptyGroupAuthorized(
+    modifier: Modifier,
+    onAction: (GroupListAction) -> Unit,
+) {
     Column(
         modifier = modifier.fillMaxSize(1f).padding(horizontal = 32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
-            modifier = Modifier,
+            modifier = Modifier.clickable {
+                onAction(GroupListAction.CreateNewGroup)
+            },
             painter = painterResource(Res.drawable.img_add_data),
             contentDescription = stringResource(Res.string.back_btn_cd),
         )
