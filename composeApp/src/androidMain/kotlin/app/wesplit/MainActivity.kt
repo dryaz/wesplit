@@ -14,14 +14,8 @@ import app.wesplit.di.AndroidAppModule
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.time.delay
 import org.koin.dsl.module
 import org.koin.ksp.generated.module
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 
 class MainActivity : ComponentActivity() {
     private val deepLinkHandler = DeepLinkHandler()
@@ -60,10 +54,7 @@ class MainActivity : ComponentActivity() {
 
     private fun handleDeepLinkIntent(intent: Intent?) {
         intent?.data?.let { uri ->
-            CoroutineScope(Dispatchers.Main).launch {
-                delay(4.seconds.toJavaDuration())
-                deepLinkHandler.handleDeeplink(uri.toString())
-            }
+            deepLinkHandler.handleDeeplink(uri.toString())
         }
     }
 }
