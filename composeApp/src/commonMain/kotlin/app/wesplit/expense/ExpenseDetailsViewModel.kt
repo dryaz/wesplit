@@ -15,6 +15,8 @@ import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.routing.RightPane
+import dev.gitlive.firebase.firestore.Timestamp
+import dev.gitlive.firebase.firestore.fromMilliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
 sealed interface UpdateAction {
@@ -30,6 +33,8 @@ sealed interface UpdateAction {
     data class Title(val title: String) : UpdateAction
 
     data class TotalAmount(val value: Float) : UpdateAction
+
+    data class Date(val millis: Long) : UpdateAction
 
     data object Commit : UpdateAction
 
@@ -124,6 +129,7 @@ class ExpenseDetailsViewModel(
                                 }.toSet(),
                             expenseType = ExpenseType.EXPENSE,
                             undistributedAmount = null,
+                            date = Timestamp.fromMilliseconds(Clock.System.now().toEpochMilliseconds().toDouble()),
                         )
 
                     return@combine State.Data(
@@ -151,6 +157,16 @@ class ExpenseDetailsViewModel(
             val expense = data.expense
             when (action) {
                 is UpdateAction.Title -> _state.update { data.copy(expense = expense.copy(title = action.title)) }
+                is UpdateAction.Date ->
+                    _state.update {
+                        data.copy(
+                            expense =
+                                expense.copy(
+                                    date = Timestamp.fromMilliseconds(action.millis.toDouble()),
+                                ),
+                        )
+                    }
+
                 is UpdateAction.TotalAmount ->
                     _state.update {
                         data.copy(

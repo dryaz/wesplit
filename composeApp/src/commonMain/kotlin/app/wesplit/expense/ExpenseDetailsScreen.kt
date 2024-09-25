@@ -28,8 +28,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -41,9 +44,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,11 +58,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.format
+import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -151,10 +158,7 @@ private fun AddExpenseScreenView(
     var deleteDialogShown by remember { mutableStateOf(false) }
 
     Column(
-        modifier =
-            modifier
-                .padding(top = 16.dp)
-                .verticalScroll(rememberScrollState()),
+        modifier = modifier.padding(top = 16.dp).verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ExpenseDetails(data, onUpdated)
@@ -165,10 +169,7 @@ private fun AddExpenseScreenView(
             OutlinedButton(
                 // TODO: Confirmation
                 onClick = { deleteDialogShown = true },
-                modifier =
-                    Modifier.widthIn(max = 450.dp)
-                        .fillMaxWidth(1f)
-                        .padding(horizontal = 16.dp),
+                modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
                 colors =
                     ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.error,
@@ -225,11 +226,7 @@ private fun SharesDetails(
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
             ),
-        modifier =
-            Modifier
-                .widthIn(max = 450.dp)
-                .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp),
+        modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -280,6 +277,7 @@ private fun SharesDetails(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ExpenseDetails(
     data: ExpenseDetailsViewModel.State.Data,
@@ -289,23 +287,18 @@ private fun ExpenseDetails(
         mutableStateOf(if (data.expense.totalAmount.value != 0f) data.expense.totalAmount.value.toString() else "")
     }
 
+    var showDatePicker by remember { mutableStateOf(false) }
+
     Card(
         colors =
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
             ),
-        modifier =
-            Modifier
-                .widthIn(max = 450.dp)
-                .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp),
+        modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
-            modifier =
-                Modifier
-                    .fillMaxWidth(1f)
-                    .padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 16.dp),
             singleLine = true,
             value = data.expense.title,
             isError = data.expense.title.isNullOrBlank(),
@@ -329,16 +322,33 @@ private fun ExpenseDetails(
                 )
             },
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
-            modifier =
-                Modifier
-                    .height(IntrinsicSize.Max)
-                    .fillMaxWidth(1f)
-                    .padding(horizontal = 16.dp),
+            modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(1f).padding(horizontal = 16.dp),
         ) {
             FilledTonalButton(
-                modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
+                modifier = Modifier.width(88.dp).fillMaxHeight(1f),
+                enabled = true,
+                onClick = { showDatePicker = !showDatePicker },
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                val expenseDate = data.expense.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = expenseDate.month.name.substring(0, 3),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                    Text(
+                        text = expenseDate.dayOfMonth.toString().padStart(2, '0'),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            FilledTonalButton(
+                modifier = Modifier.width(88.dp).fillMaxHeight(1f),
                 enabled = false,
                 onClick = { },
                 shape = RoundedCornerShape(10.dp),
@@ -346,13 +356,10 @@ private fun ExpenseDetails(
                 // TODO: Get currency from group
                 Text("$")
             }
-
             Spacer(modifier = Modifier.width(16.dp))
 
             TextField(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(1f),
+                modifier = Modifier.fillMaxWidth(1f),
                 singleLine = true,
                 value = amount,
                 keyboardOptions =
@@ -411,6 +418,33 @@ private fun ExpenseDetails(
             onDismiss = { payerSelection = false },
             onUpdated = onUpdated,
         )
+
+        val datePickerState =
+            rememberDatePickerState(
+                initialSelectedDateMillis = data.expense.date.toInstant().toEpochMilliseconds(),
+            )
+        val confirmEnabled = remember { derivedStateOf { datePickerState.selectedDateMillis != null } }
+
+        if (showDatePicker) {
+            DatePickerDialog(onDismissRequest = {
+                datePickerState.selectedDateMillis = data.expense.date.toInstant().toEpochMilliseconds()
+                showDatePicker = false
+            }, confirmButton = {
+                TextButton(onClick = {
+                    showDatePicker = false
+                    datePickerState.selectedDateMillis?.let {
+                        onUpdated(UpdateAction.Date(it))
+                    }
+                }, enabled = confirmEnabled.value) { Text("OK") }
+            }, dismissButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis = data.expense.date.toInstant().toEpochMilliseconds()
+                    showDatePicker = false
+                }) { Text("Cancel") }
+            }) {
+                DatePicker(state = datePickerState)
+            }
+        }
     }
 }
 
@@ -443,8 +477,7 @@ private fun TopAppBareByState(
                         when (state) {
                             is ExpenseDetailsViewModel.State.Error -> {}
 
-                            is ExpenseDetailsViewModel.State.Data ->
-                                if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
+                            is ExpenseDetailsViewModel.State.Data -> if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
 
                             ExpenseDetailsViewModel.State.Loading -> {}
                         }
