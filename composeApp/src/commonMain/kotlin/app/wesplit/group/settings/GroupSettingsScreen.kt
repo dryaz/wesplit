@@ -233,7 +233,7 @@ private fun GroupSettingsView(
                 ParticipantListItem(
                     participant = participant,
                     action =
-                        if (!isMeParticipating && participant.user?.authIds.isNullOrEmpty()) {
+                        if (!isMeParticipating && participant.user?.authIds.isNullOrEmpty() && account is Account.Authorized) {
                             {
                                 OutlinedButton(
                                     onClick = { onJoin(participant) },
