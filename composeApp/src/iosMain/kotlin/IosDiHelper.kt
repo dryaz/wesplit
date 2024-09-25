@@ -1,4 +1,6 @@
+import app.wesplit.DeepLinkHandler
+
 class IosDiHelper(
     val loginDelegate: LoginIosNativeDelegate,
-    val deeplink: String
+    val deepLinkHandler: DeepLinkHandler,
 )

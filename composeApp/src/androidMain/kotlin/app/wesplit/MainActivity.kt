@@ -9,20 +9,22 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import app.wesplit.di.AndroidAppModule
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.delay
 import org.koin.dsl.module
 import org.koin.ksp.generated.module
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
 class MainActivity : ComponentActivity() {
-    // MutableState to hold the deep link URL
-    private var deepLinkUrl by mutableStateOf<String?>(null)
+    private val deepLinkHandler = DeepLinkHandler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,11 +41,11 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             App(
-                deeplinkUrl = deepLinkUrl ?: "",
                 AndroidAppModule().module,
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
                 module {
                     single<AnalyticsManager> { AndroidAnalyticsManager() }
+                    single<DeepLinkHandler> { deepLinkHandler }
                     // TODO: Support user's contacts
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 },
@@ -58,7 +60,10 @@ class MainActivity : ComponentActivity() {
 
     private fun handleDeepLinkIntent(intent: Intent?) {
         intent?.data?.let { uri ->
-            deepLinkUrl = uri.toString()
+            CoroutineScope(Dispatchers.Main).launch {
+                delay(4.seconds.toJavaDuration())
+                deepLinkHandler.handleDeeplink(uri.toString())
+            }
         }
     }
 }
@@ -66,5 +71,5 @@ class MainActivity : ComponentActivity() {
 @Preview
 @Composable
 fun AppAndroidPreview() {
-    App("")
+    App()
 }

@@ -3,12 +3,13 @@ import SwiftUI
 import ComposeApp
 
 struct ComposeView: UIViewControllerRepresentable {
-  var deeplink: String = ""
+  var deeplinkHandler: DeepLinkHandler
+  
   func makeUIViewController(context: Context) -> UIViewController {
     MainViewControllerKt.mainViewController(
       iosDiHelper: IosDiHelper(
         loginDelegate: PlatformLoginDelegate(),
-        deeplink: deeplink
+        deepLinkHandler: deeplinkHandler
       )
     )
   }
@@ -17,9 +18,10 @@ struct ComposeView: UIViewControllerRepresentable {
 }
 
 struct ContentView: View {
-  var deeplink: String = ""
+  var deeplinkHandler: DeepLinkHandler
+  
   var body: some View {
-    ComposeView(deeplink: deeplink).ignoresSafeArea(.keyboard) // Compose has own keyboard handler
+    ComposeView(deeplinkHandler: deeplinkHandler).ignoresSafeArea() // Compose has own keyboard handler
   }
 }
 

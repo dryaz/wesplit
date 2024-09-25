@@ -2,6 +2,7 @@ package app.wesplit
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +39,6 @@ private const val CAMPAIGN_EVENT = "campaign_hit"
 @Composable
 @Preview
 fun App(
-    deeplinkUrl: String,
     vararg platformModule: Module,
 ) {
     Firebase.firestore.settings =
@@ -46,15 +46,16 @@ fun App(
             persistentCacheSettings { }
         }
 
-    val link = DeeplinkParsers.PROD.parse(deeplinkUrl) ?: DeeplinkParsers.LOCALHOST_8080.parse(deeplinkUrl)
-
     KoinContext(
         context =
             koinApplication {
                 modules(domainModule() + firebaseDataModule() + appModule() + platformModule)
             }.koin,
     ) {
+        val deepLinkHandler: DeepLinkHandler = koinInject()
         val analyticsManager: AnalyticsManager = koinInject()
+
+        val deeplink = deepLinkHandler.deeplink.collectAsState()
 
         val firstPaneNavController: NavHostController = rememberNavController()
         val secondPaneNavController: NavHostController = rememberNavController()
@@ -73,7 +74,9 @@ fun App(
             }
         }
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(deeplink.value) {
+            val linkValue = deeplink.value
+            val link = DeeplinkParsers.PROD.parse(linkValue) ?: DeeplinkParsers.LOCALHOST_8080.parse(linkValue)
             link?.let { link ->
                 if (link.utm.getSearch().isNotEmpty()) {
                     analyticsManager.track(CAMPAIGN_EVENT, link.utm.getSearch().toMap())

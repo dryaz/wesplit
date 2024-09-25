@@ -1,44 +1,41 @@
 import SwiftUI
 import GoogleSignIn
 import FirebaseCore
+import ComposeApp
 
-class AppDelegate: NSObject, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
   
-  var deeplink: String = ""
+  var window: UIWindow?
+  lazy var deeplinkHandler = DeepLinkHandler()
   
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
-    return true
-  }
-  
-  func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-    if userActivity.activityType == NSUserActivityTypeBrowsingWeb, let incomingURL = userActivity.webpageURL {
-      handleIncomingURL(url: incomingURL)
-      return true
+    if let userActDic = launchOptions?[.userActivityDictionary] as? [String: Any],
+       let auserActivity = userActDic["UIApplicationLaunchOptionsUserActivityKey"] as? NSUserActivity {
+      let urlString = auserActivity.webpageURL?.absoluteString ?? ""
+      deeplinkHandler.handleDeeplink(url: urlString)
     }
-    return false
+    return true
   }
   
   func application(_ app: UIApplication,
                    open url: URL,
                    options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+    deeplinkHandler.handleDeeplink(url: url.absoluteString)
     return GIDSignIn.sharedInstance.handle(url)
   }
   
-  private func handleIncomingURL(url: URL) {
-    deeplink = url.absoluteString
-    // Parse the URL and navigate within your app
-    print("Received URL: \(url.absoluteString)")
-    
-    // Example: Extract path components
-    let path = url.path
-    print("Path: \(path)")
-    
-    // Handle navigation based on path
-    // e.g., navigate to a specific view controller
+  // For Universal Links
+  func application(_ application: UIApplication,
+                   continue userActivity: NSUserActivity,
+                   restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+    if userActivity.activityType == NSUserActivityTypeBrowsingWeb,
+       let url = userActivity.webpageURL {
+      deeplinkHandler.handleDeeplink(url: url.absoluteString)
+    }
+    return true
   }
-  
 }
 
 @main
@@ -48,7 +45,9 @@ struct iOSApp: App {
   
   var body: some Scene {
     WindowGroup {
-      ContentView(deeplink: delegate.deeplink).ignoresSafeArea()
+      ContentView(deeplinkHandler: delegate.deeplinkHandler).ignoresSafeArea().onOpenURL { url in
+        delegate.deeplinkHandler.handleDeeplink(url: url.absoluteString)
+      }
     }
   }
 }

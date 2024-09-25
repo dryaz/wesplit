@@ -1,6 +1,7 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import app.wesplit.App
+import app.wesplit.DeepLinkHandler
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.LoginDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
@@ -34,14 +35,17 @@ fun main() {
         // TODO: Changed destination in app should change browser url
         // TODO: How to support back? Probably propagte it from here
 
+        val deepLinkHandler = DeepLinkHandler()
+        deepLinkHandler.handleDeeplink(window.location.toString())
+
         CanvasBasedWindow("WeSplit") {
             // TODO: Support initial destination
             // TODO: Provide parsed UTM into Common app to have SSOT for utm tracking
             App(
-                deeplinkUrl = window.location.toString(),
                 module {
                     single<LoginDelegate> { LoginJsDelegate() }
                     single<AnalyticsManager> { JsAnalyticsManager() }
+                    single<DeepLinkHandler> { deepLinkHandler }
                     // TODO: Support contact list of iOS
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 },
