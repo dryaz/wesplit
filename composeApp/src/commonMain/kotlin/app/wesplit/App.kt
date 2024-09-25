@@ -38,9 +38,7 @@ private const val CAMPAIGN_EVENT = "campaign_hit"
 
 @Composable
 @Preview
-fun App(
-    vararg platformModule: Module,
-) {
+fun App(vararg platformModule: Module) {
     Firebase.firestore.settings =
         firestoreSettings {
             persistentCacheSettings { }

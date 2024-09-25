@@ -12,7 +12,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -49,5 +57,67 @@ internal fun LoginSection(
         )
         Spacer(modifier = Modifier.height(32.dp))
         GoogleLoginButton { onAction(LoginAction.Login) }
+        Spacer(modifier = Modifier.height(32.dp))
+        TermsAndPolicyText(modifier = Modifier.padding(horizontal = 32.dp).alpha(0.65f))
     }
+}
+
+@Composable
+private fun TermsAndPolicyText(modifier: Modifier = Modifier) {
+    val uriHandler = LocalUriHandler.current
+    val privacy = "Privacy Policy"
+    val terms = "Terms&Conditions"
+
+    val annotatedString =
+        buildAnnotatedString {
+            append("By joining, you agree to the ")
+            withLink(
+                link =
+                    LinkAnnotation
+                        .Clickable(
+                            tag = privacy,
+                            styles =
+                                TextLinkStyles(
+                                    style =
+                                        SpanStyle(
+                                            color = MaterialTheme.colorScheme.primary,
+                                            textDecoration = TextDecoration.Underline,
+                                        ),
+                                ),
+                            linkInteractionListener = {
+                                uriHandler.openUri("https://wesplit.app/privacypolicy/")
+                            },
+                        ),
+            ) {
+                append(privacy)
+            }
+            append(" and ")
+            withLink(
+                link =
+                    LinkAnnotation
+                        .Clickable(
+                            tag = terms,
+                            styles =
+                                TextLinkStyles(
+                                    style =
+                                        SpanStyle(
+                                            color = MaterialTheme.colorScheme.primary,
+                                            textDecoration = TextDecoration.Underline,
+                                        ),
+                                ),
+                            linkInteractionListener = {
+                                uriHandler.openUri("https://wesplit.app/terms/")
+                            },
+                        ),
+            ) {
+                append(terms)
+            }
+        }
+
+    Text(
+        modifier = modifier,
+        text = annotatedString,
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.Center,
+    )
 }

@@ -208,9 +208,10 @@ private fun EmptyGroupAuthorized(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
-            modifier = Modifier.clickable {
-                onAction(GroupListAction.CreateNewGroup)
-            },
+            modifier =
+                Modifier.clickable {
+                    onAction(GroupListAction.CreateNewGroup)
+                },
             painter = painterResource(Res.drawable.img_add_data),
             contentDescription = stringResource(Res.string.back_btn_cd),
         )
