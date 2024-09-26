@@ -5,8 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -21,6 +19,8 @@ import app.wesplit.domain.model.group.Participant
 import com.seiko.imageloader.model.ImageAction
 import com.seiko.imageloader.rememberImageSuccessPainter
 import com.seiko.imageloader.ui.AutoSizeBox
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import org.jetbrains.compose.resources.painterResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_user
@@ -89,7 +89,7 @@ private fun EmptyParticipantAvatar(
     ) {
         val painter =
             if (participant.user == null) {
-                rememberVectorPainter(Icons.Filled.Add)
+                rememberVectorPainter(AdaptiveIcons.Outlined.Add)
             } else {
                 painterResource(Res.drawable.ic_user)
             }

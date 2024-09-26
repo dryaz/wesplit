@@ -17,9 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -53,6 +50,9 @@ import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
+import io.github.alexzhirkevich.cupertino.adaptive.icons.ExitToApp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -247,7 +247,7 @@ private fun GroupSettingsView(
                             {
                                 AdaptiveIconButton(onClick = { onUpdated(group.copy(participants = group.participants - participant)) }) {
                                     Icon(
-                                        Icons.Filled.Delete,
+                                        AdaptiveIcons.Outlined.Delete,
                                         // TODO: Proper CD
                                         contentDescription = null,
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -327,7 +327,7 @@ private fun GroupSettingsView(
             icon = {
                 Icon(
                     // TODO: Not 100% accurate icon
-                    Icons.Outlined.ExitToApp,
+                    AdaptiveIcons.Outlined.ExitToApp,
                     contentDescription = "Leave group",
                 )
             },

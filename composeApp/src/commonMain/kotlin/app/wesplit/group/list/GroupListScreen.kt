@@ -16,9 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -50,6 +47,9 @@ import com.seiko.imageloader.model.ImageAction
 import com.seiko.imageloader.rememberImageSuccessPainter
 import com.seiko.imageloader.ui.AutoSizeBox
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AddCircle
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Menu
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -114,7 +114,7 @@ fun GroupListScreen(
             AdaptiveTopAppBar(
                 navigationIcon = {
                     Icon(
-                        imageVector = Icons.Filled.Menu,
+                        imageVector = AdaptiveIcons.Outlined.Menu,
                         contentDescription = stringResource(Res.string.back_btn_cd),
                     )
                 },
@@ -133,7 +133,7 @@ fun GroupListScreen(
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                Icons.Default.AddCircle,
+                                AdaptiveIcons.Outlined.AddCircle,
                                 contentDescription = stringResource(Res.string.add_group_cd),
                                 tint = MaterialTheme.colorScheme.primary,
                             )

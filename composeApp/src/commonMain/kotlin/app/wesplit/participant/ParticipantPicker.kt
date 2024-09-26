@@ -17,10 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.outlined.AccountBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -48,6 +44,10 @@ import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.ContactListDelegate
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AccountBox
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -109,7 +109,7 @@ internal fun ParticipantPicker(
             prefix = {
                 Row {
                     Icon(
-                        imageVector = Icons.Outlined.AccountBox,
+                        imageVector = AdaptiveIcons.Outlined.AccountBox,
                         contentDescription =
                             stringResource(
                                 Res.string.search_contact,
@@ -252,7 +252,7 @@ private fun LazyListScope.newParticipantItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    Icons.Filled.Info,
+                    AdaptiveIcons.Outlined.Info,
                     contentDescription = stringResource(Res.string.start_type_creat_contact),
                     tint = MaterialTheme.colorScheme.secondary,
                 )
@@ -278,7 +278,7 @@ private fun ParticipantPickerItem(
         action = {
             if (participant in currentParticipants) {
                 Icon(
-                    Icons.Filled.Done,
+                    AdaptiveIcons.Outlined.Done,
                     contentDescription = stringResource(Res.string.user_already_in_group),
                 )
             } else {

@@ -18,10 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -64,6 +60,10 @@ import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Create
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
@@ -114,7 +114,7 @@ fun ExpenseDetailsScreen(
                 },
             ) {
                 Icon(
-                    Icons.Filled.Done,
+                    AdaptiveIcons.Outlined.Done,
                     contentDescription = stringResource(Res.string.add_expense_to_group),
                 )
             }
@@ -189,7 +189,7 @@ private fun AddExpenseScreenView(
             text = { Text("Are you sure you want to delete this expense from '${data.group.title}'?") },
             icon = {
                 Icon(
-                    Icons.Outlined.Delete,
+                    AdaptiveIcons.Outlined.Delete,
                     contentDescription = "Delete expense from group",
                 )
             },
@@ -309,7 +309,7 @@ private fun ExpenseDetails(
             prefix = {
                 Row {
                     Icon(
-                        imageVector = Icons.Filled.Create,
+                        imageVector = AdaptiveIcons.Outlined.Create,
                         contentDescription = "Expense title",
                     )
                     Spacer(modifier = Modifier.width(16.dp))

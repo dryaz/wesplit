@@ -13,9 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -41,6 +38,9 @@ import app.wesplit.ui.AdaptiveTopAppBar
 import com.seiko.imageloader.rememberImagePainter
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowRight
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Menu
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -99,7 +99,7 @@ fun ProfileScreen(
             AdaptiveTopAppBar(
                 navigationIcon = {
                     Icon(
-                        imageVector = Icons.Filled.Menu,
+                        imageVector = AdaptiveIcons.Outlined.Menu,
                         contentDescription = stringResource(Res.string.back_btn_cd),
                     )
                 },
@@ -202,7 +202,7 @@ private fun AccountInfo(
                 ),
             trailingContent = {
                 Icon(
-                    Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    AdaptiveIcons.Outlined.KeyboardArrowRight,
                     contentDescription = "Go to privacy policy",
                     tint = MaterialTheme.colorScheme.outline,
                 )
@@ -226,7 +226,7 @@ private fun AccountInfo(
                 ),
             trailingContent = {
                 Icon(
-                    Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                    AdaptiveIcons.Outlined.KeyboardArrowRight,
                     contentDescription = "Go to terms and conditions",
                     tint = MaterialTheme.colorScheme.outline,
                 )

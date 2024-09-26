@@ -11,10 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -56,6 +52,10 @@ import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -110,7 +110,7 @@ fun GroupInfoScreen(
                     onAction(GroupInfoAction.AddExpense(group))
                 }) {
                     Icon(
-                        Icons.Filled.Add,
+                        AdaptiveIcons.Outlined.Add,
                         contentDescription = stringResource(Res.string.add_expense_to_group),
                     )
                 }
@@ -143,7 +143,7 @@ fun GroupInfoScreen(
                         }
                     }) {
                         Icon(
-                            Icons.Filled.Edit,
+                            AdaptiveIcons.Outlined.Edit,
                             contentDescription = stringResource(Res.string.edit_group),
                         )
                     }
@@ -158,7 +158,7 @@ fun GroupInfoScreen(
                         }
                     }) {
                         Icon(
-                            Icons.Filled.Share,
+                            AdaptiveIcons.Outlined.Share,
                             contentDescription = stringResource(Res.string.share_group),
                         )
                     }
@@ -353,14 +353,14 @@ private fun GroupHeader(
         }
         IconButton(onClick = { onAction.invoke(GroupInfoAction.Edit(group)) }) {
             Icon(
-                Icons.Filled.Edit,
+                AdaptiveIcons.Outlined.Edit,
                 contentDescription = stringResource(Res.string.edit_group),
             )
         }
 
         IconButton(onClick = { onAction.invoke(GroupInfoAction.Share(group)) }) {
             Icon(
-                Icons.Filled.Share,
+                AdaptiveIcons.Outlined.Share,
                 contentDescription = stringResource(Res.string.share_group),
             )
         }
