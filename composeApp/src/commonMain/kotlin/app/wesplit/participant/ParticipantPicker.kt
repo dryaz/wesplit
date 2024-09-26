@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -42,7 +43,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.ContactListDelegate
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AccountBox
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -158,7 +158,7 @@ internal fun ParticipantPicker(
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                AdaptiveButton(
+                Button(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     onClick = {
                         closeButtonVisibility = false
