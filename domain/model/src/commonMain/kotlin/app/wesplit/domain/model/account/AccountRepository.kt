@@ -8,4 +8,6 @@ interface AccountRepository {
     fun logout()
 
     fun login(login: Login)
+
+    fun deleteAccount()
 }

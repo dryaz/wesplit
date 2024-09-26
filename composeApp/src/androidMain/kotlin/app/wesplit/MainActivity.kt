@@ -14,6 +14,8 @@ import app.wesplit.di.AndroidAppModule
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import org.koin.dsl.module
 import org.koin.ksp.generated.module
 
@@ -38,6 +40,7 @@ class MainActivity : ComponentActivity() {
                 AndroidAppModule().module,
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
                 module {
+                    single<CoroutineDispatcher> { Dispatchers.IO }
                     single<AnalyticsManager> { AndroidAnalyticsManager() }
                     single<DeepLinkHandler> { deepLinkHandler }
                     // TODO: Support user's contacts

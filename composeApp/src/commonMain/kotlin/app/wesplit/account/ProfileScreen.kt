@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -20,12 +23,16 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +46,7 @@ import com.seiko.imageloader.rememberImagePainter
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowRight
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Menu
 import org.jetbrains.compose.resources.painterResource
@@ -70,6 +78,9 @@ fun ProfileRoute(
         modifier = modifier,
         accountState = accountState.value,
         onAction = onAction,
+        onAccountDelete = {
+            viewModel.deleteAccount()
+        },
     )
 }
 
@@ -80,6 +91,7 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     accountState: Account,
     onAction: (ProfileAction) -> Unit,
+    onAccountDelete: () -> Unit,
 ) {
     val windowSizeClass = calculateWindowSizeClass()
 
@@ -116,6 +128,7 @@ fun ProfileScreen(
                     modifier = Modifier.padding(paddings),
                     account = accountState,
                     onAction = onAction,
+                    onAccountDelete = onAccountDelete,
                 )
 
             Account.Unknown -> {
@@ -162,7 +175,10 @@ private fun AccountInfo(
     modifier: Modifier = Modifier,
     account: Account.Authorized,
     onAction: (ProfileAction) -> Unit,
+    onAccountDelete: () -> Unit,
 ) {
+    var deleteDialogShown by remember { mutableStateOf(false) }
+
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -239,22 +255,80 @@ private fun AccountInfo(
             },
         )
 
-        ListItem(
-            modifier = Modifier.clickable { onAction(ProfileAction.Logout) },
-            colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    headlineColor = MaterialTheme.colorScheme.error,
-                ),
-            headlineContent = {
+        Row {
+            ListItem(
+                modifier = Modifier.weight(1f).clickable { deleteDialogShown = true },
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        headlineColor = MaterialTheme.colorScheme.error,
+                    ),
+                headlineContent = {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(1f),
+                        textAlign = TextAlign.Center,
+                        text = "Delete account",
+                    )
+                },
+            )
+
+            ListItem(
+                modifier = Modifier.weight(1f).clickable { onAction(ProfileAction.Logout) },
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        headlineColor = MaterialTheme.colorScheme.error,
+                    ),
+                headlineContent = {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(1f),
+                        textAlign = TextAlign.Center,
+                        text = "Logout",
+                    )
+                },
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+
+    if (deleteDialogShown) {
+        AlertDialog(
+            modifier = Modifier.widthIn(max = 450.dp),
+            onDismissRequest = { deleteDialogShown = false },
+            title = { Text("Delete Account?") },
+            text = {
                 Text(
-                    modifier = Modifier.fillMaxWidth(1f),
+                    text = "Are you sure that \nyou want completely delete your account?",
                     textAlign = TextAlign.Center,
-                    text = "Logout",
                 )
             },
+            icon = {
+                Icon(
+                    AdaptiveIcons.Outlined.Delete,
+                    contentDescription = "Delete account from wesplit",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { onAccountDelete() },
+                ) {
+                    Text(
+                        text = "Yes, Delete",
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        deleteDialogShown = false
+                    },
+                ) {
+                    Text("No, Wait")
+                }
+            },
         )
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 

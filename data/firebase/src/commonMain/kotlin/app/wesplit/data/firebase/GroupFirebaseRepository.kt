@@ -17,6 +17,7 @@ import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.code
 import dev.gitlive.firebase.firestore.firestore
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
@@ -45,6 +46,7 @@ private const val GROUP_COMMIT_PARAM_USERS = "users_num"
 @Single
 class GroupFirebaseRepository(
     private val accountRepository: AccountRepository,
+    private val coroutineDispatcher: CoroutineDispatcher,
     private val analyticsManager: AnalyticsManager,
 ) : GroupRepository {
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,10 +62,12 @@ class GroupFirebaseRepository(
                     Firebase.firestore.collection(GROUP_COLLECTION).where {
                         TOKENS_FIELD contains (Firebase.auth.currentUser?.uid ?: "")
                     }.snapshots.map {
-                        it.documents.map {
-                            it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
-                                id = it.id,
-                            )
+                        withContext(coroutineDispatcher) {
+                            it.documents.map {
+                                it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
+                                    id = it.id,
+                                )
+                            }
                         }
                     }
             }
@@ -114,7 +118,7 @@ class GroupFirebaseRepository(
         title: String,
         participants: Set<Participant>,
     ): Unit =
-        withContext(NonCancellable) {
+        withContext(coroutineDispatcher + NonCancellable) {
             val eventName = if (id != null) GROUP_UPDATE_EVENT else GROUP_CREATE_EVENT
 
             analyticsManager.track(

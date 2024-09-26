@@ -11,4 +11,8 @@ class ProfileViewModel(
 ) : ViewModel(), KoinComponent {
     val accountState: StateFlow<Account>
         get() = accountRepository.get()
+
+    fun deleteAccount() {
+        accountRepository.deleteAccount()
+    }
 }

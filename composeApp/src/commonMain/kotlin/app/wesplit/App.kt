@@ -11,7 +11,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import app.wesplit.data.firebase.firebaseDataModule
-import app.wesplit.di.appModule
 import app.wesplit.domain.di.domainModule
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
@@ -47,7 +46,7 @@ fun App(vararg platformModule: Module) {
     KoinContext(
         context =
             koinApplication {
-                modules(domainModule() + firebaseDataModule() + appModule() + platformModule)
+                modules(domainModule() + firebaseDataModule() + platformModule)
             }.koin,
     ) {
         val deepLinkHandler: DeepLinkHandler = koinInject()

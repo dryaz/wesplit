@@ -8,6 +8,7 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.firestore
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -24,6 +25,7 @@ private const val EXPENSE_SPLIT_TYPE_PARAM = "split_type"
 
 @Single
 class ExpenseFirebaseRepository(
+    private val coroutineDispatcher: CoroutineDispatcher,
     private val analyticsManager: AnalyticsManager,
 ) : ExpenseRepository {
     // TODO: Check if firebase get local balances or maybe need to cache expenses by group id in order
@@ -36,14 +38,16 @@ class ExpenseFirebaseRepository(
             .orderBy(DATE_FIELD, Direction.DESCENDING).snapshots.map {
                 // TODO: Exception to failuer result. Group could be not existing, security rules could fail etc.
                 // TODO: Sort by creation date directly on response
-                val expenses =
-                    it.documents.map {
-                        it.data(Expense.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
-                            id = it.id,
-                        )
-                    }
+                withContext(coroutineDispatcher) {
+                    val expenses =
+                        it.documents.map {
+                            it.data(Expense.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
+                                id = it.id,
+                            )
+                        }
 
-                Result.success(expenses)
+                    Result.success(expenses)
+                }
             }
 
     override fun getById(
@@ -66,7 +70,7 @@ class ExpenseFirebaseRepository(
         groupId: String,
         expense: Expense,
     ): Unit =
-        withContext(NonCancellable) {
+        withContext(coroutineDispatcher + NonCancellable) {
             val expenseId = expense.id
             val eventName = if (expenseId != null) EXPENSE_UPDATE_EVENT else EXPENSE_CREATE_EVENT
 

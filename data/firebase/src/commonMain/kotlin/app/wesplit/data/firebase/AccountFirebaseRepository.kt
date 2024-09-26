@@ -57,6 +57,16 @@ class AccountFirebaseRepository(
         }
     }
 
+    override fun deleteAccount() {
+        val authUser = Firebase.auth.currentUser
+        authUser?.let {
+            coroutinScope.launch {
+                Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).delete()
+                Firebase.auth.currentUser?.delete()
+            }
+        }
+    }
+
     override fun login(login: Login) {
         when (login) {
             is Login.GroupToken -> coroutinScope.launch { signInWithPublicToken(login.groupId, login.token) }

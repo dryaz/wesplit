@@ -10,6 +10,8 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
 import kotlinx.browser.window
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import org.jetbrains.skiko.wasm.onWasmReady
 import org.koin.dsl.module
 
@@ -43,6 +45,7 @@ fun main() {
             // TODO: Provide parsed UTM into Common app to have SSOT for utm tracking
             App(
                 module {
+                    single<CoroutineDispatcher> { Dispatchers.Main }
                     single<LoginDelegate> { LoginJsDelegate() }
                     single<AnalyticsManager> { JsAnalyticsManager() }
                     single<DeepLinkHandler> { deepLinkHandler }
