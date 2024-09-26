@@ -34,7 +34,7 @@ jobs:
     - name: Run JVM Tests
       run: ./gradlew jvmTest
     - name: Deploy web app
-      run: ./gradlew composeApp:jsBrowserProductionWebpack && ./gradlew composeApp:jsBrowserDistribution && firebase deploy --only hosting
+      run: ./gradlew composeApp:jsBrowserProductionWebpack && ./gradlew composeApp:jsBrowserDistribution && firebase hosting:channel:deploy pre-prod
     - name: Create Google Services JSON File
       env:
         GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICE_JSON }}
