@@ -450,7 +450,7 @@ fun RootNavigation(
 
                             is GroupInfoAction.Edit -> {
                                 secondPaneNavController.navigate(
-                                    RightPane.GroupSettings.destination(groupId),
+                                    RightPane.GroupSettings.destination(action.group.id),
                                     navOptions =
                                         navOptions {
                                             launchSingleTop = true

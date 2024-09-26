@@ -40,6 +40,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -327,7 +328,7 @@ private fun ExpenseDetails(
             modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(1f).padding(horizontal = 16.dp),
         ) {
             FilledTonalButton(
-                modifier = Modifier.width(88.dp).fillMaxHeight(1f),
+                modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
                 enabled = true,
                 onClick = { showDatePicker = !showDatePicker },
                 shape = RoundedCornerShape(10.dp),
@@ -348,7 +349,7 @@ private fun ExpenseDetails(
             }
             Spacer(modifier = Modifier.width(8.dp))
             FilledTonalButton(
-                modifier = Modifier.width(88.dp).fillMaxHeight(1f),
+                modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
                 enabled = false,
                 onClick = { },
                 shape = RoundedCornerShape(10.dp),

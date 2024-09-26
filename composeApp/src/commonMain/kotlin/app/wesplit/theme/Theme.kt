@@ -108,7 +108,6 @@ fun AppTheme(content: @Composable () -> Unit) {
         }
 
     AdaptiveTheme(
-        target = theme,
         material =
             MaterialThemeSpec.Default(
                 colorScheme =

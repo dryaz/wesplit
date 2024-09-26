@@ -24,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -48,7 +49,6 @@ import app.wesplit.domain.model.group.isMe
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveIconButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
@@ -245,7 +245,7 @@ private fun GroupSettingsView(
                             (account is Account.Authorized || participant.user == null)
                         ) {
                             {
-                                AdaptiveIconButton(onClick = { onUpdated(group.copy(participants = group.participants - participant)) }) {
+                                IconButton(onClick = { onUpdated(group.copy(participants = group.participants - participant)) }) {
                                     Icon(
                                         AdaptiveIcons.Outlined.Delete,
                                         // TODO: Proper CD

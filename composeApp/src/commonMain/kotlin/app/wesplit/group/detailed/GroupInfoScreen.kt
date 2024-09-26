@@ -56,6 +56,7 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -86,6 +87,7 @@ fun GroupInfoScreen(
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val data = viewModel.dataState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     val windowSizeClass = calculateWindowSizeClass()
     val scope = rememberCoroutineScope()
@@ -136,10 +138,12 @@ fun GroupInfoScreen(
                 }, onNavigationIconClick = { onAction(GroupInfoAction.Back) }, actions = {
                     IconButton(onClick = {
                         // TODO: Proper state handling, not just 1 groupinfo handler
-                        (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                            onAction.invoke(
-                                GroupInfoAction.Edit(group),
-                            )
+                        coroutineScope.launch(NonCancellable) {
+                            (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
+                                onAction.invoke(
+                                    GroupInfoAction.Edit(group),
+                                )
+                            }
                         }
                     }) {
                         Icon(
