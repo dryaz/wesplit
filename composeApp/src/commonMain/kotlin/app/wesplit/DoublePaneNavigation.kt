@@ -56,6 +56,7 @@ import split.composeapp.generated.resources.ic_android
 import split.composeapp.generated.resources.ic_dark
 import split.composeapp.generated.resources.ic_feedback
 import split.composeapp.generated.resources.ic_light
+import split.composeapp.generated.resources.ic_mobile_app
 import split.composeapp.generated.resources.ic_system
 import split.composeapp.generated.resources.ic_web
 import split.composeapp.generated.resources.submit_feedback_cd
@@ -123,6 +124,17 @@ fun DoublePaneNavigation(
                             Theme.Cupertino -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Material3))
                             Theme.Material3 -> localTheme.actionCallback(ThemeAction.ChangeTheme(Theme.Cupertino))
                         }
+                    })
+                }
+
+                if (currentPlatform !is KotlinPlatform.Mobile) {
+                    NavigationRailItem(icon = {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_mobile_app),
+                            contentDescription = "Get mobile application",
+                        )
+                    }, selected = false, onClick = {
+                        uriHandler.openUri("https://wesplit.app/")
                     })
                 }
 
@@ -207,6 +219,21 @@ fun DoublePaneNavigation(
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
+
+                if (currentPlatform !is KotlinPlatform.Mobile) {
+                    NavigationDrawerItem(
+                        label = { Text(text = "Get mobile app") },
+                        selected = false,
+                        onClick = { uriHandler.openUri("https://wesplit.app/") },
+                        shape = RectangleShape,
+                        icon = {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_mobile_app),
+                                contentDescription = stringResource(Res.string.submit_feedback_cd),
+                            )
+                        },
+                    )
+                }
 
                 NavigationDrawerItem(
                     label = { Text(text = stringResource(Res.string.submit_feedback_cd)) },
