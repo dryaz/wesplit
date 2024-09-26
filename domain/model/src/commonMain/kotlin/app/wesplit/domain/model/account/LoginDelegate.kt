@@ -17,4 +17,6 @@ sealed interface Login {
     }
 
     data class GroupToken(val groupId: String, val token: String) : Login
+
+    data object Anonymous : Login
 }

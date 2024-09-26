@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,6 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.account.Login
+import app.wesplit.ui.OrDivider
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -29,14 +32,10 @@ import split.composeapp.generated.resources.img_login
 import split.composeapp.generated.resources.login_button_cd
 import split.composeapp.generated.resources.login_to_create_descr
 
-sealed interface LoginAction {
-    data object Login : LoginAction
-}
-
 @Composable
 internal fun LoginSection(
     modifier: Modifier,
-    onAction: (LoginAction) -> Unit,
+    onLoginRequest: (Login) -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxSize(1f),
@@ -56,7 +55,20 @@ internal fun LoginSection(
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.height(32.dp))
-        GoogleLoginButton { onAction(LoginAction.Login) }
+        GoogleLoginButton { onLoginRequest(Login.Social(Login.Social.Type.GOOGLE)) }
+        Spacer(modifier = Modifier.height(4.dp))
+        OrDivider()
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedButton(
+            onClick = {
+                onLoginRequest(Login.Anonymous)
+            },
+        ) {
+            Text(
+                text = "Login Anonymously",
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
         Spacer(modifier = Modifier.height(32.dp))
         TermsAndPolicyText(modifier = Modifier.padding(horizontal = 32.dp).alpha(0.65f))
     }

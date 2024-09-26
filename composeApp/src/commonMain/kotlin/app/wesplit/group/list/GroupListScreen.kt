@@ -37,9 +37,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.wesplit.account.LoginAction
 import app.wesplit.account.LoginSection
 import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.ui.AdaptiveTopAppBar
@@ -67,7 +67,7 @@ sealed interface GroupListAction {
 
     data object OpenMenu : GroupListAction
 
-    data object Login : GroupListAction
+    data class LoginWith(val login: Login) : GroupListAction
 }
 
 @Composable
@@ -170,11 +170,7 @@ private fun EmptyGroupList(
     ) {
         LoginSection(
             modifier = modifier,
-            onAction = { loginAction ->
-                when (loginAction) {
-                    LoginAction.Login -> onAction(GroupListAction.Login)
-                }
-            },
+            onLoginRequest = { login -> onAction(GroupListAction.LoginWith(login)) },
         )
     }
 

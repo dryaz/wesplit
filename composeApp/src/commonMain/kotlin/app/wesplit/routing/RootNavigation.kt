@@ -30,7 +30,6 @@ import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.AccountRepository
-import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.expense.AddExpenseAction
@@ -46,7 +45,6 @@ import app.wesplit.group.list.GroupListViewModel
 import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
-import app.wesplit.routing.RightPane.Group.Param
 import com.motorro.keeplink.deeplink.deepLink
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -278,7 +276,7 @@ fun RootNavigation(
                         viewModel = viewModel,
                         onAction = { action ->
                             when (action) {
-                                ProfileAction.Login -> accountRepository.login(Login.Social(Login.Social.Type.GOOGLE))
+                                is ProfileAction.LoginWith -> accountRepository.login(action.login)
                                 ProfileAction.Logout -> {
                                     accountRepository.logout()
                                     secondPaneNavController.navigate(
@@ -318,8 +316,8 @@ fun RootNavigation(
                                                 },
                                         )
 
-                                    GroupListAction.Login -> {
-                                        accountRepository.login(Login.Social(Login.Social.Type.GOOGLE))
+                                    is GroupListAction.LoginWith -> {
+                                        accountRepository.login(action.login)
                                     }
 
                                     GroupListAction.CreateNewGroup -> {

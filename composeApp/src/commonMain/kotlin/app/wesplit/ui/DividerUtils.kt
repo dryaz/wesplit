@@ -15,7 +15,7 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.or
 
 @Composable
-internal fun orDivider() {
+internal fun OrDivider() {
     Row(
         modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 64.dp),
         verticalAlignment = Alignment.CenterVertically,

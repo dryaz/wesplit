@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -35,15 +33,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.account.Login
+import app.wesplit.domain.model.account.participant
 import app.wesplit.domain.model.user.email
+import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
-import com.seiko.imageloader.rememberImagePainter
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowRight
@@ -57,7 +55,7 @@ import split.composeapp.generated.resources.profile
 import split.composeapp.generated.resources.profile_under_construction
 
 sealed interface ProfileAction {
-    data object Login : ProfileAction
+    data class LoginWith(val login: Login) : ProfileAction
 
     data object Logout : ProfileAction
 
@@ -83,7 +81,7 @@ fun ProfileRoute(
 }
 
 // TODO: Check recomposition and probably postpone account retrivial?
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalAdaptiveApi::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
@@ -134,16 +132,13 @@ fun ProfileScreen(
                     CircularProgressIndicator()
                 }
             }
+
             Account.Restricted,
             is Account.Anonymous,
             ->
                 LoginSection(
                     modifier = modifier,
-                    onAction = { loginAction ->
-                        when (loginAction) {
-                            LoginAction.Login -> onAction(ProfileAction.Login)
-                        }
-                    },
+                    onLoginRequest = { login -> onAction(ProfileAction.LoginWith(login)) },
                 )
         }
     }
@@ -157,20 +152,18 @@ private fun AccountInfo(
     onAccountDelete: () -> Unit,
 ) {
     var deleteDialogShown by remember { mutableStateOf(false) }
+    val participant = account.participant()
 
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-        val painter = rememberImagePainter(account.user.photoUrl ?: "")
-        Image(
-            modifier = Modifier.size(64.dp).clip(CircleShape),
-            painter = painter,
-            contentDescription = account.user.name,
-        )
+        participant?.let {
+            ParticipantAvatar(participant = it)
+        }
         Spacer(modifier = Modifier.height(8.dp))
-        account.user.name?.let { name ->
+        account.user.name.let { name ->
             Text(
                 text = name,
                 style = MaterialTheme.typography.labelMedium,

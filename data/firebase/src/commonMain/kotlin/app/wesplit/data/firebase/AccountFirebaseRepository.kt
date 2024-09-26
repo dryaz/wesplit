@@ -84,6 +84,8 @@ class AccountFirebaseRepository(
                     }
                 }
             }
+
+            Login.Anonymous -> coroutinScope.launch { Firebase.auth.signInAnonymously() }
         }
     }
 
@@ -122,7 +124,7 @@ class AccountFirebaseRepository(
     }
 
     private suspend fun getAccount(authUser: FirebaseUser?): Account {
-        if (authUser == null || authUser.isAnonymous) {
+        if (authUser == null) {
             return Account.Anonymous
         }
 
