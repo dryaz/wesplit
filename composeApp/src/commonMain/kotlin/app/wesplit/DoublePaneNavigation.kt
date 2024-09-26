@@ -135,6 +135,11 @@ fun DoublePaneNavigation(
                         )
                     }, selected = false, onClick = {
                         uriHandler.openUri("https://wesplit.app/")
+                    },label = {
+                        Text(
+                            text = "Get App",
+                            style = MaterialTheme.typography.labelSmall,
+                        )
                     })
                 }
 
@@ -145,6 +150,11 @@ fun DoublePaneNavigation(
                     )
                 }, selected = false, onClick = {
                     uriHandler.openUri("https://wesplit.prodcamp.com/")
+                },label = {
+                    Text(
+                        text = "Feedback",
+                        style = MaterialTheme.typography.labelSmall,
+                    )
                 })
 
                 NavigationRailItem(icon = {
