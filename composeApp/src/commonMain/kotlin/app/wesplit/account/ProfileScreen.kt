@@ -43,7 +43,6 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.user.email
 import app.wesplit.ui.AdaptiveTopAppBar
 import com.seiko.imageloader.rememberImagePainter
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveButton
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
@@ -54,7 +53,6 @@ import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.img_construct
-import split.composeapp.generated.resources.login
 import split.composeapp.generated.resources.profile
 import split.composeapp.generated.resources.profile_under_construction
 
@@ -147,25 +145,6 @@ fun ProfileScreen(
                         }
                     },
                 )
-        }
-    }
-}
-
-@OptIn(ExperimentalAdaptiveApi::class)
-@Composable
-private fun Unregistered(
-    modifier: Modifier = Modifier,
-    onLogin: () -> Unit,
-) {
-    Box(
-        modifier = modifier.fillMaxSize(1f),
-        contentAlignment = Alignment.Center,
-    ) {
-        AdaptiveButton(
-            modifier = Modifier.fillMaxWidth(1f),
-            onClick = { onLogin() },
-        ) {
-            Text(stringResource(Res.string.login))
         }
     }
 }
