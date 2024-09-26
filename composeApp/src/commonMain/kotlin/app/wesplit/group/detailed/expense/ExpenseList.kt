@@ -1,8 +1,14 @@
 package app.wesplit.group.detailed.expense
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,14 +21,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.expense.Amount
@@ -37,8 +48,17 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.empty_transaction_description
+import split.composeapp.generated.resources.empty_transactions_cd
 import split.composeapp.generated.resources.ic_flag
+import split.composeapp.generated.resources.img_search_empty
 import split.composeapp.generated.resources.non_distr_cd
+
+enum class FilterType {
+    NOT_SPLIT,
+    WITH_ME,
+    PAYED_ME,
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -47,10 +67,98 @@ fun ExpenseList(
     expenses: Map<String, List<Expense>>,
     onAction: (ExpenseAction) -> Unit,
 ) {
+    val filters = remember { mutableStateListOf<FilterType>() }
+    // TODO: Maybe move to VM when do pagination etc.
+    val dataUnderFilters =
+        remember(expenses, filters.size) {
+            val notSplit = filters.contains(FilterType.NOT_SPLIT)
+            val withMe = filters.contains(FilterType.WITH_ME)
+            val payedByMe = filters.contains(FilterType.PAYED_ME)
+            expenses.mapNotNull {
+                val expensesUnderFilter =
+                    it.value.filter {
+                        var result = true
+                        if (notSplit) {
+                            result = (it.undistributedAmount?.value ?: 0f) != 0f
+                        }
+                        if (withMe) {
+                            result = result && it.myAmount().value != 0f
+                        }
+                        if (payedByMe) {
+                            result = result && it.payedBy.isMe()
+                        }
+                        result
+                    }
+                if (expensesUnderFilter.isNullOrEmpty()) {
+                    null
+                } else {
+                    it.key to expensesUnderFilter
+                }
+            }.toMap()
+        }
+
+    AnimatedVisibility(
+        visible = dataUnderFilters.isEmpty(),
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        EmptyExpenseSection()
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(1f),
     ) {
-        expenses.forEach { entry ->
+        item {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp).horizontalScroll(rememberScrollState()),
+            ) {
+                FilterChip(
+                    selected = filters.contains(FilterType.NOT_SPLIT),
+                    onClick = {
+                        if (filters.contains(
+                                FilterType.NOT_SPLIT,
+                            )
+                        ) {
+                            filters.remove(FilterType.NOT_SPLIT)
+                        } else {
+                            filters.add(FilterType.NOT_SPLIT)
+                        }
+                    },
+                    label = { Text("Not split") },
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(
+                    selected = filters.contains(FilterType.WITH_ME),
+                    onClick = {
+                        if (filters.contains(
+                                FilterType.WITH_ME,
+                            )
+                        ) {
+                            filters.remove(FilterType.WITH_ME)
+                        } else {
+                            filters.add(FilterType.WITH_ME)
+                        }
+                    },
+                    label = { Text("With me") },
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(
+                    selected = filters.contains(FilterType.PAYED_ME),
+                    onClick = {
+                        if (filters.contains(
+                                FilterType.PAYED_ME,
+                            )
+                        ) {
+                            filters.remove(FilterType.PAYED_ME)
+                        } else {
+                            filters.add(FilterType.PAYED_ME)
+                        }
+                    },
+                    label = { Text("Payed by me") },
+                )
+            }
+        }
+        dataUnderFilters.forEach { entry ->
             stickyHeader {
                 Text(
                     modifier =
@@ -208,6 +316,27 @@ private fun LentString(
             text = "You borrowed: ${expense.myAmount(group).format()}",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
+        )
+    }
+}
+
+@Composable
+internal fun EmptyExpenseSection(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize(1f).padding(horizontal = 32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Image(
+            modifier = Modifier,
+            painter = painterResource(Res.drawable.img_search_empty),
+            contentDescription = stringResource(Res.string.empty_transactions_cd),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(Res.string.empty_transaction_description),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
         )
     }
 }
