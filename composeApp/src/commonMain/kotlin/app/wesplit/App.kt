@@ -6,7 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -24,10 +23,6 @@ import app.wesplit.routing.RootNavigation
 import app.wesplit.theme.AppTheme
 import com.motorro.keeplink.uri.data.getValue
 import com.motorro.keeplink.uri.data.toMap
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.firestore.firestore
-import dev.gitlive.firebase.firestore.firestoreSettings
-import dev.gitlive.firebase.firestore.persistentCacheSettings
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
@@ -39,11 +34,6 @@ private const val CAMPAIGN_EVENT = "campaign_hit"
 @Composable
 @Preview
 fun App(vararg platformModule: Module) {
-    Firebase.firestore.settings =
-        firestoreSettings {
-            persistentCacheSettings { }
-        }
-
     KoinContext(
         context =
             koinApplication {
@@ -57,8 +47,6 @@ fun App(vararg platformModule: Module) {
 
         val firstPaneNavController: NavHostController = rememberNavController()
         val secondPaneNavController: NavHostController = rememberNavController()
-
-        val coroutineScope = rememberCoroutineScope()
 
         var selectedMenuItem: NavigationMenuItem by remember {
             mutableStateOf(MenuItem.Group)
