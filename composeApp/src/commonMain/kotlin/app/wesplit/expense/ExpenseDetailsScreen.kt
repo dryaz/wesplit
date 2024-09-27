@@ -338,12 +338,10 @@ private fun ExpenseDetails(
                     Text(
                         text = expenseDate.month.name.substring(0, 3),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline,
                     )
                     Text(
                         text = expenseDate.dayOfMonth.toString().padStart(2, '0'),
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.outline,
                     )
                 }
             }
