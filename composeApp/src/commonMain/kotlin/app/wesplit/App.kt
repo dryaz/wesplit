@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -57,6 +58,8 @@ fun App(vararg platformModule: Module) {
         val firstPaneNavController: NavHostController = rememberNavController()
         val secondPaneNavController: NavHostController = rememberNavController()
 
+        val coroutineScope = rememberCoroutineScope()
+
         var selectedMenuItem: NavigationMenuItem by remember {
             mutableStateOf(MenuItem.Group)
         }
@@ -85,12 +88,11 @@ fun App(vararg platformModule: Module) {
 
             link?.let {
                 when (val action = link.action) {
-                    is DeeplinkAction.GroupDetails -> {
+                    is DeeplinkAction.Group.Details -> {
                         secondPaneNavController.navigate(
-                            // TODO: Support token for sharing
                             RightPane.Group.destination(
                                 groupId = action.groupId,
-                                token = link.action.getSearch().getValue(DeeplinkAction.GroupDetails.TOKEN),
+                                token = link.action.getSearch().getValue(DeeplinkAction.Group.Details.TOKEN),
                             ),
                             navOptions =
                                 navOptions {
@@ -102,6 +104,21 @@ fun App(vararg platformModule: Module) {
                                 },
                         )
                     }
+
+                    is DeeplinkAction.Group.Expense -> {
+                        secondPaneNavController.navigate(
+                            RightPane.ExpenseDetails.destination(action.groupId),
+                            navOptions =
+                                navOptions {
+                                    launchSingleTop = true
+                                    popUpTo(
+                                        RightPane.Empty.route,
+                                        popUpToBuilder = { inclusive = false },
+                                    )
+                                },
+                        )
+                    }
+
                     is DeeplinkAction.Home -> {}
                     is DeeplinkAction.Profile ->
                         firstPaneNavController.navigate(

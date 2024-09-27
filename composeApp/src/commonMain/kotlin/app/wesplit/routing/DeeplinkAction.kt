@@ -28,23 +28,41 @@ sealed class DeeplinkAction : Action() {
         override fun getPath(): Array<String> = super.getPath() + SEGMENT
     }
 
-    class GroupDetails(val groupId: String, val token: String?) : DeeplinkAction() {
+    sealed class Group : DeeplinkAction() {
+        abstract val groupId: String
+
         internal companion object {
             const val SEGMENT = "group"
-            const val TOKEN = "token"
         }
 
-        override fun getPath(): Array<String> = super.getPath() + SEGMENT + groupId
+        override fun getPath(): Array<String> = super.getPath() + SEGMENT
 
-        override fun getSearch(): Array<Param> {
-            return if (token != null) {
-                super.getSearch() +
-                    arrayOf(
-                        TOKEN of token,
-                    )
-            } else {
-                super.getSearch()
+        class Details(override val groupId: String, val token: String?) : Group() {
+            internal companion object {
+                const val TOKEN = "token"
             }
+
+            override fun getPath(): Array<String> = super.getPath() + groupId
+
+            override fun getSearch(): Array<Param> {
+                return if (token != null) {
+                    super.getSearch() +
+                        arrayOf(
+                            TOKEN of token,
+                        )
+                } else {
+                    super.getSearch()
+                }
+            }
+        }
+
+        class Expense(override val groupId: String, val expenseId: String? = null) : Group() {
+            internal companion object {
+                const val SEGMENT = "expense"
+                const val TOKEN = "token"
+            }
+
+            override fun getPath(): Array<String> = super.getPath() + groupId + SEGMENT + (expenseId ?: "")
         }
     }
 

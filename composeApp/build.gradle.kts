@@ -83,6 +83,9 @@ kotlin {
             implementation(libs.androidx.credentials.play.services.auth)
             implementation(libs.googleid)
 
+            implementation(libs.androidx.core.ktx)
+            implementation(libs.androidx.core.google.shortcuts)
+
 //            implementation(libs.ktor.client.android)
         }
 

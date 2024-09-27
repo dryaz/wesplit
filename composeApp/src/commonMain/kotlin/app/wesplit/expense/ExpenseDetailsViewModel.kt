@@ -3,6 +3,8 @@ package app.wesplit.expense
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.ShortcutAction
+import app.wesplit.ShortcutDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.expense.Amount
@@ -52,6 +54,7 @@ class ExpenseDetailsViewModel(
     private val groupRepository: GroupRepository,
     private val expenseRepository: ExpenseRepository,
     private val analyticsManager: AnalyticsManager,
+    private val shortcutDelegate: ShortcutDelegate,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support add expense inside group
     private val groupId: String =
@@ -111,8 +114,13 @@ class ExpenseDetailsViewModel(
                         return@combine State.Error(State.Error.Type.NOT_EXISTS)
                     }
 
+                    val existingExpense = expenseResult.getOrNull()
+                    if (existingExpense == null) {
+                        shortcutDelegate.push(ShortcutAction.NewExpense(group))
+                    }
+
                     val expense =
-                        expenseResult.getOrNull() ?: Expense(
+                        existingExpense ?: Expense(
                             id = null,
                             title = "",
                             payedBy = group.participants.find { it.isMe() } ?: group.participants.first(),

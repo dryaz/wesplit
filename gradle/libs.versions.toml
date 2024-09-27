@@ -1,4 +1,6 @@
 [versions]
+coreGoogleShortcuts = "1.1.0"
+coreSplashscreen = "1.2.0-alpha02"
 versionName = "1.1.0"
 android-versionCode = "21"
 
@@ -51,6 +53,8 @@ cupertino = "0.1.0-alpha04"
 materialKolor = "1.7.0"
 
 [libraries]
+androidx-core-google-shortcuts = { module = "androidx.core:core-google-shortcuts", version.ref = "coreGoogleShortcuts" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 deeplink = { module = "com.motorro.keeplink:deeplink", version.ref = "deeplink" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }

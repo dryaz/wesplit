@@ -25,6 +25,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navOptions
 import app.wesplit.DoublePaneNavigation
 import app.wesplit.NavigationMenuItem
+import app.wesplit.ShortcutDelegate
 import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
@@ -412,7 +413,7 @@ fun RootNavigation(
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
                             is GroupInfoAction.Share -> {
                                 val detailsAction =
-                                    DeeplinkAction.GroupDetails(
+                                    DeeplinkAction.Group.Details(
                                         groupId = action.group.id,
                                         token = action.group.publicToken,
                                     )
@@ -559,6 +560,7 @@ fun RootNavigation(
                     // TODO: Accorgin ti github koin starts to support navigation args in savedstate in VM, POC
                     val groupRepository: GroupRepository = koinInject()
                     val expenseRepository: ExpenseRepository = koinInject()
+                    val shortcutDelegate: ShortcutDelegate = koinInject()
 
                     val groupId =
                         checkNotNull(
@@ -590,6 +592,7 @@ fun RootNavigation(
                                 groupRepository,
                                 expenseRepository,
                                 analyticsManager,
+                                shortcutDelegate,
                             )
                         }
 

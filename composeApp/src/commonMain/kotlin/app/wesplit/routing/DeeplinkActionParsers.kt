@@ -12,26 +12,51 @@ internal val ProfileParser =
         DefaultActionParser { DeeplinkAction.Profile() },
     )
 
-internal val GropuDetailsIdParser =
+internal val GroupIdParser =
     ActionParser { components, pathIndex ->
+        if (pathIndex != components.getPath().size - 1) return@ActionParser null
+
         components.getPath().getOrNull(pathIndex)?.takeIf { it.isNotBlank() }?.let {
-            DeeplinkAction.GroupDetails(
+            DeeplinkAction.Group.Details(
                 groupId = it,
-                token = components.getSearch().getValue(DeeplinkAction.GroupDetails.TOKEN),
+                token = components.getSearch().getValue(DeeplinkAction.Group.Details.TOKEN),
             )
+        }
+    }
+
+internal val ExpenseIdParser =
+    ActionParser { components, pathIndex ->
+        if (pathIndex == components.getPath().size - 1) return@ActionParser null
+        val groupId = components.getPath().getOrNull(pathIndex)
+
+        val nextPathElement = components.getPath().getOrNull(pathIndex + 1)
+        if (nextPathElement != "expense") return@ActionParser null
+
+        val expenseId = components.getPath().getOrNull(pathIndex + 2)
+        return@ActionParser if (groupId != null && expenseId != null) {
+            DeeplinkAction.Group.Expense(groupId, expenseId)
+        } else {
+            null
         }
     }
 
 internal val GroupDetailsParser =
     SegmentCheckParser(
-        DeeplinkAction.GroupDetails.SEGMENT,
-        BranchActionParser(GropuDetailsIdParser),
+        DeeplinkAction.Group.SEGMENT,
+        BranchActionParser(GroupIdParser),
+    )
+
+internal val ExpenseDetailsParser =
+    SegmentCheckParser(
+        DeeplinkAction.Group.SEGMENT,
+        BranchActionParser(ExpenseIdParser),
     )
 
 private val rootParsers =
     listOf(
         ProfileParser,
         GroupDetailsParser,
+        ExpenseDetailsParser,
     )
 
 val RootActionParser =

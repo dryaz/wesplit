@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
                 AndroidAppModule().module,
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
                 module {
+                    single<ShortcutDelegate> { ShortcutAndroidDelegate(application) }
                     single<CoroutineDispatcher> { Dispatchers.IO }
                     single<AnalyticsManager> { AndroidAnalyticsManager() }
                     single<DeepLinkHandler> { deepLinkHandler }
@@ -56,8 +57,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleDeepLinkIntent(intent: Intent?) {
-        intent?.data?.let { uri ->
-            deepLinkHandler.handleDeeplink(uri.toString())
+        intent?.let {
+            val url = ShortcutAndroidDelegate.getDeeplink(it) ?: it.data?.let { it.toString() }
+            url?.let {
+                deepLinkHandler.handleDeeplink(it)
+            }
         }
     }
 }
