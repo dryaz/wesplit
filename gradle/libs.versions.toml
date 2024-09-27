@@ -1,10 +1,10 @@
 [versions]
-coreGoogleShortcuts = "1.1.0"
-coreSplashscreen = "1.2.0-alpha02"
-versionName = "1.1.0"
-android-versionCode = "21"
+versionName = "1.2.0"
+android-versionCode = "22"
 
 agp = "8.5.2"
+coreGoogleShortcuts = "1.1.0"
+coreSplashscreen = "1.2.0-alpha02"
 android-compileSdk = "34"
 android-minSdk = "24"
 android-targetSdk = "34"
