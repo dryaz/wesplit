@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,22 +35,26 @@ import split.composeapp.generated.resources.img_login
 import split.composeapp.generated.resources.login_button_cd
 import split.composeapp.generated.resources.login_to_create_descr
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 internal fun LoginSection(
     modifier: Modifier,
     onLoginRequest: (Login) -> Unit,
 ) {
+    val windowSizeClass = calculateWindowSizeClass()
     Column(
         modifier = modifier.fillMaxSize(1f),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Image(
-            modifier = Modifier,
-            painter = painterResource(Res.drawable.img_login),
-            contentDescription = stringResource(Res.string.login_button_cd),
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        if (windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact) {
+            Image(
+                modifier = Modifier,
+                painter = painterResource(Res.drawable.img_login),
+                contentDescription = stringResource(Res.string.login_button_cd),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         Text(
             modifier = Modifier.padding(horizontal = 16.dp),
             text = stringResource(Res.string.login_to_create_descr),
