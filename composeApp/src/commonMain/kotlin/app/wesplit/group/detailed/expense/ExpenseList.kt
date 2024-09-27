@@ -102,7 +102,7 @@ fun ExpenseList(
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        EmptyExpenseSection()
+        EmptyExpenseSection(modifier = Modifier.padding(top = 70.dp, bottom = 16.dp))
     }
 
     LazyColumn(

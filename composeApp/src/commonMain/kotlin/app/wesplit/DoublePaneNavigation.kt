@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -80,7 +81,7 @@ fun DoublePaneNavigation(
 
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(
-            modifier = Modifier.fillMaxHeight(1f),
+            modifier = Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding(),
         ) {
             // TODO: https://m3.material.io/ has navigation rail only on expanded but even not medium
             NavigationRail(
@@ -135,7 +136,7 @@ fun DoublePaneNavigation(
                         )
                     }, selected = false, onClick = {
                         uriHandler.openUri("https://wesplit.app/")
-                    },label = {
+                    }, label = {
                         Text(
                             text = "Get App",
                             style = MaterialTheme.typography.labelSmall,
@@ -150,7 +151,7 @@ fun DoublePaneNavigation(
                     )
                 }, selected = false, onClick = {
                     uriHandler.openUri("https://wesplit.prodcamp.com/")
-                },label = {
+                }, label = {
                     Text(
                         text = "Feedback",
                         style = MaterialTheme.typography.labelSmall,

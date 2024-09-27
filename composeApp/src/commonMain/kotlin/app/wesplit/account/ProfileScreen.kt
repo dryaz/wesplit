@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -117,11 +118,11 @@ fun ProfileScreen(
                 },
             )
         },
-    ) { paddings ->
+    ) { padding ->
         when (accountState) {
             is Account.Authorized ->
                 AccountInfo(
-                    modifier = Modifier.padding(paddings),
+                    modifier = Modifier.padding(padding),
                     account = accountState,
                     onAction = onAction,
                     onAccountDelete = onAccountDelete,
@@ -144,6 +145,7 @@ fun ProfileScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 private fun AccountInfo(
     modifier: Modifier = Modifier,
@@ -153,6 +155,7 @@ private fun AccountInfo(
 ) {
     var deleteDialogShown by remember { mutableStateOf(false) }
     val participant = account.participant()
+    val windowSizeClass = calculateWindowSizeClass()
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -177,7 +180,11 @@ private fun AccountInfo(
                 color = MaterialTheme.colorScheme.outline,
             )
         }
-        UnderConstruction()
+        if (windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact) {
+            UnderConstruction()
+        } else {
+            Spacer(modifier = Modifier.weight(1f))
+        }
         val uriHandler = LocalUriHandler.current
         ListItem(
             modifier =

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,6 +24,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -79,7 +81,7 @@ sealed interface GroupInfoAction {
     data class OpenExpenseDetails(val expense: Expense) : GroupInfoAction
 }
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun GroupInfoScreen(
     modifier: Modifier = Modifier,
@@ -108,9 +110,12 @@ fun GroupInfoScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         floatingActionButton = {
             (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                FloatingActionButton(onClick = {
-                    onAction(GroupInfoAction.AddExpense(group))
-                }) {
+                FloatingActionButton(
+                    modifier = Modifier,
+                    onClick = {
+                        onAction(GroupInfoAction.AddExpense(group))
+                    },
+                ) {
                     Icon(
                         AdaptiveIcons.Outlined.Add,
                         contentDescription = stringResource(Res.string.add_expense_to_group),
@@ -122,7 +127,9 @@ fun GroupInfoScreen(
             SnackbarHost(hostState = snackbarHostState)
         },
         topBar = {
-            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact) {
+            if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||
+                windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
+            ) {
                 // TODO: Better to have collapsing toolbar instead of hiding group header
                 AdaptiveTopAppBar(title = {
                     Text(
@@ -169,9 +176,9 @@ fun GroupInfoScreen(
                 })
             }
         },
-    ) { paddings ->
+    ) { padding ->
         Box(
-            modifier = Modifier.padding(paddings).fillMaxSize(1f),
+            modifier = Modifier.fillMaxSize(1f).padding(top = padding.calculateTopPadding()),
             contentAlignment = Alignment.Center,
         ) {
             val actionCallback: (GroupInfoAction) -> Unit =
@@ -230,11 +237,15 @@ private fun GroupInfoContent(
     Column(
         modifier = Modifier.fillMaxSize(1f),
     ) {
-        if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
+        if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact &&
+            windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
+        ) {
             GroupHeader(group, onAction)
         }
 
-        if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+        if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
+            windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
+        ) {
             SplitView(expenseViewModel, balanceSectionViewModel, onAction)
         } else {
             PaginationView(expenseViewModel, balanceSectionViewModel, onAction)
