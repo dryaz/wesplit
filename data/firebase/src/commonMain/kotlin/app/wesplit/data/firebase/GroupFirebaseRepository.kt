@@ -3,6 +3,7 @@ package app.wesplit.data.firebase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.account.participant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
@@ -199,8 +200,12 @@ class GroupFirebaseRepository(
         val doc = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).get()
         if (doc.exists) {
             val existingGroup = doc.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
-            val myTokens = existingGroup.participants.firstOrNull { it.isMe() }?.user?.authIds
-            if (myTokens == null) return
+            val myTokens =
+                (
+                    existingGroup.participants.firstOrNull { it.isMe() }?.user?.authIds
+                        ?: emptyList()
+                ) + (accountRepository.get().value.participant()?.user?.authIds ?: emptyList())
+            if (myTokens.isEmpty()) return
 
             val newTokens = existingGroup.tokens.filterNot { it in myTokens }
             // TODO: Check if it's accurate (spoiler: probably not)
