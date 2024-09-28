@@ -46,6 +46,10 @@ sealed interface UpdateAction {
 
     sealed interface Split : UpdateAction {
         data class Equal(val participant: Participant, val isIncluded: Boolean) : Split
+
+        data class Share(val participant: Participant, val value: Float) : Split
+
+        data class Amount(val participant: Participant, val value: Float) : Split
     }
 }
 
@@ -178,11 +182,11 @@ class ExpenseDetailsViewModel(
                 is UpdateAction.TotalAmount ->
                     _state.update {
                         data.copy(
-                            expense = calculateShares(expense.copy(totalAmount = expense.totalAmount.copy(value = action.value))),
+                            expense = expense.copy(totalAmount = expense.totalAmount.copy(value = action.value)).reCalculateShares(),
                         )
                     }
 
-                is UpdateAction.Split.Equal -> _state.update { data.copy(expense = calculateShares(expense, action)) }
+                is UpdateAction.Split -> _state.update { data.copy(expense = expense.reCalculateShares(action)) }
 
                 UpdateAction.Delete ->
                     (_state.value as? State.Data)?.expense?.let { exp ->
@@ -220,51 +224,6 @@ class ExpenseDetailsViewModel(
     }
 
     private fun isComplete(expense: Expense) = !expense.title.isNullOrBlank() && expense.totalAmount.value != 0f
-
-    // TODO: Extract to usecase, cover by tests
-    // TODO: When new split option supported -> need to use base UpdateCation.Split and do different calculations
-    private fun calculateShares(
-        expense: Expense,
-        action: UpdateAction.Split.Equal? = null,
-    ): Expense {
-        val sum = expense.totalAmount.value
-        val currency = expense.totalAmount.currencyCode
-        val currentParticiapants =
-            (expense.shares).filter {
-                if (it.participant.id == action?.participant?.id) {
-                    action.isIncluded
-                } else {
-                    true
-                }
-            }.map { it.participant }.toHashSet()
-
-        val totalParticipants =
-            action?.let {
-                if (it.isIncluded) currentParticiapants + it.participant else currentParticiapants
-            } ?: currentParticiapants
-
-        // TODO: It will fail in some case, maaaybe need to use bigdecimal etc.
-        val sharePerPart = sum / totalParticipants.size
-        val shares =
-            totalParticipants.map {
-                Share(
-                    participant = it,
-                    amount =
-                        Amount(
-                            value = sharePerPart,
-                            currencyCode = currency,
-                        ),
-                )
-            }.toSet()
-        val distributed = shares.map { it.amount.value }.sum()
-        val residual = sum - distributed
-        val undistributed = if (residual != 0f) Amount(residual, currency) else null
-
-        return expense.copy(
-            shares = shares,
-            undistributedAmount = undistributed,
-        )
-    }
 
     sealed interface State {
         data object Loading : State

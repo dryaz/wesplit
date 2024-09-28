@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -37,15 +39,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.FutureFeature
+import app.wesplit.domain.model.expense.SplitType
 import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Participant
@@ -222,6 +229,8 @@ private fun SharesDetails(
     data: ExpenseDetailsViewModel.State.Data,
     onUpdated: (UpdateAction) -> Unit,
 ) {
+    var splitType by remember { mutableStateOf(SplitType.EQUAL) }
+
     Card(
         colors =
             CardDefaults.cardColors(
@@ -229,53 +238,152 @@ private fun SharesDetails(
             ),
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = "We split in",
-                modifier = Modifier.padding(vertical = 16.dp).padding(start = 16.dp),
-                color = MaterialTheme.colorScheme.outline,
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = data.group.uiTitle(),
-                modifier = Modifier.padding(vertical = 16.dp).padding(end = 16.dp),
-            )
-        }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
+        SharesDetailsHeader(data)
+        SharesDetailsParticipants(data, splitType, onUpdated)
+    }
+}
 
-        data.allParticipants().forEach { participant ->
-            ParticipantListItem(
-                participant = participant,
-                onClick = { item ->
-                    onUpdated(
-                        UpdateAction.Split.Equal(
-                            participant = item,
-                            isIncluded = data.expense.shares.none { it.participant.id == item.id },
-                        ),
-                    )
-                },
-                action = {
-                    Checkbox(
-                        checked = data.expense.shares.any { it.participant.id == participant.id },
-                        onCheckedChange = { isChecked ->
-                            onUpdated(
-                                UpdateAction.Split.Equal(
-                                    participant = participant,
-                                    isIncluded = isChecked,
-                                ),
-                            )
-                        },
-                    )
-                },
-                subTitle =
-                    data.expense.shares.find { it.participant.id == participant.id }?.let {
-                        it.amount.format()
-                    } ?: "Not participating",
-            )
+@Composable
+fun SharesDetailsParticipants(
+    data: ExpenseDetailsViewModel.State.Data,
+    splitType: SplitType,
+    onUpdated: (UpdateAction) -> Unit,
+) {
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    var selectedTabIndex by remember {
+        mutableIntStateOf(
+            when (splitType) {
+                SplitType.EQUAL -> 0
+                SplitType.SHARES -> 1
+                SplitType.AMOUNTS -> TODO("Amounts not yet supported")
+            },
+        )
+    }
+
+    Column {
+        TabRow(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            selectedTabIndex = selectedTabIndex,
+        ) {
+            Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text("Equal") })
+            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text("By Shares") })
+        }
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(1f),
+        ) { index ->
+            Column(
+                modifier = Modifier.fillMaxSize(1f),
+            ) {
+                when (index) {
+                    0 -> SharesDetailsParticipantList(data, SplitType.EQUAL, onUpdated)
+                    1 -> SharesDetailsParticipantList(data, SplitType.SHARES, onUpdated)
+                }
+            }
         }
     }
+
+    LaunchedEffect(key1 = selectedTabIndex) {
+        pagerState.animateScrollToPage(selectedTabIndex)
+    }
+
+    LaunchedEffect(key1 = pagerState.currentPage, pagerState.isScrollInProgress) {
+        if (!pagerState.isScrollInProgress) {
+            selectedTabIndex = pagerState.currentPage
+        }
+    }
+}
+
+@Composable
+private fun SharesDetailsParticipantList(
+    data: ExpenseDetailsViewModel.State.Data,
+    splitType: SplitType,
+    onUpdated: (UpdateAction) -> Unit,
+) {
+    data.allParticipants().forEach { participant ->
+        when (splitType) {
+            SplitType.EQUAL ->
+                ParticipantListItem(
+                    participant = participant,
+                    onClick = { item ->
+                        onUpdated(
+                            UpdateAction.Split.Equal(
+                                participant = item,
+                                isIncluded = data.expense.shares.none { it.participant.id == item.id },
+                            ),
+                        )
+                    },
+                    action = {
+                        Checkbox(
+                            checked = data.expense.shares.any { it.participant.id == participant.id },
+                            onCheckedChange = { isChecked ->
+                                onUpdated(
+                                    UpdateAction.Split.Equal(
+                                        participant = participant,
+                                        isIncluded = isChecked,
+                                    ),
+                                )
+                            },
+                        )
+                    },
+                    subTitle =
+                        data.expense.shares.find { it.participant.id == participant.id }?.let {
+                            it.amount.format()
+                        } ?: "Not participating",
+                )
+
+            SplitType.SHARES ->
+                ParticipantListItem(
+                    participant = participant,
+                    action = {
+                        TextField(
+                            modifier = Modifier.width(74.dp),
+                            singleLine = true,
+                            value = data.expense.shares.find { it.participant.id == participant.id }?.amount?.format(false) ?: "0",
+                            keyboardOptions =
+                                KeyboardOptions(
+                                    keyboardType = KeyboardType.Decimal,
+                                ),
+                            onValueChange = { value ->
+                                val floatValue = value.toFloatOrNull() ?: 0f
+                                onUpdated(
+                                    UpdateAction.Split.Share(
+                                        participant = participant,
+                                        value = floatValue,
+                                    ),
+                                )
+                            },
+                        )
+                    },
+                    subTitle =
+                        data.expense.shares.find { it.participant.id == participant.id }?.let {
+                            it.amount.format()
+                        } ?: "Not participating",
+                )
+
+            SplitType.AMOUNTS -> TODO("Amount not supported yet")
+        }
+    }
+}
+
+@Composable
+private fun SharesDetailsHeader(data: ExpenseDetailsViewModel.State.Data) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "We split in",
+            modifier = Modifier.padding(vertical = 16.dp).padding(start = 16.dp),
+            color = MaterialTheme.colorScheme.outline,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = data.group.uiTitle(),
+            modifier = Modifier.padding(vertical = 16.dp).padding(end = 16.dp),
+        )
+    }
+    HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
