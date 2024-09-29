@@ -229,8 +229,6 @@ private fun SharesDetails(
     data: ExpenseDetailsViewModel.State.Data,
     onUpdated: (UpdateAction) -> Unit,
 ) {
-    var splitType by remember { mutableStateOf(SplitType.EQUAL) }
-
     Card(
         colors =
             CardDefaults.cardColors(
@@ -239,7 +237,7 @@ private fun SharesDetails(
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         SharesDetailsHeader(data)
-        SharesDetailsParticipants(data, splitType, onUpdated)
+        SharesDetailsParticipants(data, data.splitOptions.selectedSplitType, onUpdated)
     }
 }
 
@@ -310,18 +308,18 @@ private fun SharesDetailsParticipantList(
                         onUpdated(
                             UpdateAction.Split.Equal(
                                 participant = item,
-                                isIncluded = data.expense.shares.none { it.participant.id == item.id },
+                                value = data.splitOptions.splitValues[splitType]!![participant] as Boolean == false,
                             ),
                         )
                     },
                     action = {
                         Checkbox(
-                            checked = data.expense.shares.any { it.participant.id == participant.id },
+                            checked = data.splitOptions.splitValues[splitType]!![participant] as Boolean,
                             onCheckedChange = { isChecked ->
                                 onUpdated(
                                     UpdateAction.Split.Equal(
                                         participant = participant,
-                                        isIncluded = isChecked,
+                                        value = isChecked,
                                     ),
                                 )
                             },
@@ -333,14 +331,14 @@ private fun SharesDetailsParticipantList(
                         } ?: "Not participating",
                 )
 
-            SplitType.SHARES ->
+            SplitType.SHARES -> {
                 ParticipantListItem(
                     participant = participant,
                     action = {
                         TextField(
                             modifier = Modifier.width(74.dp),
                             singleLine = true,
-                            value = data.expense.shares.find { it.participant.id == participant.id }?.amount?.format(false) ?: "0",
+                            value = (data.splitOptions.splitValues[splitType]!![participant] ?: 0f).toString(),
                             keyboardOptions =
                                 KeyboardOptions(
                                     keyboardType = KeyboardType.Decimal,
@@ -361,6 +359,7 @@ private fun SharesDetailsParticipantList(
                             it.amount.format()
                         } ?: "Not participating",
                 )
+            }
 
             SplitType.AMOUNTS -> TODO("Amount not supported yet")
         }

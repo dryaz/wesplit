@@ -35,8 +35,8 @@ data class Expense(
     @SerialName("date")
     val date: BaseTimestamp = Timestamp.ServerTimestamp,
     // TODO: Yet support only equal split in v1
-    @SerialName("splitType")
-    val splitType: SplitType = SplitType.EQUAL,
+//    @SerialName("splitType")
+//    val splitType: SplitType = SplitType.EQUAL,
     // TODO: Itemization
     // TODO: Comments
 )
@@ -46,7 +46,9 @@ fun BaseTimestamp.toInstant() = Instant.fromEpochSeconds((this as Timestamp).sec
 @Serializable
 @SerialName("share")
 data class Share(
+    @SerialName("participant")
     val participant: Participant,
+    @SerialName("amount")
     val amount: Amount,
 )
 

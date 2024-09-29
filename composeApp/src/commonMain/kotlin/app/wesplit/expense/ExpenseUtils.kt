@@ -4,62 +4,141 @@ import app.wesplit.domain.model.expense.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.Share
 import app.wesplit.domain.model.expense.SplitType
+import app.wesplit.domain.model.group.Participant
 
-internal fun Expense.reCalculateShares(updateAction: UpdateAction.Split? = null): Expense {
-    val newSplitType =
-        updateAction?.let {
-            when (it) {
-                is UpdateAction.Split.Amount -> SplitType.AMOUNTS
-                is UpdateAction.Split.Equal -> SplitType.EQUAL
-                is UpdateAction.Split.Share -> SplitType.SHARES
-            }
-        } ?: this.splitType
+internal fun Expense.getInitialSplitOptions() =
+    ExpenseDetailsViewModel.State.Data.SplitOptions(
+        selectedSplitType = if (shares.distinctBy { it.amount.value }.size == 1) SplitType.EQUAL else SplitType.SHARES,
+        splitValues =
+            SplitType.entries.map {
+                it to
+                    when (it) {
+                        SplitType.EQUAL ->
+                            shares.map { it.participant to (it.amount.value != 0f || totalAmount.value == 0f) }
+                                .toMap()
 
-    val newShares =
-        when (newSplitType) {
-            SplitType.EQUAL -> calculateEqual(totalAmount, shares, updateAction as UpdateAction.Split.Equal?)
-            SplitType.SHARES -> calculateShares(totalAmount, shares, updateAction as UpdateAction.Split.Share?)
-            SplitType.AMOUNTS -> TODO("Amounts not yet supported")
-        }
+                        SplitType.SHARES ->
+                            shares.map {
+                                val shareCost = shares.getMinShareCost()
+                                it.participant to (if (shareCost != 0f) it.amount.value / shareCost else 1f)
+                            }.toMap()
 
-    return this.copy(
-        splitType = newSplitType,
-        shares = newShares,
+                        SplitType.AMOUNTS ->
+                            shares.map { it.participant to it.amount.value }
+                                .toMap()
+                    }
+            }.toMap(),
+    )
+
+internal fun ExpenseDetailsViewModel.State.Data.SplitOptions.update(
+    action: UpdateAction.TotalAmount,
+): ExpenseDetailsViewModel.State.Data.SplitOptions {
+    val shareValues = splitValues[SplitType.SHARES]
+    val totalShares = shareValues?.values?.sumOf { (it as Float).toDouble() } ?: 0.0
+    val shareCost = (if (totalShares != 0.0) action.value / totalShares else 0.0).toFloat()
+
+    return copy(
+        splitValues =
+            splitValues.mapValues { entry ->
+                if (entry.key != SplitType.AMOUNTS) {
+                    entry.value
+                } else {
+                    entry.value.mapValues { entry ->
+                        (shareValues?.get(entry.key) as Float? ?: 0f) * shareCost
+                    }
+                }
+            },
     )
 }
 
-fun calculateShares(
-    totalAmount: Amount,
-    shares: Set<Share>,
-    action: UpdateAction.Split.Share?,
-): Set<Share> {
-    val shareCost = shares.minOf { it.amount.value }
-    val participantShares = shares.associate { it.participant to (it.amount.value / shareCost).toFloat() }.toMutableMap()
-    action?.let {
-        participantShares[it.participant] = it.value
-    }
-
-    val newShareCost = totalAmount.value / participantShares.values.sum()
-    return participantShares.map { Share(it.key, Amount((newShareCost * it.value), totalAmount.currencyCode)) }.toSet()
-}
-
-private fun calculateEqual(
-    totalAmountValue: Amount,
-    shares: Set<Share>,
-    action: UpdateAction.Split.Equal?,
-): Set<Share> {
-    val currentParticipants = shares.map { it.participant }.toSet()
-    val newParticipants =
-        if (action != null) {
-            if (action.isIncluded) {
-                currentParticipants + action.participant
-            } else {
-                currentParticipants - action.participant
-            }
-        } else {
-            currentParticipants
+internal fun ExpenseDetailsViewModel.State.Data.SplitOptions.update(
+    action: UpdateAction.Split,
+): ExpenseDetailsViewModel.State.Data.SplitOptions {
+    val newSplitType =
+        when (action) {
+            is UpdateAction.Split.Amount -> SplitType.AMOUNTS
+            is UpdateAction.Split.Equal -> SplitType.EQUAL
+            is UpdateAction.Split.Share -> SplitType.SHARES
         }
 
-    val shareCost = totalAmountValue.value / newParticipants.size
-    return newParticipants.map { Share(it, Amount(shareCost, totalAmountValue.currencyCode)) }.toSet()
+    val newSplitValueForAction =
+        splitValues[newSplitType]!!.mapValues { entry ->
+            if (entry.key == action.participant) action.value else entry.value
+        }
+
+    return copy(
+        selectedSplitType = newSplitType,
+        splitValues =
+            splitValues.mapValues { entry ->
+                calculateForSplitType(entry.key, entry.value, newSplitType, newSplitValueForAction)
+            },
+    )
+}
+
+private fun calculateForSplitType(
+    splitType: SplitType,
+    oldValue: Map<Participant, Any>,
+    baseSplitType: SplitType,
+    baseValue: Map<Participant, Any>,
+): Map<Participant, Any> {
+    if (splitType == baseSplitType) return baseValue
+
+    return when (baseSplitType) {
+        SplitType.EQUAL -> {
+            when (splitType) {
+                SplitType.SHARES -> baseValue.mapValues { if ((it.value as Boolean) == true) 1f else 0f }
+                SplitType.AMOUNTS -> {
+                    val total = oldValue.values.sumOf { (it as Float).toDouble() }
+                    val participants = baseValue.values.count { (it as Boolean) == true }
+                    val share = (if (participants != 0) total / participants else 0f).toFloat()
+                    baseValue.mapValues { if ((it.value as Boolean) == true) share else 0f }
+                }
+                SplitType.EQUAL -> throw IllegalStateException("Calculate for same split type: $splitType")
+            }
+        }
+        SplitType.SHARES -> {
+            when (splitType) {
+                SplitType.AMOUNTS -> {
+                    val total = oldValue.values.sumOf { (it as Float).toDouble() }
+                    val shares = baseValue.values.sumOf { (it as Float).toDouble() }
+                    val sharePrice = total / shares
+                    baseValue.mapValues { (it.value as Float) * sharePrice }
+                }
+                SplitType.EQUAL -> baseValue.mapValues { true }
+                SplitType.SHARES -> throw IllegalStateException("Calculate for same split type: $splitType")
+            }
+        }
+        SplitType.AMOUNTS -> {
+            when (splitType) {
+                SplitType.SHARES -> {
+                    val total = baseValue.values.sumOf { (it as Float).toDouble() }
+                    val sharePrice = baseValue.values.filter { (it as Float) != 0f }.minOfOrNull { it as Float } ?: 0f
+                    baseValue.mapValues { (it.value as Float) / sharePrice }
+                }
+                SplitType.EQUAL -> baseValue.mapValues { true }
+                SplitType.AMOUNTS -> throw IllegalStateException("Calculate for same split type: $splitType")
+            }
+        }
+    }
+}
+
+internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.State.Data.SplitOptions): Expense {
+    val shareValues = splitOptions.splitValues[SplitType.AMOUNTS] ?: throw IllegalStateException("Cant get amounts")
+    return this.copy(
+        shares =
+            shareValues.map { entry ->
+                Share(
+                    participant = entry.key,
+                    amount =
+                        Amount(
+                            value = entry.value as Float,
+                            currencyCode = totalAmount.currencyCode,
+                        ),
+                )
+            }.toSet(),
+    )
+}
+
+private fun Collection<Share>.getMinShareCost(): Float {
+    return filter { it.amount.value != 0f }.minOfOrNull { it.amount.value } ?: 0f
 }

@@ -12,6 +12,7 @@ import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.ExpenseType
 import app.wesplit.domain.model.expense.Share
+import app.wesplit.domain.model.expense.SplitType
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
@@ -45,11 +46,14 @@ sealed interface UpdateAction {
     data class NewPayer(val participant: Participant) : UpdateAction
 
     sealed interface Split : UpdateAction {
-        data class Equal(val participant: Participant, val isIncluded: Boolean) : Split
+        abstract val participant: Participant
+        abstract val value: Any
 
-        data class Share(val participant: Participant, val value: Float) : Split
+        data class Equal(override val participant: Participant, override val value: Boolean) : Split
 
-        data class Amount(val participant: Participant, val value: Float) : Split
+        data class Share(override val participant: Participant, override val value: Float) : Split
+
+        data class Amount(override val participant: Participant, override val value: Float) : Split
     }
 }
 
@@ -148,11 +152,11 @@ class ExpenseDetailsViewModel(
                         group = group,
                         expense = expense,
                         isComplete = isComplete(expense),
+                        splitOptions = expense.getInitialSplitOptions(),
                     )
                 }
             }
                 .catch {
-
                     analyticsManager.log(it)
                     // TODO: Improve error handling, e.g. get reason and plot proper data
                     _state.update { State.Error(State.Error.Type.FETCH_ERROR) }
@@ -181,12 +185,26 @@ class ExpenseDetailsViewModel(
 
                 is UpdateAction.TotalAmount ->
                     _state.update {
+                        val newSplitOptions = data.splitOptions.update(action)
+
                         data.copy(
-                            expense = expense.copy(totalAmount = expense.totalAmount.copy(value = action.value)).reCalculateShares(),
+                            expense =
+                                expense.copy(
+                                    totalAmount = expense.totalAmount.copy(value = action.value),
+                                ).reCalculateShares(newSplitOptions),
+                            splitOptions = newSplitOptions,
                         )
                     }
 
-                is UpdateAction.Split -> _state.update { data.copy(expense = expense.reCalculateShares(action)) }
+                is UpdateAction.Split ->
+                    _state.update {
+                        val newSplitOptions = data.splitOptions.update(action)
+
+                        data.copy(
+                            expense = expense.reCalculateShares(newSplitOptions),
+                            splitOptions = newSplitOptions,
+                        )
+                    }
 
                 UpdateAction.Delete ->
                     (_state.value as? State.Data)?.expense?.let { exp ->
@@ -240,7 +258,13 @@ class ExpenseDetailsViewModel(
             val group: Group,
             val expense: Expense,
             val isComplete: Boolean,
-        ) : State
+            val splitOptions: SplitOptions,
+        ) : State {
+            data class SplitOptions(
+                val selectedSplitType: SplitType,
+                val splitValues: Map<SplitType, Map<Participant, Any>>,
+            )
+        }
 
         fun Data.allParticipants(): Set<Participant> {
             val participantsIds = group.participants.map { it.id }

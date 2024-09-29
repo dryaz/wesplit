@@ -74,12 +74,7 @@ class ExpenseFirebaseRepository(
             val expenseId = expense.id
             val eventName = if (expenseId != null) EXPENSE_UPDATE_EVENT else EXPENSE_CREATE_EVENT
 
-            analyticsManager.track(
-                eventName,
-                mapOf(
-                    EXPENSE_SPLIT_TYPE_PARAM to expense.splitType.name,
-                ),
-            )
+            analyticsManager.track(eventName)
 
             if (expenseId != null) {
                 val doc =
@@ -87,7 +82,6 @@ class ExpenseFirebaseRepository(
                         GROUP_COLLECTION,
                     ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).get()
                 if (doc.exists) {
-                    val existingExpense = doc.data(Expense.serializer(), ServerTimestampBehavior.ESTIMATE)
                     Firebase.firestore.collection(
                         GROUP_COLLECTION,
                     ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).update(

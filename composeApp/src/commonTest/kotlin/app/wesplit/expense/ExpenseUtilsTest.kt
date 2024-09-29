@@ -13,212 +13,218 @@ private const val CURRENCY = "U"
 
 class ExpenseUtilsTest {
     @Test
-    fun redistribute_equal_split() {
+    fun initial_splitt_options_zeros() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                300f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                ),
-                splitType = SplitType.EQUAL,
+                amount = 0f,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(0f, CURRENCY)),
+                        Share(u2, amount = Amount(0f, CURRENCY)),
+                    ),
             )
 
-        val newExpense = expense.reCalculateShares()
-        newExpense.shares.size shouldBe 3
-        newExpense.shares.forEach {
-            it.amount.value shouldBe 100f
+        val options = expense.getInitialSplitOptions()
+        options.selectedSplitType shouldBe SplitType.EQUAL
+        with(options.splitValues[SplitType.EQUAL]!!) {
+            size shouldBe 2
+            this[u1] shouldBe true
+            this[u2] shouldBe true
         }
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0f
-        newExpense.splitType shouldBe SplitType.EQUAL
-    }
-
-    @Test
-    fun redistribute_equal_split_new_amount() {
-        val expense =
-            createExpense(
-                300f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                ),
-                splitType = SplitType.EQUAL,
-            )
-
-        val newExpense = expense.copy(totalAmount = Amount(450f, CURRENCY)).reCalculateShares()
-        newExpense.shares.size shouldBe 3
-        newExpense.shares.forEach {
-            it.amount.value shouldBe 150f
+        with(options.splitValues[SplitType.SHARES]!!) {
+            size shouldBe 2
+            this[u1] shouldBe 1f
+            this[u2] shouldBe 1f
         }
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0f
-        newExpense.splitType shouldBe SplitType.EQUAL
+        with(options.splitValues[SplitType.AMOUNTS]!!) {
+            size shouldBe 2
+            this[u1] shouldBe 0f
+            this[u2] shouldBe 0f
+        }
     }
 
     @Test
-    fun redistribute_shares_split() {
+    fun initial_splitt_options_non_zeros() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                600f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "b"), Amount(200f, CURRENCY)),
-                    Share(Participant(name = "c"), Amount(300f, CURRENCY)),
-                ),
-                splitType = SplitType.SHARES,
+                amount = 30f,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(10f, CURRENCY)),
+                        Share(u2, amount = Amount(20f, CURRENCY)),
+                    ),
             )
 
-        val newExpense = expense.reCalculateShares()
-        newExpense.shares.size shouldBe 3
-        newExpense.shares.first { it.participant.name == "a" }.amount.value shouldBe 100f
-        newExpense.shares.first { it.participant.name == "b" }.amount.value shouldBe 200f
-        newExpense.shares.first { it.participant.name == "c" }.amount.value shouldBe 300f
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0
-        newExpense.splitType shouldBe SplitType.SHARES
+        val options = expense.getInitialSplitOptions()
+        options.selectedSplitType shouldBe SplitType.SHARES
+        with(options.splitValues[SplitType.EQUAL]!!) {
+            size shouldBe 2
+            this[u1] shouldBe true
+            this[u2] shouldBe true
+        }
+        with(options.splitValues[SplitType.SHARES]!!) {
+            size shouldBe 2
+            this[u1] shouldBe 1f
+            this[u2] shouldBe 2f
+        }
+        with(options.splitValues[SplitType.AMOUNTS]!!) {
+            size shouldBe 2
+            this[u1] shouldBe 10f
+            this[u2] shouldBe 20f
+        }
     }
 
     @Test
-    fun redistribute_shares_split_change_total() {
+    fun update_total_amount() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                600f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "b"), Amount(200f, CURRENCY)),
-                    Share(Participant(name = "c"), Amount(300f, CURRENCY)),
-                ),
-                splitType = SplitType.SHARES,
+                amount = 30f,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(10f, CURRENCY)),
+                        Share(u2, amount = Amount(20f, CURRENCY)),
+                    ),
             )
 
-        val newExpense = expense.copy(totalAmount = Amount(900f, CURRENCY)).reCalculateShares()
-        newExpense.shares.size shouldBe 3
-        newExpense.shares.first { it.participant.name == "a" }.amount.value shouldBe 150f
-        newExpense.shares.first { it.participant.name == "b" }.amount.value shouldBe 300f
-        newExpense.shares.first { it.participant.name == "c" }.amount.value shouldBe 450f
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0f
-        newExpense.splitType shouldBe SplitType.SHARES
+        val options = expense.getInitialSplitOptions().update(UpdateAction.TotalAmount(150f))
+        with(options.splitValues[SplitType.EQUAL]!!) {
+            size shouldBe 2
+            this[u1] shouldBe true
+            this[u2] shouldBe true
+        }
+        with(options.splitValues[SplitType.SHARES]!!) {
+            size shouldBe 2
+            this[u1] shouldBe 1f
+            this[u2] shouldBe 2f
+        }
+        with(options.splitValues[SplitType.AMOUNTS]!!) {
+            size shouldBe 2
+            this[u1] shouldBe 50f
+            this[u2] shouldBe 100f
+        }
     }
 
     @Test
-    fun redistribute_shares_split_change_share() {
+    fun update_to_equal() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
+        val u3 = Participant(name = "c")
         val expense =
             createExpense(
-                600f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "b"), Amount(200f, CURRENCY)),
-                    Share(Participant(name = "c"), Amount(300f, CURRENCY)),
-                ),
-                splitType = SplitType.SHARES,
+                amount = 90f,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(10f, CURRENCY)),
+                        Share(u2, amount = Amount(30f, CURRENCY)),
+                        Share(u3, amount = Amount(50f, CURRENCY)),
+                    ),
             )
 
-        val participantToChange = expense.shares.first { it.participant.name == "a" }.participant
-        val newExpense = expense.reCalculateShares(UpdateAction.Split.Share(participantToChange, 3f))
-        newExpense.shares.size shouldBe 3
-        newExpense.shares.first { it.participant.name == "a" }.amount.value shouldBe 225f
-        newExpense.shares.first { it.participant.name == "b" }.amount.value shouldBe 150f
-        newExpense.shares.first { it.participant.name == "c" }.amount.value shouldBe 225f
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0f
-        newExpense.splitType shouldBe SplitType.SHARES
+        val options = expense.getInitialSplitOptions().update(UpdateAction.Split.Equal(u1, false))
+        with(options.splitValues[SplitType.EQUAL]!!) {
+            size shouldBe 3
+            this[u1] shouldBe false
+            this[u2] shouldBe true
+            this[u3] shouldBe true
+        }
+        with(options.splitValues[SplitType.SHARES]!!) {
+            size shouldBe 3
+            this[u1] shouldBe 0f
+            this[u2] shouldBe 1f
+            this[u3] shouldBe 1f
+        }
+        with(options.splitValues[SplitType.AMOUNTS]!!) {
+            size shouldBe 3
+            this[u1] shouldBe 0f
+            this[u2] shouldBe 45f
+            this[u3] shouldBe 45f
+        }
     }
 
     @Test
-    fun redistribute_shares_split_change_share_type_equal_include() {
+    fun update_to_share() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
+        val u3 = Participant(name = "c")
         val expense =
             createExpense(
-                600f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "b"), Amount(200f, CURRENCY)),
-                    Share(Participant(name = "c"), Amount(300f, CURRENCY)),
-                ),
-                splitType = SplitType.SHARES,
+                amount = 90f,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(30f, CURRENCY)),
+                        Share(u2, amount = Amount(30f, CURRENCY)),
+                        Share(u3, amount = Amount(30f, CURRENCY)),
+                    ),
             )
 
-        val participantToChange = expense.shares.first { it.participant.name == "a" }.participant
-        val newExpense = expense.reCalculateShares(UpdateAction.Split.Equal(participantToChange, true))
-        newExpense.shares.size shouldBe 3
-        newExpense.shares.first { it.participant.name == "a" }.amount.value shouldBe 200f
-        newExpense.shares.first { it.participant.name == "b" }.amount.value shouldBe 200f
-        newExpense.shares.first { it.participant.name == "c" }.amount.value shouldBe 200f
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0f
-        newExpense.splitType shouldBe SplitType.EQUAL
+        val options = expense.getInitialSplitOptions().update(UpdateAction.Split.Share(u1, 2f))
+        with(options.splitValues[SplitType.EQUAL]!!) {
+            size shouldBe 3
+            this[u1] shouldBe true
+            this[u2] shouldBe true
+            this[u3] shouldBe true
+        }
+        with(options.splitValues[SplitType.SHARES]!!) {
+            size shouldBe 3
+            this[u1] shouldBe 2f
+            this[u2] shouldBe 1f
+            this[u3] shouldBe 1f
+        }
+        with(options.splitValues[SplitType.AMOUNTS]!!) {
+            size shouldBe 3
+            this[u1] shouldBe 45f
+            this[u2] shouldBe 22.5f
+            this[u3] shouldBe 22.5f
+        }
     }
 
     @Test
-    fun redistribute_shares_split_change_share_type_eqaul_exclude() {
+    fun update_to_amount() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
+        val u3 = Participant(name = "c")
         val expense =
             createExpense(
-                600f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "b"), Amount(200f, CURRENCY)),
-                    Share(Participant(name = "c"), Amount(300f, CURRENCY)),
-                ),
-                splitType = SplitType.SHARES,
+                amount = 90f,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(30f, CURRENCY)),
+                        Share(u2, amount = Amount(30f, CURRENCY)),
+                        Share(u3, amount = Amount(30f, CURRENCY)),
+                    ),
             )
 
-        val participantToChange = expense.shares.first { it.participant.name == "a" }.participant
-        val newExpense = expense.reCalculateShares(UpdateAction.Split.Equal(participantToChange, false))
-        newExpense.shares.size shouldBe 2
-        newExpense.shares.first { it.participant.name == "b" }.amount.value shouldBe 300f
-        newExpense.shares.first { it.participant.name == "c" }.amount.value shouldBe 300f
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0f
-        newExpense.splitType shouldBe SplitType.EQUAL
-    }
-
-    @Test
-    fun redistribute_equal_split_change_to_shares() {
-        val expense =
-            createExpense(
-                300f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "b"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "c"), Amount(100f, CURRENCY)),
-                ),
-                splitType = SplitType.EQUAL,
-            )
-
-        val participantToChange = expense.shares.first { it.participant.name == "a" }.participant
-        val newExpense = expense.reCalculateShares(UpdateAction.Split.Share(participantToChange, 2f))
-        newExpense.shares.size shouldBe 3
-        newExpense.shares.first { it.participant.name == "a" }.amount.value shouldBe 150f
-        newExpense.shares.first { it.participant.name == "b" }.amount.value shouldBe 75f
-        newExpense.shares.first { it.participant.name == "c" }.amount.value shouldBe 75f
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0f
-        newExpense.splitType shouldBe SplitType.SHARES
-    }
-
-    @Test
-    fun redistribute_shares_split_change_share_to_zero() {
-        val expense =
-            createExpense(
-                600f,
-                setOf(
-                    Share(Participant(name = "a"), Amount(100f, CURRENCY)),
-                    Share(Participant(name = "b"), Amount(200f, CURRENCY)),
-                    Share(Participant(name = "c"), Amount(300f, CURRENCY)),
-                ),
-                splitType = SplitType.SHARES,
-            )
-
-        val participantToChange = expense.shares.first { it.participant.name == "a" }.participant
-        val newExpense = expense.reCalculateShares(UpdateAction.Split.Share(participantToChange, 0f))
-        newExpense.shares.size shouldBe 3
-        newExpense.shares.first { it.participant.name == "a" }.amount.value shouldBe 0f
-        newExpense.shares.first { it.participant.name == "b" }.amount.value shouldBe 240f
-        newExpense.shares.first { it.participant.name == "c" }.amount.value shouldBe 360f
-        (newExpense.undistributedAmount?.value ?: 0f) shouldBe 0f
-        newExpense.splitType shouldBe SplitType.SHARES
+        val options = expense.getInitialSplitOptions().update(UpdateAction.Split.Amount(u1, 120f))
+        with(options.splitValues[SplitType.EQUAL]!!) {
+            size shouldBe 3
+            this[u1] shouldBe true
+            this[u2] shouldBe true
+            this[u3] shouldBe true
+        }
+        with(options.splitValues[SplitType.SHARES]!!) {
+            size shouldBe 3
+            this[u1] shouldBe 4f
+            this[u2] shouldBe 1f
+            this[u3] shouldBe 1f
+        }
+        with(options.splitValues[SplitType.AMOUNTS]!!) {
+            size shouldBe 3
+            this[u1] shouldBe 120f
+            this[u2] shouldBe 30f
+            this[u3] shouldBe 30f
+        }
     }
 }
 
 private fun createExpense(
     amount: Float,
     shares: Set<Share>,
-    splitType: SplitType,
     undistributed: Float = 0f,
 ) = Expense(
     title = "123",
@@ -227,5 +233,4 @@ private fun createExpense(
     expenseType = ExpenseType.EXPENSE,
     undistributedAmount = Amount(undistributed, CURRENCY),
     shares = shares,
-    splitType = splitType,
 )
