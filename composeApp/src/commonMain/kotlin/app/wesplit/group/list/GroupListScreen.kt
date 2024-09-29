@@ -108,7 +108,7 @@ fun GroupListScreen(
         }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             // TODO: Navigation drawer icon which also connected to menu items inside double pane nav
             AdaptiveTopAppBar(
@@ -118,6 +118,7 @@ fun GroupListScreen(
                         contentDescription = stringResource(Res.string.back_btn_cd),
                     )
                 },
+                expandedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 navigationTitle = { Unit },
                 onNavigationIconClick = navigationIconClick,
                 title = {
@@ -239,7 +240,7 @@ private fun GroupList(
                 ListItem(
                     colors =
                         ListItemDefaults.colors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                         ),
                     modifier =
                         Modifier.clickable {

@@ -193,7 +193,7 @@ private fun AccountInfo(
                 },
             colors =
                 ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 ),
             trailingContent = {
                 Icon(
@@ -217,7 +217,7 @@ private fun AccountInfo(
                 },
             colors =
                 ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                 ),
             trailingContent = {
                 Icon(

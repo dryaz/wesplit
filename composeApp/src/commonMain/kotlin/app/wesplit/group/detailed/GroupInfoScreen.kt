@@ -107,7 +107,7 @@ fun GroupInfoScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         floatingActionButton = {
             (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
                 FloatingActionButton(

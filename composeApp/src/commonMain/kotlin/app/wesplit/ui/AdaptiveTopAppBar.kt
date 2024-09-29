@@ -21,6 +21,7 @@ import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.cupertino.CupertinoTopAppBarDefaults
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
@@ -49,6 +50,8 @@ fun AdaptiveTopAppBar(
             style = MaterialTheme.typography.labelSmall,
         )
     },
+    collapsedContainerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
+    expandedContainerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     onNavigationIconClick: (() -> Unit)? = null,
 ) {
     val windowSizeClass = calculateWindowSizeClass()
@@ -59,7 +62,7 @@ fun AdaptiveTopAppBar(
                 material {
                     colors =
                         TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            containerColor = collapsedContainerColor,
                         )
                 }
                 cupertino {
@@ -88,7 +91,7 @@ fun AdaptiveTopAppBar(
             windowInsets = WindowInsets(top = 0.dp),
             colors =
                 TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    containerColor = expandedContainerColor,
                 ),
             title = title,
             navigationIcon = {

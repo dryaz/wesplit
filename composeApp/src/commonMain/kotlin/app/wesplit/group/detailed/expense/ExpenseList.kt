@@ -163,7 +163,7 @@ fun ExpenseList(
                 Text(
                     modifier =
                         Modifier
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                             .fillMaxWidth(1f),
                     text = "${entry.key}",
