@@ -57,4 +57,5 @@ jobs:
         release-file: ./composeApp/build/outputs/bundle/release/composeApp-release.aab
         track: internal
         status: complete
+        changesNotSentForReview: true
         mapping-file: ./composeApp/build/outputs/mapping/release/mapping.txt
