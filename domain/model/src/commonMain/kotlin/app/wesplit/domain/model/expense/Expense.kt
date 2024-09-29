@@ -52,6 +52,6 @@ data class Share(
     val amount: Amount,
 )
 
-fun Expense.myAmount() = shares.find { it.participant.isMe() }?.amount ?: Amount(0f, totalAmount.currencyCode)
+fun Expense.myAmount() = shares.find { it.participant.isMe() }?.amount ?: Amount(0.0, totalAmount.currencyCode)
 
-fun Expense.myAmount(group: Group) = shares.find { it.participant.isMe(group) }?.amount ?: Amount(0f, totalAmount.currencyCode)
+fun Expense.myAmount(group: Group) = shares.find { it.participant.isMe(group) }?.amount ?: Amount(0.0, totalAmount.currencyCode)

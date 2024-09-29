@@ -339,17 +339,17 @@ private fun SharesDetailsParticipantList(
                         TextField(
                             modifier = Modifier.width(74.dp),
                             singleLine = true,
-                            value = (data.splitOptions.splitValues[splitType]!![participant] ?: 0f).toString(),
+                            value = (data.splitOptions.splitValues[splitType]!![participant] ?: 0.0).toString(),
                             keyboardOptions =
                                 KeyboardOptions(
                                     keyboardType = KeyboardType.Decimal,
                                 ),
                             onValueChange = { value ->
-                                val floatValue = value.toFloatOrNull() ?: 0f
+                                val doubleValue = value.toDoubleOrNull() ?: 0.0
                                 onUpdated(
                                     UpdateAction.Split.Share(
                                         participant = participant,
-                                        value = floatValue,
+                                        value = doubleValue,
                                     ),
                                 )
                             },
@@ -393,7 +393,7 @@ private fun ExpenseDetails(
     onUpdated: (UpdateAction) -> Unit,
 ) {
     var amount by remember {
-        mutableStateOf(if (data.expense.totalAmount.value != 0f) data.expense.totalAmount.value.toString() else "")
+        mutableStateOf(if (data.expense.totalAmount.value != 0.0) data.expense.totalAmount.value.toString() else "")
     }
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -473,16 +473,16 @@ private fun ExpenseDetails(
                     KeyboardOptions(
                         keyboardType = KeyboardType.Decimal,
                     ),
-                isError = amount.isNullOrBlank() || amount.toFloatOrNull() == 0f,
+                isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
                 onValueChange = { value ->
                     if (value.isNullOrBlank()) {
                         amount = ""
-                        onUpdated(UpdateAction.TotalAmount(0f))
+                        onUpdated(UpdateAction.TotalAmount(0.0))
                     } else {
-                        val floatValue = value.toFloatOrNull()
-                        val filtered = if (floatValue != null) value else amount
+                        val doubleValue = value.toDoubleOrNull()
+                        val filtered = if (doubleValue != null) value else amount
                         amount = filtered
-                        floatValue?.let {
+                        doubleValue?.let {
                             onUpdated(UpdateAction.TotalAmount(it))
                         }
                     }

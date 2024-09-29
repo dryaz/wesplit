@@ -52,8 +52,8 @@ fun BalanceList(balance: Balance?) {
                     )
                 }
 
-                val nonDistr = (balance.nonDistributed.value * 100f).roundToInt() / 100f
-                if (nonDistr != 0.0f) {
+                val nonDistr = (balance.nonDistributed.value * 100.0).roundToInt() / 100.0
+                if (nonDistr != 0.0) {
                     HorizontalDivider(modifier = Modifier.fillMaxWidth(1f))
                     Row(
                         modifier =

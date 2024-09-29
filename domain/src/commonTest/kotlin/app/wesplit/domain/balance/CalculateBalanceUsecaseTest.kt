@@ -31,14 +31,14 @@ class CalculateBalanceUsecaseTest {
                     "e1",
                     payedBy = p1,
                     shares = emptySet(),
-                    totalAmount = Amount(100f, "USD"),
+                    totalAmount = Amount(100.0, "USD"),
                     expenseType = ExpenseType.EXPENSE,
-                    undistributedAmount = Amount(100f, "USD"),
+                    undistributedAmount = Amount(100.0, "USD"),
                 ),
             )
 
         val balance = CalculateBalanceUsecase().invoke(group, expenseList)
-        balance.nonDistributed.value shouldBe 100f
+        balance.nonDistributed.value shouldBe 100.0
     }
 
     @Test
@@ -62,14 +62,14 @@ class CalculateBalanceUsecaseTest {
                     "e1",
                     payedBy = p1,
                     shares = emptySet(),
-                    totalAmount = Amount(100f, "USD"),
+                    totalAmount = Amount(100.0, "USD"),
                     expenseType = ExpenseType.EXPENSE,
-                    undistributedAmount = Amount(100f, "USD"),
+                    undistributedAmount = Amount(100.0, "USD"),
                 ),
             )
 
         val balance = CalculateBalanceUsecase().invoke(group, expenseList)
-        balance.participants[p1]?.balance?.value shouldBe 100f
+        balance.participants[p1]?.balance?.value shouldBe 100.0
     }
 
     @Test
@@ -95,10 +95,10 @@ class CalculateBalanceUsecaseTest {
                     payedBy = p1,
                     shares =
                         setOf(
-                            Share(p1, Amount(50f, "USD")),
-                            Share(p2, Amount(50f, "USD")),
+                            Share(p1, Amount(50.0, "USD")),
+                            Share(p2, Amount(50.0, "USD")),
                         ),
-                    totalAmount = Amount(100f, "USD"),
+                    totalAmount = Amount(100.0, "USD"),
                     expenseType = ExpenseType.EXPENSE,
                     undistributedAmount = null,
                 ),
@@ -108,18 +108,18 @@ class CalculateBalanceUsecaseTest {
                     payedBy = p2,
                     shares =
                         setOf(
-                            Share(p1, Amount(50f, "USD")),
-                            Share(p2, Amount(50f, "USD")),
+                            Share(p1, Amount(50.0, "USD")),
+                            Share(p2, Amount(50.0, "USD")),
                         ),
-                    totalAmount = Amount(100f, "USD"),
+                    totalAmount = Amount(100.0, "USD"),
                     expenseType = ExpenseType.EXPENSE,
                     undistributedAmount = null,
                 ),
             )
 
         val balance = CalculateBalanceUsecase().invoke(group, expenseList)
-        balance.participants[p1]?.balance?.value shouldBe 0f
-        balance.participants[p2]?.balance?.value shouldBe 0f
-        balance.nonDistributed.value shouldBe 0f
+        balance.participants[p1]?.balance?.value shouldBe 0.0
+        balance.participants[p2]?.balance?.value shouldBe 0.0
+        balance.nonDistributed.value shouldBe 0.0
     }
 }

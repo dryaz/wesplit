@@ -18,11 +18,11 @@ class ExpenseUtilsTest {
         val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                amount = 0f,
+                amount = 0.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(0f, CURRENCY)),
-                        Share(u2, amount = Amount(0f, CURRENCY)),
+                        Share(u1, amount = Amount(0.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
                     ),
             )
 
@@ -35,13 +35,13 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 2
-            this[u1] shouldBe 1f
-            this[u2] shouldBe 1f
+            this[u1] shouldBe 1.0
+            this[u2] shouldBe 1.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 2
-            this[u1] shouldBe 0f
-            this[u2] shouldBe 0f
+            this[u1] shouldBe 0.0
+            this[u2] shouldBe 0.0
         }
     }
 
@@ -51,11 +51,11 @@ class ExpenseUtilsTest {
         val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                amount = 30f,
+                amount = 30.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(10f, CURRENCY)),
-                        Share(u2, amount = Amount(20f, CURRENCY)),
+                        Share(u1, amount = Amount(10.0, CURRENCY)),
+                        Share(u2, amount = Amount(20.0, CURRENCY)),
                     ),
             )
 
@@ -68,13 +68,13 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 2
-            this[u1] shouldBe 1f
-            this[u2] shouldBe 2f
+            this[u1] shouldBe 1.0
+            this[u2] shouldBe 2.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 2
-            this[u1] shouldBe 10f
-            this[u2] shouldBe 20f
+            this[u1] shouldBe 10.0
+            this[u2] shouldBe 20.0
         }
     }
 
@@ -84,15 +84,15 @@ class ExpenseUtilsTest {
         val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                amount = 30f,
+                amount = 30.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(10f, CURRENCY)),
-                        Share(u2, amount = Amount(20f, CURRENCY)),
+                        Share(u1, amount = Amount(10.0, CURRENCY)),
+                        Share(u2, amount = Amount(20.0, CURRENCY)),
                     ),
             )
 
-        val options = expense.getInitialSplitOptions().update(UpdateAction.TotalAmount(150f))
+        val options = expense.getInitialSplitOptions().update(UpdateAction.TotalAmount(150.0))
         with(options.splitValues[SplitType.EQUAL]!!) {
             size shouldBe 2
             this[u1] shouldBe true
@@ -100,13 +100,13 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 2
-            this[u1] shouldBe 1f
-            this[u2] shouldBe 2f
+            this[u1] shouldBe 1.0
+            this[u2] shouldBe 2.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 2
-            this[u1] shouldBe 50f
-            this[u2] shouldBe 100f
+            this[u1] shouldBe 50.0
+            this[u2] shouldBe 100.0
         }
     }
 
@@ -117,12 +117,12 @@ class ExpenseUtilsTest {
         val u3 = Participant(name = "c")
         val expense =
             createExpense(
-                amount = 90f,
+                amount = 90.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(10f, CURRENCY)),
-                        Share(u2, amount = Amount(30f, CURRENCY)),
-                        Share(u3, amount = Amount(50f, CURRENCY)),
+                        Share(u1, amount = Amount(10.0, CURRENCY)),
+                        Share(u2, amount = Amount(30.0, CURRENCY)),
+                        Share(u3, amount = Amount(50.0, CURRENCY)),
                     ),
             )
 
@@ -135,15 +135,15 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 3
-            this[u1] shouldBe 0f
-            this[u2] shouldBe 1f
-            this[u3] shouldBe 1f
+            this[u1] shouldBe 0.0
+            this[u2] shouldBe 1.0
+            this[u3] shouldBe 1.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 3
-            this[u1] shouldBe 0f
-            this[u2] shouldBe 45f
-            this[u3] shouldBe 45f
+            this[u1] shouldBe 0.0
+            this[u2] shouldBe 45.0
+            this[u3] shouldBe 45.0
         }
     }
 
@@ -154,16 +154,16 @@ class ExpenseUtilsTest {
         val u3 = Participant(name = "c")
         val expense =
             createExpense(
-                amount = 90f,
+                amount = 90.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(30f, CURRENCY)),
-                        Share(u2, amount = Amount(30f, CURRENCY)),
-                        Share(u3, amount = Amount(30f, CURRENCY)),
+                        Share(u1, amount = Amount(30.0, CURRENCY)),
+                        Share(u2, amount = Amount(30.0, CURRENCY)),
+                        Share(u3, amount = Amount(30.0, CURRENCY)),
                     ),
             )
 
-        val options = expense.getInitialSplitOptions().update(UpdateAction.Split.Share(u1, 2f))
+        val options = expense.getInitialSplitOptions().update(UpdateAction.Split.Share(u1, 2.0))
         with(options.splitValues[SplitType.EQUAL]!!) {
             size shouldBe 3
             this[u1] shouldBe true
@@ -172,15 +172,15 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 3
-            this[u1] shouldBe 2f
-            this[u2] shouldBe 1f
-            this[u3] shouldBe 1f
+            this[u1] shouldBe 2.0
+            this[u2] shouldBe 1.0
+            this[u3] shouldBe 1.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 3
-            this[u1] shouldBe 45f
-            this[u2] shouldBe 22.5f
-            this[u3] shouldBe 22.5f
+            this[u1] shouldBe 45.0
+            this[u2] shouldBe 22.5
+            this[u3] shouldBe 22.5
         }
     }
 
@@ -191,16 +191,16 @@ class ExpenseUtilsTest {
         val u3 = Participant(name = "c")
         val expense =
             createExpense(
-                amount = 90f,
+                amount = 90.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(30f, CURRENCY)),
-                        Share(u2, amount = Amount(30f, CURRENCY)),
-                        Share(u3, amount = Amount(30f, CURRENCY)),
+                        Share(u1, amount = Amount(30.0, CURRENCY)),
+                        Share(u2, amount = Amount(30.0, CURRENCY)),
+                        Share(u3, amount = Amount(30.0, CURRENCY)),
                     ),
             )
 
-        val options = expense.getInitialSplitOptions().update(UpdateAction.Split.Amount(u1, 120f))
+        val options = expense.getInitialSplitOptions().update(UpdateAction.Split.Amount(u1, 120.0))
         with(options.splitValues[SplitType.EQUAL]!!) {
             size shouldBe 3
             this[u1] shouldBe true
@@ -209,15 +209,15 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 3
-            this[u1] shouldBe 4f
-            this[u2] shouldBe 1f
-            this[u3] shouldBe 1f
+            this[u1] shouldBe 4.0
+            this[u2] shouldBe 1.0
+            this[u3] shouldBe 1.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 3
-            this[u1] shouldBe 120f
-            this[u2] shouldBe 30f
-            this[u3] shouldBe 30f
+            this[u1] shouldBe 120.0
+            this[u2] shouldBe 30.0
+            this[u3] shouldBe 30.0
         }
     }
 
@@ -227,11 +227,11 @@ class ExpenseUtilsTest {
         val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                amount = 100f,
+                amount = 100.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(0f, CURRENCY)),
-                        Share(u2, amount = Amount(0f, CURRENCY)),
+                        Share(u1, amount = Amount(0.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
                     ),
             )
 
@@ -243,13 +243,13 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 2
-            this[u1] shouldBe 1f
-            this[u2] shouldBe 1f
+            this[u1] shouldBe 1.0
+            this[u2] shouldBe 1.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 2
-            this[u1] shouldBe 0f
-            this[u2] shouldBe 0f
+            this[u1] shouldBe 0.0
+            this[u2] shouldBe 0.0
         }
     }
 
@@ -259,11 +259,11 @@ class ExpenseUtilsTest {
         val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                amount = 10f,
+                amount = 10.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(0f, CURRENCY)),
-                        Share(u2, amount = Amount(0f, CURRENCY)),
+                        Share(u1, amount = Amount(0.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
                     ),
             )
 
@@ -275,13 +275,13 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 2
-            this[u1] shouldBe 1f
-            this[u2] shouldBe 0f
+            this[u1] shouldBe 1.0
+            this[u2] shouldBe 0.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 2
-            this[u1] shouldBe 0f
-            this[u2] shouldBe 0f
+            this[u1] shouldBe 0.0
+            this[u2] shouldBe 0.0
         }
     }
 
@@ -292,11 +292,11 @@ class ExpenseUtilsTest {
         val u3 = Participant(name = "c")
         val expense =
             createExpense(
-                amount = 30f,
+                amount = 30.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(10f, CURRENCY)),
-                        Share(u2, amount = Amount(20f, CURRENCY)),
+                        Share(u1, amount = Amount(10.0, CURRENCY)),
+                        Share(u2, amount = Amount(20.0, CURRENCY)),
                     ),
             )
 
@@ -310,15 +310,15 @@ class ExpenseUtilsTest {
         }
         with(options.splitValues[SplitType.SHARES]!!) {
             size shouldBe 3
-            this[u1] shouldBe 1f
-            this[u2] shouldBe 2f
-            this[u3] shouldBe 0f
+            this[u1] shouldBe 1.0
+            this[u2] shouldBe 2.0
+            this[u3] shouldBe 0.0
         }
         with(options.splitValues[SplitType.AMOUNTS]!!) {
             size shouldBe 3
-            this[u1] shouldBe 10f
-            this[u2] shouldBe 20f
-            this[u3] shouldBe 0f
+            this[u1] shouldBe 10.0
+            this[u2] shouldBe 20.0
+            this[u3] shouldBe 0.0
         }
     }
 
@@ -328,11 +328,11 @@ class ExpenseUtilsTest {
         val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                amount = 30f,
+                amount = 30.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(0f, CURRENCY)),
-                        Share(u2, amount = Amount(0f, CURRENCY)),
+                        Share(u1, amount = Amount(0.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
                     ),
             )
 
@@ -349,20 +349,20 @@ class ExpenseUtilsTest {
                                 ),
                             SplitType.SHARES to
                                 mapOf(
-                                    u1 to 0f,
-                                    u2 to 0f,
+                                    u1 to 0.0,
+                                    u2 to 0.0,
                                 ),
                             SplitType.AMOUNTS to
                                 mapOf(
-                                    u1 to 0f,
-                                    u2 to 0f,
+                                    u1 to 0.0,
+                                    u2 to 0.0,
                                 ),
                         ),
                 ),
             )
 
-        newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 30f
-        newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 0f
+        newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 30.0
+        newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 0.0
     }
 
     @Test
@@ -371,11 +371,11 @@ class ExpenseUtilsTest {
         val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                amount = 30f,
+                amount = 30.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(0f, CURRENCY)),
-                        Share(u2, amount = Amount(0f, CURRENCY)),
+                        Share(u1, amount = Amount(0.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
                     ),
             )
 
@@ -392,20 +392,63 @@ class ExpenseUtilsTest {
                                 ),
                             SplitType.SHARES to
                                 mapOf(
-                                    u1 to 1f,
-                                    u2 to 0f,
+                                    u1 to 1.0,
+                                    u2 to 0.0,
                                 ),
                             SplitType.AMOUNTS to
                                 mapOf(
-                                    u1 to 0f,
-                                    u2 to 0f,
+                                    u1 to 0.0,
+                                    u2 to 0.0,
                                 ),
                         ),
                 ),
             )
 
-        newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 30f
-        newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 0f
+        newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 30.0
+        newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 0.0
+    }
+
+    @Test
+    fun recalculate_shares_for_shares_split_options_zeros() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
+        val expense =
+            createExpense(
+                amount = 30.0,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(0.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
+                    ),
+            )
+
+        val newExpense =
+            expense.reCalculateShares(
+                ExpenseDetailsViewModel.State.Data.SplitOptions(
+                    selectedSplitType = SplitType.SHARES,
+                    splitValues =
+                        mapOf(
+                            SplitType.EQUAL to
+                                mapOf(
+                                    u1 to false,
+                                    u2 to false,
+                                ),
+                            SplitType.SHARES to
+                                mapOf(
+                                    u1 to 0.0,
+                                    u2 to 0.0,
+                                ),
+                            SplitType.AMOUNTS to
+                                mapOf(
+                                    u1 to 0.0,
+                                    u2 to 0.0,
+                                ),
+                        ),
+                ),
+            )
+
+        newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 0.0
+        newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 0.0
     }
 
     @Test
@@ -414,11 +457,11 @@ class ExpenseUtilsTest {
         val u2 = Participant(name = "b")
         val expense =
             createExpense(
-                amount = 30f,
+                amount = 30.0,
                 shares =
                     setOf(
-                        Share(u1, amount = Amount(0f, CURRENCY)),
-                        Share(u2, amount = Amount(0f, CURRENCY)),
+                        Share(u1, amount = Amount(0.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
                     ),
             )
 
@@ -435,27 +478,27 @@ class ExpenseUtilsTest {
                                 ),
                             SplitType.SHARES to
                                 mapOf(
-                                    u1 to 0f,
-                                    u2 to 0f,
+                                    u1 to 0.0,
+                                    u2 to 0.0,
                                 ),
                             SplitType.AMOUNTS to
                                 mapOf(
-                                    u1 to 10f,
-                                    u2 to 10f,
+                                    u1 to 10.0,
+                                    u2 to 10.0,
                                 ),
                         ),
                 ),
             )
 
-        newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 10f
-        newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 10f
+        newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 10.0
+        newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 10.0
     }
 }
 
 private fun createExpense(
-    amount: Float,
+    amount: Double,
     shares: Set<Share>,
-    undistributed: Float = 0f,
+    undistributed: Double = 0.0,
 ) = Expense(
     title = "123",
     payedBy = Participant(name = "abc"),

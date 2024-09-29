@@ -79,10 +79,10 @@ fun ExpenseList(
                     it.value.filter {
                         var result = true
                         if (notSplit) {
-                            result = (it.undistributedAmount?.value ?: 0f) != 0f
+                            result = (it.undistributedAmount?.value ?: 0.0) != 0.0
                         }
                         if (withMe) {
-                            result = result && it.myAmount().value != 0f
+                            result = result && it.myAmount().value != 0.0
                         }
                         if (payedByMe) {
                             result = result && it.payedBy.isMe()
@@ -248,7 +248,7 @@ private fun ExpenseItem(
                 text = "You: ${expense.myAmount(group).format()}",
                 style = MaterialTheme.typography.bodySmall,
                 color =
-                    if (expense.myAmount().value != 0f) {
+                    if (expense.myAmount().value != 0.0) {
                         MaterialTheme.colorScheme.tertiary
                     } else {
                         MaterialTheme.colorScheme.outlineVariant
@@ -263,7 +263,7 @@ private fun LentString(
     group: Group,
     expense: Expense,
 ) {
-    if (expense.undistributedAmount != null && expense.undistributedAmount?.value != 0f) {
+    if (expense.undistributedAmount != null && expense.undistributedAmount?.value != 0.0) {
         val undistributed = expense.undistributedAmount
         Row(
             modifier =
@@ -286,7 +286,7 @@ private fun LentString(
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
         }
-    } else if (expense.myAmount(group).value == 0f && !expense.payedBy.isMe(group)) {
+    } else if (expense.myAmount(group).value == 0.0 && !expense.payedBy.isMe(group)) {
         Text(
             text = "You're not participating",
             style = MaterialTheme.typography.bodyMedium,
@@ -298,7 +298,7 @@ private fun LentString(
                 value = expense.totalAmount.value - expense.myAmount(group).value,
                 currencyCode = expense.totalAmount.currencyCode,
             )
-        if (lent.value != 0f) {
+        if (lent.value != 0.0) {
             Text(
                 text = "You lent: ${lent.format()}",
                 style = MaterialTheme.typography.bodyMedium,

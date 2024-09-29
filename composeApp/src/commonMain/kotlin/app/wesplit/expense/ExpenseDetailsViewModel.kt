@@ -35,7 +35,7 @@ sealed interface UpdateAction {
     // TODO: Update currency, FX feature and paywall - only for payed
     data class Title(val title: String) : UpdateAction
 
-    data class TotalAmount(val value: Float) : UpdateAction
+    data class TotalAmount(val value: Double) : UpdateAction
 
     data class Date(val millis: Long) : UpdateAction
 
@@ -51,9 +51,9 @@ sealed interface UpdateAction {
 
         data class Equal(override val participant: Participant, override val value: Boolean) : Split
 
-        data class Share(override val participant: Participant, override val value: Float) : Split
+        data class Share(override val participant: Participant, override val value: Double) : Split
 
-        data class Amount(override val participant: Participant, override val value: Float) : Split
+        data class Amount(override val participant: Participant, override val value: Double) : Split
     }
 }
 
@@ -133,14 +133,14 @@ class ExpenseDetailsViewModel(
                             title = "",
                             payedBy = group.participants.find { it.isMe() } ?: group.participants.first(),
                             // TODO: Currency model/set not to have hardcoded USD, map to sybmol etc
-                            totalAmount = Amount(0f, "USD"),
+                            totalAmount = Amount(0.0, "USD"),
                             shares =
                                 group.participants.map { participant ->
                                     Share(
                                         participant = participant,
                                         // TODO: Currency should be first defined on the group level to have base currency for the group
                                         //  and in future implement FX. Meanwhile disable currency chooser on expense lvl.
-                                        amount = Amount(0f, "USD"),
+                                        amount = Amount(0.0, "USD"),
                                     )
                                 }.toSet(),
                             expenseType = ExpenseType.EXPENSE,
@@ -244,7 +244,7 @@ class ExpenseDetailsViewModel(
         }
     }
 
-    private fun isComplete(expense: Expense) = !expense.title.isNullOrBlank() && expense.totalAmount.value != 0f
+    private fun isComplete(expense: Expense) = !expense.title.isNullOrBlank() && expense.totalAmount.value != 0.0
 
     sealed interface State {
         data object Loading : State

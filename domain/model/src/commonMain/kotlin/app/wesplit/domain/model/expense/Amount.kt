@@ -8,10 +8,10 @@ import kotlin.math.roundToInt
 @SerialName("amount")
 data class Amount(
     @SerialName("value")
-    val value: Float,
+    val value: Double,
     @SerialName("currency")
     val currencyCode: String,
 )
 
 // TODO: KMP amount formatting
-fun Amount.format(withCurrency: Boolean = true) = "${if (withCurrency) "$" else ""}${(value * 100f).roundToInt() / 100f}"
+fun Amount.format(withCurrency: Boolean = true) = "${if (withCurrency) "$" else ""}${(value * 100.0).roundToInt() / 100.0}"

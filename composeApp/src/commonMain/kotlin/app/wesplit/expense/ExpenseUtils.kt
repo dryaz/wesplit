@@ -16,7 +16,7 @@ internal fun Expense.getInitialSplitOptions(extraParticipants: Collection<Partic
                         SplitType.EQUAL ->
                             (
                                 shares
-                                    .map { it.participant to (it.amount.value != 0f || totalAmount.value == 0f) } +
+                                    .map { it.participant to (it.amount.value != 0.0 || totalAmount.value == 0.0) } +
                                     extraParticipants.map { it to false }
                             ).toMap()
 
@@ -24,13 +24,13 @@ internal fun Expense.getInitialSplitOptions(extraParticipants: Collection<Partic
                             (
                                 shares.map {
                                     val shareCost = shares.getMinShareCost()
-                                    it.participant to (if (shareCost != 0f) it.amount.value / shareCost else 1f)
-                                } + extraParticipants.map { it to 0f }
+                                    it.participant to (if (shareCost != 0.0) it.amount.value / shareCost else 1f)
+                                } + extraParticipants.map { it to 0.0 }
                             ).toMap()
 
                         SplitType.AMOUNTS ->
                             (
-                                shares.map { it.participant to it.amount.value } + extraParticipants.map { it to 0f }
+                                shares.map { it.participant to it.amount.value } + extraParticipants.map { it to 0.0 }
                             ).toMap()
                     }
             }.toMap(),
@@ -40,8 +40,8 @@ internal fun ExpenseDetailsViewModel.State.Data.SplitOptions.update(
     action: UpdateAction.TotalAmount,
 ): ExpenseDetailsViewModel.State.Data.SplitOptions {
     val shareValues = splitValues[SplitType.SHARES]
-    val totalShares = shareValues?.values?.sumOf { (it as Float).toDouble() } ?: 0.0
-    val shareCost = (if (totalShares != 0.0) action.value / totalShares else 0.0).toFloat()
+    val totalShares = shareValues?.values?.sumOf { (it as Double) } ?: 0.0
+    val shareCost = (if (totalShares != 0.0) action.value / totalShares else 0.0)
 
     val updatedOptions =
         copy(
@@ -51,7 +51,7 @@ internal fun ExpenseDetailsViewModel.State.Data.SplitOptions.update(
                         entry.value
                     } else {
                         entry.value.mapValues { entry ->
-                            (shareValues?.get(entry.key) as Float? ?: 0f) * shareCost
+                            (shareValues?.get(entry.key) as Double? ?: 0.0) * shareCost
                         }
                     }
                 },
@@ -95,12 +95,12 @@ private fun calculateForSplitType(
     return when (baseSplitType) {
         SplitType.EQUAL -> {
             when (splitType) {
-                SplitType.SHARES -> baseValue.mapValues { if ((it.value as Boolean) == true) 1f else 0f }
+                SplitType.SHARES -> baseValue.mapValues { if ((it.value as Boolean) == true) 1f else 0.0 }
                 SplitType.AMOUNTS -> {
-                    val total = oldValue.values.sumOf { (it as Float).toDouble() }
+                    val total = oldValue.values.sumOf { (it as Double) }
                     val participants = baseValue.values.count { (it as Boolean) == true }
-                    val share = (if (participants != 0) total / participants else 0f).toFloat()
-                    baseValue.mapValues { if ((it.value as Boolean) == true) share else 0f }
+                    val share = (if (participants != 0) total / participants else 0.0)
+                    baseValue.mapValues { if ((it.value as Boolean) == true) share else 0.0 }
                 }
 
                 SplitType.EQUAL -> throw IllegalStateException("Calculate for same split type: $splitType")
@@ -110,10 +110,10 @@ private fun calculateForSplitType(
         SplitType.SHARES -> {
             when (splitType) {
                 SplitType.AMOUNTS -> {
-                    val total = oldValue.values.sumOf { (it as Float).toDouble() }
-                    val shares = baseValue.values.sumOf { (it as Float).toDouble() }
+                    val total = oldValue.values.sumOf { (it as Double) }
+                    val shares = baseValue.values.sumOf { (it as Double) }
                     val sharePrice = total / shares
-                    baseValue.mapValues { (it.value as Float) * sharePrice }
+                    baseValue.mapValues { (it.value as Double) * sharePrice }
                 }
 
                 SplitType.EQUAL -> baseValue.mapValues { true }
@@ -124,9 +124,9 @@ private fun calculateForSplitType(
         SplitType.AMOUNTS -> {
             when (splitType) {
                 SplitType.SHARES -> {
-                    val total = baseValue.values.sumOf { (it as Float).toDouble() }
-                    val sharePrice = baseValue.values.filter { (it as Float) != 0f }.minOfOrNull { it as Float } ?: 0f
-                    baseValue.mapValues { (it.value as Float) / sharePrice }
+                    val total = baseValue.values.sumOf { (it as Double) }
+                    val sharePrice = baseValue.values.filter { (it as Double) != 0.0 }.minOfOrNull { it as Double } ?: 0.0
+                    baseValue.mapValues { (it.value as Double) / sharePrice }
                 }
 
                 SplitType.EQUAL -> baseValue.mapValues { true }
@@ -144,7 +144,7 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
     return when (splitOptions.selectedSplitType) {
         SplitType.EQUAL -> {
             val participantCount = shareValues.count { (it.value as Boolean) == true }
-            val sharePrice = totalAmount.value / participantCount
+            val sharePrice = if (participantCount != 0) totalAmount.value / participantCount else 0.0
             copy(
                 shares =
                     shareValues.map { entry ->
@@ -152,7 +152,7 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
                             participant = entry.key,
                             amount =
                                 Amount(
-                                    value = if (entry.value as Boolean) sharePrice else 0f,
+                                    value = if (entry.value as Boolean) sharePrice else 0.0,
                                     currencyCode = totalAmount.currencyCode,
                                 ),
                         )
@@ -161,8 +161,8 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
         }
 
         SplitType.SHARES -> {
-            val totalShares = shareValues.values.sumOf { (it as Float).toDouble() }
-            val sharePrice = (totalAmount.value / totalShares).toFloat()
+            val totalShares = shareValues.values.sumOf { (it as Double) }
+            val sharePrice = if (totalShares != 0.0) (totalAmount.value / totalShares) else 0.0
             copy(
                 shares =
                     shareValues.map { entry ->
@@ -170,7 +170,7 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
                             participant = entry.key,
                             amount =
                                 Amount(
-                                    value = (entry.value as Float) * sharePrice,
+                                    value = (entry.value as Double) * sharePrice,
                                     currencyCode = totalAmount.currencyCode,
                                 ),
                         )
@@ -186,7 +186,7 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
                             participant = entry.key,
                             amount =
                                 Amount(
-                                    value = entry.value as Float,
+                                    value = entry.value as Double,
                                     currencyCode = totalAmount.currencyCode,
                                 ),
                         )
@@ -196,6 +196,6 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
     }
 }
 
-private fun Collection<Share>.getMinShareCost(): Float {
-    return filter { it.amount.value != 0f }.minOfOrNull { it.amount.value } ?: 0f
+private fun Collection<Share>.getMinShareCost(): Double {
+    return filter { it.amount.value != 0.0 }.minOfOrNull { it.amount.value } ?: 0.0
 }
