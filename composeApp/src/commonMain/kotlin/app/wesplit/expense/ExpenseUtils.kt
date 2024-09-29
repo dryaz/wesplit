@@ -24,7 +24,7 @@ internal fun Expense.getInitialSplitOptions(extraParticipants: Collection<Partic
                             (
                                 shares.map {
                                     val shareCost = shares.getMinShareCost()
-                                    it.participant to (if (shareCost != 0.0) it.amount.value / shareCost else 1f)
+                                    it.participant to (if (shareCost != 0.0) it.amount.value / shareCost else 1.0)
                                 } + extraParticipants.map { it to 0.0 }
                             ).toMap()
 
@@ -95,7 +95,7 @@ private fun calculateForSplitType(
     return when (baseSplitType) {
         SplitType.EQUAL -> {
             when (splitType) {
-                SplitType.SHARES -> baseValue.mapValues { if ((it.value as Boolean) == true) 1f else 0.0 }
+                SplitType.SHARES -> baseValue.mapValues { if ((it.value as Boolean) == true) 1.0 else 0.0 }
                 SplitType.AMOUNTS -> {
                     val total = oldValue.values.sumOf { (it as Double) }
                     val participants = baseValue.values.count { (it as Boolean) == true }
