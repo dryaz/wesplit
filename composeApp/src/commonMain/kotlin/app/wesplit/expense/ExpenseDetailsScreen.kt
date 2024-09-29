@@ -301,20 +301,21 @@ private fun SharesDetailsParticipantList(
 ) {
     data.allParticipants().forEach { participant ->
         when (splitType) {
-            SplitType.EQUAL ->
+            SplitType.EQUAL -> {
+                val isParticipating = data.splitOptions.splitValues[splitType]!![participant] as Boolean
                 ParticipantListItem(
                     participant = participant,
                     onClick = { item ->
                         onUpdated(
                             UpdateAction.Split.Equal(
                                 participant = item,
-                                value = data.splitOptions.splitValues[splitType]!![participant] as Boolean == false,
+                                value = !isParticipating,
                             ),
                         )
                     },
                     action = {
                         Checkbox(
-                            checked = data.splitOptions.splitValues[splitType]!![participant] as Boolean,
+                            checked = isParticipating,
                             onCheckedChange = { isChecked ->
                                 onUpdated(
                                     UpdateAction.Split.Equal(
@@ -330,7 +331,7 @@ private fun SharesDetailsParticipantList(
                             it.amount.format()
                         } ?: "Not participating",
                 )
-
+            }
             SplitType.SHARES -> {
                 ParticipantListItem(
                     participant = participant,
