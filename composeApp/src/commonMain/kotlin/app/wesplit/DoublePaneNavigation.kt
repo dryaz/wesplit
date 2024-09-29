@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
@@ -29,6 +31,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
@@ -81,7 +84,8 @@ fun DoublePaneNavigation(
 
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(
-            modifier = Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding(),
+            modifier = Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding()
+                .imePadding().navigationBarsPadding(),
         ) {
             // TODO: https://m3.material.io/ has navigation rail only on expanded but even not medium
             NavigationRail(
@@ -196,7 +200,8 @@ fun DoublePaneNavigation(
                     Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(16.dp)
                         .clip(RoundedCornerShape(20.dp)),
             ) {
-                firstNavhost(Modifier.width(320.dp).fillMaxHeight(1f))
+                val firstNavHostWeight = if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact) 0.7f else 1f
+                firstNavhost(Modifier.weight(firstNavHostWeight).widthIn(max = 320.dp).fillMaxHeight(1f))
                 VerticalDivider()
                 // TODO: Calculate weight based on current width, if width is that it will be collapsed -> weight already should be 1.
                 //  So it should be from 1 until 2 based on scnreen width. calculateWindowSizeClass() doesn't provide value :(
@@ -269,7 +274,7 @@ fun DoublePaneNavigation(
             }
         }) {
             Box(
-                modifier = Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surface),
+                modifier = Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surface).imePadding(),
             ) {
                 AnimatedVisibility(
                     visible = secondNavhostEmpty,
