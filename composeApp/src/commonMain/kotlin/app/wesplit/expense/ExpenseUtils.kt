@@ -157,6 +157,7 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
                                 ),
                         )
                     }.toSet(),
+                undistributedAmount = if (participantCount == 0) totalAmount else null,
             )
         }
 
@@ -175,10 +176,13 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
                                 ),
                         )
                     }.toSet(),
+                undistributedAmount = if (totalShares == 0.0) totalAmount else null,
             )
         }
 
         SplitType.AMOUNTS -> {
+            val distributed = shareValues.values.sumOf { it as Double }
+            val undistributed = totalAmount.value - distributed
             copy(
                 shares =
                     shareValues.map { entry ->
@@ -191,6 +195,7 @@ internal fun Expense.reCalculateShares(splitOptions: ExpenseDetailsViewModel.Sta
                                 ),
                         )
                     }.toSet(),
+                undistributedAmount = if (undistributed != 0.0) Amount(undistributed, totalAmount.currencyCode) else null,
             )
         }
     }

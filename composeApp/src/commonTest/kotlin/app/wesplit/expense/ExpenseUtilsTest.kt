@@ -449,6 +449,53 @@ class ExpenseUtilsTest {
 
         newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 0.0
         newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 0.0
+
+        newExpense.undistributedAmount?.value shouldBe 30.0
+    }
+
+    @Test
+    fun recalculate_shares_for_equal_split_options_zeros() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
+        val expense =
+            createExpense(
+                amount = 30.0,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(0.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
+                    ),
+            )
+
+        val newExpense =
+            expense.reCalculateShares(
+                ExpenseDetailsViewModel.State.Data.SplitOptions(
+                    selectedSplitType = SplitType.EQUAL,
+                    splitValues =
+                        mapOf(
+                            SplitType.EQUAL to
+                                mapOf(
+                                    u1 to false,
+                                    u2 to false,
+                                ),
+                            SplitType.SHARES to
+                                mapOf(
+                                    u1 to 0.0,
+                                    u2 to 0.0,
+                                ),
+                            SplitType.AMOUNTS to
+                                mapOf(
+                                    u1 to 0.0,
+                                    u2 to 0.0,
+                                ),
+                        ),
+                ),
+            )
+
+        newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 0.0
+        newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 0.0
+
+        newExpense.undistributedAmount?.value shouldBe 30.0
     }
 
     @Test
@@ -492,6 +539,8 @@ class ExpenseUtilsTest {
 
         newExpense.shares.first { it.participant == u1 }.amount.value shouldBe 10.0
         newExpense.shares.first { it.participant == u2 }.amount.value shouldBe 10.0
+
+        newExpense.undistributedAmount?.value shouldBe 10.0
     }
 }
 
