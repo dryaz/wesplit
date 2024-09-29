@@ -57,7 +57,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.expense.SplitType
@@ -332,26 +337,72 @@ private fun SharesDetailsParticipantList(
                         } ?: "Not participating",
                 )
             }
+
             SplitType.SHARES -> {
                 ParticipantListItem(
                     participant = participant,
                     action = {
+                        val focusRequester = remember { FocusRequester() }
+                        var fieldValue by remember(data.splitOptions) {
+                            val splitValue = (data.splitOptions.splitValues[splitType]!![participant] ?: 0.0).toString()
+                            val strValue = if (splitValue.endsWith(".0")) splitValue.dropLast(2) else splitValue
+                            mutableStateOf(
+                                TextFieldValue(
+                                    text = strValue,
+                                    selection = TextRange(strValue.length),
+                                ),
+                            )
+                        }
                         TextField(
-                            modifier = Modifier.width(74.dp),
+                            modifier =
+                                Modifier.width(74.dp).focusRequester(focusRequester)
+                                    .onFocusChanged { focusState ->
+                                        if (focusState.isFocused) {
+                                            fieldValue =
+                                                fieldValue.copy(
+                                                    selection = TextRange(0, fieldValue.text.length),
+                                                )
+                                        } else {
+                                            fieldValue =
+                                                fieldValue.copy(
+                                                    selection = TextRange(fieldValue.text.length, fieldValue.text.length),
+                                                )
+                                        }
+                                    },
                             singleLine = true,
-                            value = (data.splitOptions.splitValues[splitType]!![participant] ?: 0.0).toString(),
+                            value = fieldValue,
                             keyboardOptions =
                                 KeyboardOptions(
                                     keyboardType = KeyboardType.Decimal,
                                 ),
-                            onValueChange = { value ->
-                                val doubleValue = value.toDoubleOrNull() ?: 0.0
-                                onUpdated(
-                                    UpdateAction.Split.Share(
-                                        participant = participant,
-                                        value = doubleValue,
-                                    ),
-                                )
+                            onValueChange = { newValue ->
+                                val isDeleting = newValue.text.length < fieldValue.text.length
+                                val isEndingWithDot = newValue.text.endsWith(".")
+                                var needUpdate = false
+
+                                if (isDeleting && isEndingWithDot) {
+                                    fieldValue =
+                                        TextFieldValue(
+                                            newValue.text.dropLast(1),
+                                            selection = TextRange(newValue.text.length - 1),
+                                        )
+                                    needUpdate = true
+                                } else if (!isEndingWithDot) {
+                                    needUpdate = true
+                                    fieldValue = newValue
+                                } else {
+                                    fieldValue = newValue
+                                }
+
+                                if (needUpdate) {
+                                    val doubleValue = newValue.text.toDoubleOrNull() ?: 0.0
+                                    onUpdated(
+                                        UpdateAction.Split.Share(
+                                            participant = participant,
+                                            value = doubleValue,
+                                        ),
+                                    )
+                                }
                             },
                         )
                     },

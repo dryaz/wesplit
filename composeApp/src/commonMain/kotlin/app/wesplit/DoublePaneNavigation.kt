@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
@@ -84,8 +84,9 @@ fun DoublePaneNavigation(
 
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(
-            modifier = Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding()
-                .imePadding().navigationBarsPadding(),
+            modifier =
+                Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding()
+                    .imePadding().navigationBarsPadding(),
         ) {
             // TODO: https://m3.material.io/ has navigation rail only on expanded but even not medium
             NavigationRail(
@@ -200,8 +201,8 @@ fun DoublePaneNavigation(
                     Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(16.dp)
                         .clip(RoundedCornerShape(20.dp)),
             ) {
-                val firstNavHostWeight = if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact) 0.7f else 1f
-                firstNavhost(Modifier.weight(firstNavHostWeight).widthIn(max = 320.dp).fillMaxHeight(1f))
+                val width = if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact) 220.dp else 320.dp
+                firstNavhost(Modifier.width(width).fillMaxHeight(1f))
                 VerticalDivider()
                 // TODO: Calculate weight based on current width, if width is that it will be collapsed -> weight already should be 1.
                 //  So it should be from 1 until 2 based on scnreen width. calculateWindowSizeClass() doesn't provide value :(
