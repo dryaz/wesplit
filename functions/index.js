@@ -1,35 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-// const crypto = require('crypto');
 
 admin.initializeApp();
-
-// exports.onGroupCreate = functions.firestore
-//   .document('groups/{groupId}')
-//   .onCreate(async (snap, context) => {
-//     const groupId = context.params.groupId;
-
-//     try {
-//       // Define custom claims or payload as needed
-//       const customClaims = {
-//         groupId: groupId,
-//         // Add other claims if necessary
-//       };
-
-//       // Use a unique UID for the group
-//       const uid = `group_${groupId}`;
-
-//       // Generate the custom token
-//       const publicToken = await admin.auth().createCustomToken(uid, customClaims);
-
-//       // Update the Firestore document with the custom token
-//       await snap.ref.update({ publicToken });
-
-//       console.log('Custom token generated and added to group document');
-//     } catch (error) {
-//       console.error('Error creating custom token:', error);
-//     }
-//   });
 
 exports.generateGroupToken = functions.https.onCall(async (data, context) => {
   const { groupId, publicToken } = data;
@@ -86,3 +58,103 @@ exports.generateGroupToken = functions.https.onCall(async (data, context) => {
     }
   }
 });
+
+// Cloud Function to recalculate balances
+exports.recalculateBalances = functions.firestore
+  .document('groups/{groupId}/expenses/{expenseId}')
+  .onWrite(async (change, context) => {
+    const groupId = context.params.groupId;
+    const groupRef = admin.firestore().collection('groups').doc(groupId);
+
+    // Initialize balances map
+    let balances = {};
+
+    // Initialize undistributed amounts map
+    let undistributed = {};
+
+    // Fetch all expenses in the group's expenses subcollection
+    const expensesSnapshot = await groupRef.collection('expenses').get();
+
+    // Iterate over each expense to update balances
+    expensesSnapshot.forEach(expenseDoc => {
+      const expenseData = expenseDoc.data();
+      const payedBy = expenseData.payedBy; // Participant object with 'id' and 'name'
+      const amount = expenseData.totalAmount;   // Amount object with 'value' and 'currencyCode'
+      const shares = expenseData.shares;   // Set of Share objects
+
+      // Validate 'payedBy' and 'amount'
+      if (!payedBy || !payedBy.id || !payedBy.name || !amount || typeof amount.value !== 'number' || !amount.currency) {
+        console.error(`Expense ${expenseDoc.id} has invalid 'payedBy' or 'amount' data.`);
+        return;
+      }
+
+      const currency = amount.currency;
+      const totalPaid = amount.value;
+
+      // Initialize balances for payer if not already done
+      if (!balances[payedBy.id]) {
+        balances[payedBy.id] = {};
+      }
+      if (!balances[payedBy.id][currency]) {
+        balances[payedBy.id][currency] = 0;
+      }
+
+      // Credit the payer with the total amount paid
+      balances[payedBy.id][currency] += totalPaid;
+
+      // Initialize sum of shares
+      let sumOfShares = 0;
+
+      // Process shares
+      shares.forEach(share => {
+        const participant = share.participant; // Participant object
+        const shareAmount = share.amount;      // Amount object with 'value' and 'currencyCode'
+
+        // Validate participant and shareAmount
+        if (!participant || !participant.id || !participant.name || !shareAmount || typeof shareAmount.value !== 'number' || !shareAmount.currency) {
+          console.error(`Share in expense ${expenseDoc.id} has invalid participant or amount data.`);
+          return;
+        }
+
+        if (shareAmount.currency !== currency) {
+          console.error(`Currency mismatch in expense ${expenseDoc.id}.`);
+          return;
+        }
+
+        const participantId = participant.id;
+        const shareValue = shareAmount.value;
+
+        // Initialize balances for participant if not already done
+        if (!balances[participantId]) {
+          balances[participantId] = {};
+        }
+        if (!balances[participantId][currency]) {
+          balances[participantId][currency] = 0;
+        }
+
+        // Debit the participant by their share amount
+        balances[participantId][currency] -= shareValue;
+
+        // Accumulate the sum of shares
+        sumOfShares += shareValue;
+      });
+
+      // Calculate undistributed amount
+      const undistributedAmount = totalPaid - sumOfShares;
+
+      if (undistributedAmount !== 0) {
+        // Initialize undistributed amount for this currency if not already done
+        if (!undistributed[currency]) {
+          undistributed[currency] = 0;
+        }
+        // Add undistributed amount to the total for this currency
+        undistributed[currency] += undistributedAmount;
+      }
+    });
+
+    // Add undistributed amounts under 'undist' key in balances
+    balances['undist'] = undistributed;
+
+    // Update the group document with the recalculated balances
+    await groupRef.update({ balances: balances });
+  });
