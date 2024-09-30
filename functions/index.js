@@ -156,5 +156,8 @@ exports.recalculateBalances = functions.firestore
     balances['undist'] = undistributed;
 
     // Update the group document with the recalculated balances
-    await groupRef.update({ balances: balances });
+    await groupRef.update({
+      balances: balances,
+      lastExpenseAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
   });
