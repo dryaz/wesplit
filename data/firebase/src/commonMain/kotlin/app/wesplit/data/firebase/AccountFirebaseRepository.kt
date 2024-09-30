@@ -69,7 +69,15 @@ class AccountFirebaseRepository(
 
     override fun login(login: Login) {
         when (login) {
-            is Login.GroupToken -> coroutinScope.launch { signInWithPublicToken(login.groupId, login.token) }
+            is Login.GroupToken ->
+                coroutinScope.launch {
+                    try {
+                        signInWithPublicToken(login.groupId, login.token)
+                    } catch (e: Exception) {
+                        analytics.log(e)
+                    }
+                }
+
             is Login.Social -> {
                 val providerParam = mapOf(LOGIN_PROVIDER_PARAM to login.type.toString())
                 analytics.track(LOGIN_ATTEMPT_EVENT, providerParam)
@@ -85,7 +93,14 @@ class AccountFirebaseRepository(
                 }
             }
 
-            Login.Anonymous -> coroutinScope.launch { Firebase.auth.signInAnonymously() }
+            Login.Anonymous ->
+                coroutinScope.launch {
+                    try {
+                        Firebase.auth.signInAnonymously()
+                    } catch (e: Exception) {
+                        analytics.log(e)
+                    }
+                }
         }
     }
 

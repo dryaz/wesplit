@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
@@ -66,16 +65,7 @@ internal fun LoginSection(
         Spacer(modifier = Modifier.height(4.dp))
         OrDivider()
         Spacer(modifier = Modifier.height(4.dp))
-        OutlinedButton(
-            onClick = {
-                onLoginRequest(Login.Anonymous)
-            },
-        ) {
-            Text(
-                text = "Login Anonymously",
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
+        AnonymousLoginButton { onLoginRequest(Login.Anonymous) }
         Spacer(modifier = Modifier.height(32.dp))
         TermsAndPolicyText(modifier = Modifier.padding(horizontal = 32.dp).alpha(0.65f))
     }
