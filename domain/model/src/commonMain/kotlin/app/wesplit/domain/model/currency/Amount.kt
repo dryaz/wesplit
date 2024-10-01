@@ -1,4 +1,4 @@
-package app.wesplit.domain.model.expense
+package app.wesplit.domain.model.currency
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -13,5 +13,7 @@ data class Amount(
     val currencyCode: String,
 )
 
-// TODO: KMP amount formatting
-fun Amount.format(withCurrency: Boolean = true) = "${if (withCurrency) "$" else ""}${(value * 100.0).roundToInt() / 100.0}"
+fun Amount.format(withCurrency: Boolean = true) =
+    "${if (withCurrency) currencyCode.currencySymbol() else ""}${(value * 100.0).roundToInt() / 100.0}"
+
+fun String.currencySymbol() = currencySymbols.get(this) ?: this

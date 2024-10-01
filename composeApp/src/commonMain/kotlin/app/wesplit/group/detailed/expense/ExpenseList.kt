@@ -36,9 +36,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.wesplit.domain.model.expense.Amount
+import app.wesplit.domain.model.currency.Amount
+import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.Expense
-import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.expense.myAmount
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group

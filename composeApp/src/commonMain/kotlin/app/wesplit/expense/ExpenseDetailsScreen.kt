@@ -64,9 +64,11 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import app.wesplit.currency.CurrencyPicker
 import app.wesplit.domain.model.FutureFeature
+import app.wesplit.domain.model.currency.currencySymbol
+import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.SplitType
-import app.wesplit.domain.model.expense.format
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
@@ -448,6 +450,7 @@ private fun ExpenseDetails(
     }
 
     var showDatePicker by remember { mutableStateOf(false) }
+    var showCurrencyPicker by remember { mutableStateOf(false) }
 
     Card(
         colors =
@@ -507,12 +510,10 @@ private fun ExpenseDetails(
             Spacer(modifier = Modifier.width(8.dp))
             FilledTonalButton(
                 modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
-                enabled = false,
-                onClick = { },
+                onClick = { showCurrencyPicker = true },
                 shape = RoundedCornerShape(10.dp),
             ) {
-                // TODO: Get currency from group
-                Text("$")
+                Text(data.expense.totalAmount.currencyCode.currencySymbol())
             }
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -528,13 +529,13 @@ private fun ExpenseDetails(
                 onValueChange = { value ->
                     if (value.isNullOrBlank()) {
                         amount = ""
-                        onUpdated(UpdateAction.TotalAmount(0.0))
+                        onUpdated(UpdateAction.TotalAmount(0.0, data.expense.totalAmount.currencyCode))
                     } else {
                         val doubleValue = value.toDoubleOrNull()
                         val filtered = if (doubleValue != null) value else amount
                         amount = filtered
                         doubleValue?.let {
-                            onUpdated(UpdateAction.TotalAmount(it))
+                            onUpdated(UpdateAction.TotalAmount(it, data.expense.totalAmount.currencyCode))
                         }
                     }
                 },
@@ -602,6 +603,16 @@ private fun ExpenseDetails(
             }) {
                 DatePicker(state = datePickerState)
             }
+        }
+
+        if (showCurrencyPicker) {
+            CurrencyPicker(
+                data = data,
+                onDismiss = { showCurrencyPicker = false },
+                onConfirm = { currency ->
+                    onUpdated(UpdateAction.TotalAmount(data.expense.totalAmount.value, currency))
+                },
+            )
         }
     }
 }

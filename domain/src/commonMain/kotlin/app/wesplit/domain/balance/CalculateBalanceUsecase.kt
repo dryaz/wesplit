@@ -1,6 +1,6 @@
 package app.wesplit.domain.balance
 
-import app.wesplit.domain.model.expense.Amount
+import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.balance.Balance

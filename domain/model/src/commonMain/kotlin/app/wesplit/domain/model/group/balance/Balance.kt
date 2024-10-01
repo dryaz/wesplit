@@ -1,6 +1,6 @@
 package app.wesplit.domain.model.group.balance
 
-import app.wesplit.domain.model.expense.Amount
+import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.group.Participant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi

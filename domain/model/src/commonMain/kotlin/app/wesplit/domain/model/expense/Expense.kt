@@ -1,5 +1,6 @@
 package app.wesplit.domain.model.expense
 
+import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe

@@ -18,7 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.wesplit.domain.model.expense.format
+import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.group.balance.Balance
 import app.wesplit.participant.ParticipantListItem
 import org.jetbrains.compose.resources.painterResource

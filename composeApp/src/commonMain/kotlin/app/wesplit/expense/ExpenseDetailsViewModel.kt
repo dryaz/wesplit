@@ -7,7 +7,9 @@ import app.wesplit.ShortcutAction
 import app.wesplit.ShortcutDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
-import app.wesplit.domain.model.expense.Amount
+import app.wesplit.domain.model.currency.Amount
+import app.wesplit.domain.model.currency.CurrencyCodesCollection
+import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.ExpenseType
@@ -35,7 +37,7 @@ sealed interface UpdateAction {
     // TODO: Update currency, FX feature and paywall - only for payed
     data class Title(val title: String) : UpdateAction
 
-    data class TotalAmount(val value: Double) : UpdateAction
+    data class TotalAmount(val value: Double, val currencyCode: String) : UpdateAction
 
     data class Date(val millis: Long) : UpdateAction
 
@@ -61,6 +63,7 @@ class ExpenseDetailsViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
     private val expenseRepository: ExpenseRepository,
+    private val currencyRepository: CurrencyRepository,
     private val analyticsManager: AnalyticsManager,
     private val shortcutDelegate: ShortcutDelegate,
 ) : ViewModel(), KoinComponent {
@@ -104,7 +107,13 @@ class ExpenseDetailsViewModel(
                     }
                 }
 
-            groupRepository.get(groupId).combine(expenseFlow) { groupResult, expenseResult ->
+            val currencyFlow = currencyRepository.getAvailableCurrencyCodes()
+
+            combine(
+                groupRepository.get(groupId),
+                expenseFlow,
+                currencyFlow,
+            ) { groupResult, expenseResult, currencies ->
                 if (groupResult.isFailure || expenseResult.isFailure) {
                     groupResult.exceptionOrNull()?.let {
                         analyticsManager.log(it)
@@ -156,6 +165,7 @@ class ExpenseDetailsViewModel(
                         expense = expense,
                         isComplete = isComplete(expense),
                         splitOptions = expense.getInitialSplitOptions(extraParticipants),
+                        availableCurrencies = currencies,
                     )
                 }
             }
@@ -193,7 +203,7 @@ class ExpenseDetailsViewModel(
                         data.copy(
                             expense =
                                 expense.copy(
-                                    totalAmount = expense.totalAmount.copy(value = action.value),
+                                    totalAmount = expense.totalAmount.copy(value = action.value, currencyCode = action.currencyCode),
                                 ).reCalculateShares(newSplitOptions),
                             splitOptions = newSplitOptions,
                         )
@@ -262,6 +272,7 @@ class ExpenseDetailsViewModel(
             val expense: Expense,
             val isComplete: Boolean,
             val splitOptions: SplitOptions,
+            val availableCurrencies: CurrencyCodesCollection,
         ) : State {
             data class SplitOptions(
                 val selectedSplitType: SplitType,

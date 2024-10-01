@@ -31,6 +31,7 @@ import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.expense.AddExpenseAction
@@ -561,6 +562,7 @@ fun RootNavigation(
                     val groupRepository: GroupRepository = koinInject()
                     val expenseRepository: ExpenseRepository = koinInject()
                     val shortcutDelegate: ShortcutDelegate = koinInject()
+                    val currencyRepository: CurrencyRepository = koinInject()
 
                     val groupId =
                         checkNotNull(
@@ -591,6 +593,7 @@ fun RootNavigation(
                                 SavedStateHandle.createHandle(null, it.arguments),
                                 groupRepository,
                                 expenseRepository,
+                                currencyRepository,
                                 analyticsManager,
                                 shortcutDelegate,
                             )
