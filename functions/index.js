@@ -60,7 +60,7 @@ exports.generateGroupToken = functions.https.onCall(async (data, context) => {
   }
 });
 
-// Cloud Function to recalculate balances
+// Cloud Function to recalculate balances and update lastExpenseAt
 exports.recalculateBalances = functions.firestore
   .document('groups/{groupId}/expenses/{expenseId}')
   .onWrite(async (change, context) => {
@@ -68,10 +68,10 @@ exports.recalculateBalances = functions.firestore
     const groupRef = admin.firestore().collection('groups').doc(groupId);
 
     // Initialize balances map
-    let balances = {};
+    let balancesMap = {};
 
     // Initialize undistributed amounts map
-    let undistributed = {};
+    let undistributedMap = {};
 
     // Fetch all expenses in the group's expenses subcollection
     const expensesSnapshot = await groupRef.collection('expenses').get();
@@ -93,15 +93,19 @@ exports.recalculateBalances = functions.firestore
       const totalPaid = amount.value;
 
       // Initialize balances for payer if not already done
-      if (!balances[payedBy.id]) {
-        balances[payedBy.id] = {};
+      const payerId = payedBy.id;
+      if (!balancesMap[payerId]) {
+        balancesMap[payerId] = {
+          participant: payedBy,
+          amountsMap: {}
+        };
       }
-      if (!balances[payedBy.id][currency]) {
-        balances[payedBy.id][currency] = 0;
+      if (!balancesMap[payerId].amountsMap[currency]) {
+        balancesMap[payerId].amountsMap[currency] = 0;
       }
 
       // Credit the payer with the total amount paid
-      balances[payedBy.id][currency] += totalPaid;
+      balancesMap[payerId].amountsMap[currency] += totalPaid;
 
       // Initialize sum of shares
       let sumOfShares = 0;
@@ -126,15 +130,18 @@ exports.recalculateBalances = functions.firestore
         const shareValue = shareAmount.value;
 
         // Initialize balances for participant if not already done
-        if (!balances[participantId]) {
-          balances[participantId] = {};
+        if (!balancesMap[participantId]) {
+          balancesMap[participantId] = {
+            participant: participant,
+            amountsMap: {}
+          };
         }
-        if (!balances[participantId][currency]) {
-          balances[participantId][currency] = 0;
+        if (!balancesMap[participantId].amountsMap[currency]) {
+          balancesMap[participantId].amountsMap[currency] = 0;
         }
 
         // Debit the participant by their share amount
-        balances[participantId][currency] -= shareValue;
+        balancesMap[participantId].amountsMap[currency] -= shareValue;
 
         // Accumulate the sum of shares
         sumOfShares += shareValue;
@@ -145,22 +152,48 @@ exports.recalculateBalances = functions.firestore
 
       if (undistributedAmount !== 0) {
         // Initialize undistributed amount for this currency if not already done
-        if (!undistributed[currency]) {
-          undistributed[currency] = 0;
+        if (!undistributedMap[currency]) {
+          undistributedMap[currency] = 0;
         }
         // Add undistributed amount to the total for this currency
-        undistributed[currency] += undistributedAmount;
+        undistributedMap[currency] += undistributedAmount;
       }
     });
 
-    // Add undistributed amounts under 'undist' key in balances
-    balances['undist'] = undistributed;
+    // Construct participantsBalance set
+    const participantsBalanceSet = Object.values(balancesMap).map(entry => {
+      // Convert amountsMap to a set of Amount objects
+      const amountsSet = Object.entries(entry.amountsMap).map(([currency, value]) => ({
+        currency,
+        value
+      }));
 
-    // Update the group document with the recalculated balances
-    await groupRef.update({
-      balances: balances,
-      lastExpenseAt: admin.firestore.FieldValue.serverTimestamp(),
+      return {
+        participant: entry.participant,
+        amounts: amountsSet
+      };
     });
+
+    // Construct undistributed set
+    const undistributedSet = Object.entries(undistributedMap).map(([currency, value]) => ({
+      currency,
+      value
+    }));
+
+    // Create the Balance object
+    const balanceObject = {
+      participantsBalance: participantsBalanceSet,
+      undistributed: undistributedSet
+    };
+
+    // Prepare the update data
+    const updateData = {
+      balances: [balanceObject], // Set containing one Balance object
+      lastExpenseAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Update the group document with the recalculated balances and lastExpenseAt
+    await groupRef.update(updateData);
   });
 
 exports.updateCurrencyRates = functions.pubsub.schedule('0 0 * * *').timeZone('UTC').onRun(async (context) => {
