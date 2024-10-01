@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const axios = require('axios');
 
 admin.initializeApp();
 
@@ -161,3 +162,39 @@ exports.recalculateBalances = functions.firestore
       lastExpenseAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   });
+
+exports.updateCurrencyRates = functions.pubsub.schedule('0 0 * * *').timeZone('UTC').onRun(async (context) => {
+  try {
+    const apiKey = functions.config().exchangerate.key;
+    const baseUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
+
+    // Fetch exchange rates
+    const response = await axios.get(baseUrl);
+    const data = response.data;
+
+    if (data.result === 'success') {
+      // Write data to Firestore
+      const db = admin.firestore();
+      const timestamp = admin.firestore.FieldValue.serverTimestamp();
+
+      await db.collection('fxrates').doc('latest').set({
+        base: data.base_code,
+        rates: data.conversion_rates,
+        lastUpdate: timestamp,
+      });
+
+      const strTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      await db.collection('fxrates').doc(strTimestamp).set({
+        base: data.base_code,
+        rates: data.conversion_rates,
+        lastUpdate: timestamp,
+      });
+
+      console.log('Exchange rates updated successfully.');
+    } else {
+      console.error('Error fetching exchange rates:', data['error-type']);
+    }
+  } catch (error) {
+    console.error('Error in updateCurrencyRates function:', error);
+  }
+});
