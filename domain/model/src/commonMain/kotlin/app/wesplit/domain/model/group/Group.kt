@@ -19,6 +19,9 @@ data class Group(
     @SerialName("participants")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val participants: Set<Participant> = emptySet(),
+    @SerialName("balances")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val balances: Balance? = null,
     @SerialName("imageUrl")
     val imageUrl: String? = null,
     @SerialName("createdAt")

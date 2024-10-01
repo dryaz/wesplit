@@ -188,7 +188,7 @@ exports.recalculateBalances = functions.firestore
 
     // Prepare the update data
     const updateData = {
-      balances: [balanceObject], // Set containing one Balance object
+      balances: balanceObject, // Set containing one Balance object
       lastExpenseAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 

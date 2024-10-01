@@ -333,10 +333,16 @@ private fun SharesDetailsParticipantList(
                             },
                         )
                     },
-                    subTitle =
-                        data.expense.shares.find { it.participant.id == participant.id }?.let {
-                            it.amount.format()
-                        } ?: "Not participating",
+                    subComposable = {
+                        Text(
+                            text =
+                                data.expense.shares.find { it.participant.id == participant.id }?.let {
+                                    it.amount.format()
+                                } ?: "Not participating",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    },
                 )
             }
 
@@ -408,10 +414,16 @@ private fun SharesDetailsParticipantList(
                             },
                         )
                     },
-                    subTitle =
-                        data.expense.shares.find { it.participant.id == participant.id }?.let {
-                            it.amount.format()
-                        } ?: "Not participating",
+                    subComposable = {
+                        Text(
+                            text =
+                                data.expense.shares.find { it.participant.id == participant.id }?.let {
+                                    it.amount.format()
+                                } ?: "Not participating",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    },
                 )
             }
 

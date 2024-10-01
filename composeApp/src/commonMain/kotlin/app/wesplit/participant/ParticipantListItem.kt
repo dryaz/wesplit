@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +23,7 @@ import split.composeapp.generated.resources.you
 fun ParticipantListItem(
     participant: Participant,
     modifier: Modifier = Modifier,
-    subTitle: String? = null,
+    subComposable: @Composable (() -> Unit)? = null,
     action: @Composable (() -> Unit)? = null,
     onClick: ((Participant) -> Unit)? = null,
 ) {
@@ -53,13 +52,7 @@ fun ParticipantListItem(
             Text(
                 text = participant.name + suffix,
             )
-            subTitle?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.outline,
-                )
-            }
+            subComposable?.let { it() }
         }
         action?.let {
             it()

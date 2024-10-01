@@ -1,6 +1,5 @@
 package app.wesplit.group.detailed
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,12 +42,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
-import app.wesplit.domain.model.group.balance.BalanceRepository
 import app.wesplit.domain.model.group.uiTitle
-import app.wesplit.group.detailed.balance.BalanceSection
-import app.wesplit.group.detailed.balance.BalanceSectionViewModel
+import app.wesplit.group.detailed.balance.BalanceList
 import app.wesplit.group.detailed.expense.ExpenseAction
 import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
@@ -210,7 +208,6 @@ private fun GroupInfoContent(
 ) {
     val expenseRepository: ExpenseRepository = koinInject()
     val groupRepository: GroupRepository = koinInject()
-    val balanceRepository: BalanceRepository = koinInject()
     val analyticsManager: AnalyticsManager = koinInject()
 
     val windowSizeClass = calculateWindowSizeClass()
@@ -221,15 +218,6 @@ private fun GroupInfoContent(
                 groupId = group.id,
                 expenseRepository = expenseRepository,
                 groupRepository = groupRepository,
-                analyticsManager = analyticsManager,
-            )
-        }
-
-    val balanceSectionViewModel: BalanceSectionViewModel =
-        viewModel(key = "BalanceSectionViewModel ${group.id}") {
-            BalanceSectionViewModel(
-                groupId = group.id,
-                balanceRepository = balanceRepository,
                 analyticsManager = analyticsManager,
             )
         }
@@ -246,9 +234,9 @@ private fun GroupInfoContent(
         if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
             windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
         ) {
-            SplitView(expenseViewModel, balanceSectionViewModel, onAction)
+            SplitView(expenseViewModel, group.balances, onAction)
         } else {
-            PaginationView(expenseViewModel, balanceSectionViewModel, onAction)
+            PaginationView(expenseViewModel, group.balances, onAction)
         }
     }
 }
@@ -256,7 +244,7 @@ private fun GroupInfoContent(
 @Composable
 private fun SplitView(
     expenseViewModel: ExpenseSectionViewModel,
-    balanceSectionViewModel: BalanceSectionViewModel,
+    balance: Balance?,
     onAction: (GroupInfoAction) -> Unit,
 ) {
     Column {
@@ -283,16 +271,15 @@ private fun SplitView(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.TopCenter,
         ) {
-            BalanceSection(balanceSectionViewModel)
+            BalanceList(balance)
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PaginationView(
     expenseViewModel: ExpenseSectionViewModel,
-    balanceSectionViewModel: BalanceSectionViewModel,
+    balance: Balance?,
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -323,7 +310,7 @@ private fun PaginationView(
                             }
                         }
 
-                    1 -> BalanceSection(balanceSectionViewModel)
+                    1 -> BalanceList(balance)
                 }
             }
         }
