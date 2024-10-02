@@ -52,6 +52,7 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.app_version
 import split.composeapp.generated.resources.change_color_mode
@@ -81,12 +82,13 @@ fun DoublePaneNavigation(
     val windowSizeClass = calculateWindowSizeClass()
     // TODO: AB test rather to send email or fill the form via prodcamp
     val uriHandler = LocalUriHandler.current
+    val shareDelegate: ShareDelegate = koinInject()
 
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(
             modifier =
-                Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding()
-                    .imePadding().navigationBarsPadding(),
+            Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding()
+                .imePadding().navigationBarsPadding(),
         ) {
             // TODO: https://m3.material.io/ has navigation rail only on expanded but even not medium
             NavigationRail(
@@ -117,12 +119,12 @@ fun DoublePaneNavigation(
                     NavigationRailItem(icon = {
                         Icon(
                             painter =
-                                painterResource(
-                                    when (localTheme.theme) {
-                                        Theme.Cupertino -> Res.drawable.ic_web
-                                        Theme.Material3 -> Res.drawable.ic_android
-                                    },
-                                ),
+                            painterResource(
+                                when (localTheme.theme) {
+                                    Theme.Cupertino -> Res.drawable.ic_web
+                                    Theme.Material3 -> Res.drawable.ic_android
+                                },
+                            ),
                             contentDescription = stringResource(Res.string.change_theme),
                         )
                     }, selected = false, onClick = {
@@ -140,7 +142,11 @@ fun DoublePaneNavigation(
                             contentDescription = "Get mobile application",
                         )
                     }, selected = false, onClick = {
-                        uriHandler.openUri("https://wesplit.app/")
+                        if (shareDelegate.supportPlatformSharing()) {
+                            shareDelegate.open(ShareData.Link("https://wesplit.app"))
+                        } else {
+                            uriHandler.openUri("https://wesplit.app")
+                        }
                     }, label = {
                         Text(
                             text = "Get App",
@@ -155,7 +161,11 @@ fun DoublePaneNavigation(
                         contentDescription = stringResource(Res.string.submit_feedback_cd),
                     )
                 }, selected = false, onClick = {
-                    uriHandler.openUri("https://wesplit.prodcamp.com/")
+                    if (shareDelegate.supportPlatformSharing()) {
+                        shareDelegate.open(ShareData.Link("https://wesplit.prodcamp.com/"))
+                    } else {
+                        uriHandler.openUri("https://wesplit.prodcamp.com/")
+                    }
                 }, label = {
                     Text(
                         text = "Feedback",
@@ -166,13 +176,13 @@ fun DoublePaneNavigation(
                 NavigationRailItem(icon = {
                     Icon(
                         painter =
-                            painterResource(
-                                when (localTheme.colorMode) {
-                                    ColorMode.LIGHT -> Res.drawable.ic_light
-                                    ColorMode.DARK -> Res.drawable.ic_dark
-                                    ColorMode.SYSTEM -> Res.drawable.ic_system
-                                },
-                            ),
+                        painterResource(
+                            when (localTheme.colorMode) {
+                                ColorMode.LIGHT -> Res.drawable.ic_light
+                                ColorMode.DARK -> Res.drawable.ic_dark
+                                ColorMode.SYSTEM -> Res.drawable.ic_system
+                            },
+                        ),
                         contentDescription = stringResource(Res.string.change_color_mode),
                     )
                 }, label = {
@@ -198,8 +208,8 @@ fun DoublePaneNavigation(
             }
             Row(
                 modifier =
-                    Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(16.dp)
-                        .clip(RoundedCornerShape(20.dp)),
+                Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(16.dp)
+                    .clip(RoundedCornerShape(20.dp)),
             ) {
                 val width = if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact) 220.dp else 320.dp
                 firstNavhost(Modifier.width(width).fillMaxHeight(1f))
@@ -241,7 +251,13 @@ fun DoublePaneNavigation(
                     NavigationDrawerItem(
                         label = { Text(text = "Get mobile app") },
                         selected = false,
-                        onClick = { uriHandler.openUri("https://wesplit.app/") },
+                        onClick = {
+                            if (shareDelegate.supportPlatformSharing()) {
+                                shareDelegate.open(ShareData.Link("https://wesplit.app"))
+                            } else {
+                                uriHandler.openUri("https://wesplit.app")
+                            }
+                        },
                         shape = RectangleShape,
                         icon = {
                             Icon(
@@ -255,7 +271,13 @@ fun DoublePaneNavigation(
                 NavigationDrawerItem(
                     label = { Text(text = stringResource(Res.string.submit_feedback_cd)) },
                     selected = false,
-                    onClick = { uriHandler.openUri("https://wesplit.prodcamp.com/") },
+                    onClick = {
+                        if (shareDelegate.supportPlatformSharing()) {
+                            shareDelegate.open(ShareData.Link("https://wesplit.prodcamp.com/"))
+                        } else {
+                            uriHandler.openUri("https://wesplit.prodcamp.com/")
+                        }
+                    },
                     shape = RectangleShape,
                     icon = {
                         Icon(

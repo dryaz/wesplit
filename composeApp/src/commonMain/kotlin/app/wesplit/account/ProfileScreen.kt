@@ -37,6 +37,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.wesplit.KotlinPlatform
+import app.wesplit.ShareData
+import app.wesplit.ShareDelegate
+import app.wesplit.currentPlatform
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.account.participant
@@ -49,6 +53,7 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowRight
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Menu
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.img_construct
@@ -156,6 +161,7 @@ private fun AccountInfo(
     var deleteDialogShown by remember { mutableStateOf(false) }
     val participant = account.participant()
     val windowSizeClass = calculateWindowSizeClass()
+    val shareDelegate: ShareDelegate = koinInject()
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -180,7 +186,9 @@ private fun AccountInfo(
                 color = MaterialTheme.colorScheme.outline,
             )
         }
-        if (windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact) {
+        if (windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
+            && currentPlatform != KotlinPlatform.Ios
+        ) {
             UnderConstruction()
         } else {
             Spacer(modifier = Modifier.weight(1f))
@@ -188,13 +196,17 @@ private fun AccountInfo(
         val uriHandler = LocalUriHandler.current
         ListItem(
             modifier =
-                Modifier.clickable {
+            Modifier.clickable {
+                if (shareDelegate.supportPlatformSharing()) {
+                    shareDelegate.open(ShareData.Link("https://wesplit.app/privacypolicy/"))
+                } else {
                     uriHandler.openUri("https://wesplit.app/privacypolicy/")
-                },
+                }
+            },
             colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                ),
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
             trailingContent = {
                 Icon(
                     AdaptiveIcons.Outlined.KeyboardArrowRight,
@@ -212,13 +224,17 @@ private fun AccountInfo(
 
         ListItem(
             modifier =
-                Modifier.clickable {
+            Modifier.clickable {
+                if (shareDelegate.supportPlatformSharing()) {
+                    shareDelegate.open(ShareData.Link("https://wesplit.app/terms/"))
+                } else {
                     uriHandler.openUri("https://wesplit.app/terms/")
-                },
+                }
+            },
             colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                ),
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
             trailingContent = {
                 Icon(
                     AdaptiveIcons.Outlined.KeyboardArrowRight,
@@ -238,10 +254,10 @@ private fun AccountInfo(
             ListItem(
                 modifier = Modifier.weight(1f).clickable { deleteDialogShown = true },
                 colors =
-                    ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        headlineColor = MaterialTheme.colorScheme.error,
-                    ),
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    headlineColor = MaterialTheme.colorScheme.error,
+                ),
                 headlineContent = {
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),
@@ -254,10 +270,10 @@ private fun AccountInfo(
             ListItem(
                 modifier = Modifier.weight(1f).clickable { onAction(ProfileAction.Logout) },
                 colors =
-                    ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        headlineColor = MaterialTheme.colorScheme.error,
-                    ),
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    headlineColor = MaterialTheme.colorScheme.error,
+                ),
                 headlineContent = {
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),

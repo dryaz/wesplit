@@ -26,11 +26,14 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import app.wesplit.KotlinPlatform
+import app.wesplit.ShareData
+import app.wesplit.ShareDelegate
 import app.wesplit.currentPlatform
 import app.wesplit.domain.model.account.Login
 import app.wesplit.ui.OrDivider
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.img_login
 import split.composeapp.generated.resources.login_button_cd
@@ -80,6 +83,7 @@ internal fun LoginSection(
 @Composable
 private fun TermsAndPolicyText(modifier: Modifier = Modifier) {
     val uriHandler = LocalUriHandler.current
+    val shareDelegate: ShareDelegate = koinInject()
     val privacy = "Privacy Policy"
     val terms = "Terms&Conditions"
 
@@ -100,7 +104,11 @@ private fun TermsAndPolicyText(modifier: Modifier = Modifier) {
                                         ),
                                 ),
                             linkInteractionListener = {
-                                uriHandler.openUri("https://wesplit.app/privacypolicy/")
+                                if (shareDelegate.supportPlatformSharing()) {
+                                    shareDelegate.open(ShareData.Link("https://wesplit.app/privacypolicy/"))
+                                } else {
+                                    uriHandler.openUri("https://wesplit.app/privacypolicy/")
+                                }
                             },
                         ),
             ) {
@@ -121,7 +129,11 @@ private fun TermsAndPolicyText(modifier: Modifier = Modifier) {
                                         ),
                                 ),
                             linkInteractionListener = {
-                                uriHandler.openUri("https://wesplit.app/terms/")
+                                if (shareDelegate.supportPlatformSharing()) {
+                                    shareDelegate.open(ShareData.Link("https://wesplit.app/terms/"))
+                                } else {
+                                    uriHandler.openUri("https://wesplit.app/terms/")
+                                }
                             },
                         ),
             ) {

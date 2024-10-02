@@ -20,6 +20,12 @@ class PlatformShareDelegate: ShareDelegate {
             shareLink(linkData.value)
         }
     }
+  
+    func open(data: ShareData) {
+        if let linkData = data as? ShareDataLink {
+          UIApplication.shared.open(URL(string: linkData.value)!, options: [:], completionHandler: nil)
+        }
+    }
 
     private func shareLink(_ link: String) {
         DispatchQueue.main.async {
