@@ -38,6 +38,13 @@ class LoginIosDelegate(
                     val result = Firebase.auth.signInWithCredential(credential)
                     val user = result.user
                     if (user != null) {
+                        creds.name?.let {
+                            if (!it.isNullOrBlank()) {
+                                Firebase.auth.currentUser?.updateProfile(
+                                    displayName = it,
+                                )
+                            }
+                        }
                         onLogin(Result.success(user))
                     } else {
                         onLogin(Result.failure(NullPointerException("Error while login")))
@@ -91,4 +98,5 @@ data class GooleCredentials(
 data class AppleCredentials(
     val idToken: String,
     val nonce: String,
+    val name: String?,
 )

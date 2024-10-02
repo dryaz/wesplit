@@ -132,9 +132,17 @@ extension PlatformLoginDelegate: ASAuthorizationControllerDelegate {
             onAppleCredentialsReceived?(nil)
             return
         }
+      
+      let fullNameString: String? = {
+          if let fullNameComponents = appleIDCredential.fullName {
+              return PersonNameComponentsFormatter().string(from: fullNameComponents)
+          } else {
+              return nil
+          }
+      }()
 
-        let credentials = AppleCredentials(idToken: identityToken, nonce: nonce)
-        onAppleCredentialsReceived?(credentials)
+      let credentials = AppleCredentials(idToken: identityToken, nonce: nonce, name: fullNameString)
+      onAppleCredentialsReceived?(credentials)
     }
 
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
