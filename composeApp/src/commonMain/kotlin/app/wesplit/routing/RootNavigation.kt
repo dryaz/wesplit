@@ -25,6 +25,8 @@ import androidx.navigation.navArgument
 import androidx.navigation.navOptions
 import app.wesplit.DoublePaneNavigation
 import app.wesplit.NavigationMenuItem
+import app.wesplit.ShareData
+import app.wesplit.ShareDelegate
 import app.wesplit.ShortcutDelegate
 import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
@@ -163,6 +165,7 @@ fun RootNavigation(
     val analyticsManager: AnalyticsManager = koinInject()
     val accountRepository: AccountRepository = koinInject()
     val coroutineScope = rememberCoroutineScope()
+    val shareDelegate: ShareDelegate = koinInject()
     val clipboardManager = LocalClipboardManager.current
 
     val menuItems =
@@ -409,6 +412,7 @@ fun RootNavigation(
                         }
                     GroupInfoScreen(
                         viewModel = viewModel,
+                        shareDelegate = shareDelegate,
                     ) { action ->
                         when (action) {
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
@@ -420,12 +424,16 @@ fun RootNavigation(
                                     )
                                 val link = deepLink(detailsAction)
                                 val groupDetailsUrl = DeeplinkBuilders.PROD.build(link)
-                                clipboardManager.setText(
-                                    annotatedString =
-                                        buildAnnotatedString {
-                                            append(text = groupDetailsUrl)
-                                        },
-                                )
+                                if (shareDelegate.supportPlatformSharing()) {
+                                    shareDelegate.share(ShareData.Link(groupDetailsUrl))
+                                } else {
+                                    clipboardManager.setText(
+                                        annotatedString =
+                                            buildAnnotatedString {
+                                                append(text = groupDetailsUrl)
+                                            },
+                                    )
+                                }
                             }
 
                             is GroupInfoAction.AddExpense -> {

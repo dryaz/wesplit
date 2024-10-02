@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -15,6 +16,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
@@ -85,6 +87,10 @@ fun BalanceList(balance: Balance?) {
                 if (balance.undistributed.isNotEmpty()) {
                     HorizontalDivider()
                     ListItem(
+                        colors =
+                            ListItemDefaults.colors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                            ),
                         headlineContent = {
                             Text(
                                 text = "Undistributed",
@@ -92,6 +98,7 @@ fun BalanceList(balance: Balance?) {
                         },
                         leadingContent = {
                             Icon(
+                                modifier = Modifier.width(56.dp),
                                 painter = painterResource(Res.drawable.ic_flag),
                                 contentDescription = "Undistributed",
                             )

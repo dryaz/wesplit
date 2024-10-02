@@ -9,7 +9,8 @@ struct ComposeView: UIViewControllerRepresentable {
     MainViewControllerKt.mainViewController(
       iosDiHelper: IosDiHelper(
         loginDelegate: PlatformLoginDelegate(),
-        deepLinkHandler: deeplinkHandler
+        deepLinkHandler: deeplinkHandler,
+        shareDelegate: PlatformShareDelegate()
       )
     )
   }

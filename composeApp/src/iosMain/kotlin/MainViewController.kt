@@ -1,6 +1,7 @@
 import androidx.compose.ui.window.ComposeUIViewController
 import app.wesplit.App
 import app.wesplit.DeepLinkHandler
+import app.wesplit.ShareDelegate
 import app.wesplit.ShortcutDelegate
 import app.wesplit.ShortcutDelegateNotSupport
 import app.wesplit.domain.model.AnalyticsManager
@@ -19,6 +20,7 @@ fun mainViewController(iosDiHelper: IosDiHelper): UIViewController {
             module {
                 single<CoroutineDispatcher> { Dispatchers.IO }
                 single<AnalyticsManager> { IosAnalyticsManager() }
+                single<ShareDelegate> { iosDiHelper.shareDelegate }
                 single<DeepLinkHandler> { iosDiHelper.deepLinkHandler }
                 single<ShortcutDelegate> { ShortcutDelegateNotSupport }
                 single<LoginIosNativeDelegate> { iosDiHelper.loginDelegate }

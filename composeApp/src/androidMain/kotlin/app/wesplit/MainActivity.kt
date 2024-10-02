@@ -41,6 +41,7 @@ class MainActivity : ComponentActivity() {
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
                 module {
                     single<ShortcutDelegate> { ShortcutAndroidDelegate(application) }
+                    single<ShareDelegate> { DefaultShareDelegate }
                     single<CoroutineDispatcher> { Dispatchers.IO }
                     single<AnalyticsManager> { AndroidAnalyticsManager() }
                     single<DeepLinkHandler> { deepLinkHandler }

@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
@@ -84,6 +85,7 @@ sealed interface GroupInfoAction {
 fun GroupInfoScreen(
     modifier: Modifier = Modifier,
     viewModel: GroupInfoViewModel,
+    shareDelegate: ShareDelegate,
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val data = viewModel.dataState.collectAsState()
@@ -160,7 +162,6 @@ fun GroupInfoScreen(
                     IconButton(onClick = {
                         // TODO: Proper state handling, not just 1 groupinfo handler
                         (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                            showLinkCopiedSnackbar()
                             onAction.invoke(
                                 GroupInfoAction.Share(group),
                             )
@@ -182,7 +183,7 @@ fun GroupInfoScreen(
             val actionCallback: (GroupInfoAction) -> Unit =
                 remember {
                     {
-                        if (it is GroupInfoAction.Share) showLinkCopiedSnackbar()
+                        if (it is GroupInfoAction.Share && !shareDelegate.supportPlatformSharing()) showLinkCopiedSnackbar()
                         onAction(it)
                     }
                 }
