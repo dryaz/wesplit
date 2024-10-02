@@ -13,6 +13,7 @@ sealed interface Login {
     data class Social(val type: Type) : Login {
         enum class Type {
             GOOGLE,
+            APPLE,
         }
     }
 

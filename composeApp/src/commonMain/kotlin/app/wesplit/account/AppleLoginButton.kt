@@ -21,12 +21,12 @@ import app.wesplit.theme.LocalThemeState
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
-import split.composeapp.generated.resources.btn_google_black
-import split.composeapp.generated.resources.btn_google_white
-import split.composeapp.generated.resources.login_with_google_cd
+import split.composeapp.generated.resources.btn_apple_black
+import split.composeapp.generated.resources.btn_apple_white
+import split.composeapp.generated.resources.login_with_apple_cd
 
 @Composable
-fun GoogleLoginButton(onAction: () -> Unit) {
+fun AppleLoginButton(onAction: () -> Unit) {
     var isLoading by remember { mutableStateOf(false) }
 
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -41,12 +41,12 @@ fun GoogleLoginButton(onAction: () -> Unit) {
             painter =
                 painterResource(
                     when (LocalThemeState.current.colorMode) {
-                        ColorMode.DARK -> Res.drawable.btn_google_white
-                        ColorMode.LIGHT -> Res.drawable.btn_google_black
-                        ColorMode.SYSTEM -> if (!isSystemInDarkTheme()) Res.drawable.btn_google_black else Res.drawable.btn_google_white
+                        ColorMode.DARK -> Res.drawable.btn_apple_white
+                        ColorMode.LIGHT -> Res.drawable.btn_apple_black
+                        ColorMode.SYSTEM -> if (!isSystemInDarkTheme()) Res.drawable.btn_apple_black else Res.drawable.btn_apple_white
                     },
                 ),
-            contentDescription = stringResource(Res.string.login_with_google_cd),
+            contentDescription = stringResource(Res.string.login_with_apple_cd),
         )
     }
 }

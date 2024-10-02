@@ -26,6 +26,7 @@
     <string name="change_color_mode">Change color mode</string>
     <string name="empty_group_cd">No group selected</string>
     <string name="login_with_google_cd">Login with Google</string>
+    <string name="login_with_apple_cd">Login with Apple</string>
     <string name="you">you</string>
     <string name="search_contact">Type name of user</string>
     <string name="no_contact_found">You don't have such contacts</string>

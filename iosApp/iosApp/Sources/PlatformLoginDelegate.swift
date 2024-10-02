@@ -12,8 +12,12 @@ import FirebaseCore
 import GoogleSignIn
 import FirebaseAuth
 import UIKit
+import AuthenticationServices
+import CryptoKit
 
-class PlatformLoginDelegate: LoginIosNativeDelegate {
+class PlatformLoginDelegate: NSObject, LoginIosNativeDelegate {
+  private var onAppleCredentialsReceived: ((AppleCredentials?) -> Void)?
+  private var currentNonce: String?
   
   func googleLogin(onCredentialsReceived: @escaping (GooleCredentials?) -> Void) {
     guard let clientID = FirebaseApp.app()?.options.clientID else {
@@ -53,6 +57,55 @@ class PlatformLoginDelegate: LoginIosNativeDelegate {
     }
   }
   
+  func appleLogin(onCredentialsReceived: @escaping (AppleCredentials?) -> Void) {
+          self.onAppleCredentialsReceived = onCredentialsReceived
+
+          // Generate nonce for Firebase
+          let nonce = randomNonceString()
+          currentNonce = nonce
+
+          let appleIDProvider = ASAuthorizationAppleIDProvider()
+          let request = appleIDProvider.createRequest()
+          request.requestedScopes = [.fullName, .email]
+          request.nonce = sha256(nonce)
+
+          let authController = ASAuthorizationController(authorizationRequests: [request])
+          authController.delegate = self
+          authController.presentationContextProvider = self
+          authController.performRequests()
+      }
+
+  func randomNonceString(length: Int = 32) -> String {
+      precondition(length > 0)
+      let charset: Array<Character> =
+          Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+
+      var result = ""
+      var remainingLength = length
+
+      while remainingLength > 0 {
+          let randoms = (0..<16).map { _ in UInt8.random(in: 0...255) }
+          randoms.forEach { random in
+              if remainingLength == 0 {
+                  return
+              }
+              if random < charset.count {
+                  result.append(charset[Int(random)])
+                  remainingLength -= 1
+              }
+          }
+      }
+
+      return result
+  }
+
+  func sha256(_ input: String) -> String {
+      let inputData = Data(input.utf8)
+      let hashedData = SHA256.hash(data: inputData)
+      let hashString = hashedData.compactMap { String(format: "%02x", $0) }.joined()
+      return hashString
+  }
+  
   private static func getRootViewController() -> UIViewController? {
     // Supports apps with multiple scenes (iOS 13+)
     if #available(iOS 13.0, *) {
@@ -67,4 +120,33 @@ class PlatformLoginDelegate: LoginIosNativeDelegate {
       return UIApplication.shared.keyWindow?.rootViewController
     }
   }
+}
+
+extension PlatformLoginDelegate: ASAuthorizationControllerDelegate {
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        // Handle successful authorization
+        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+              let identityTokenData = appleIDCredential.identityToken,
+              let identityToken = String(data: identityTokenData, encoding: .utf8),
+              let nonce = currentNonce else {
+            onAppleCredentialsReceived?(nil)
+            return
+        }
+
+        let credentials = AppleCredentials(idToken: identityToken, nonce: nonce)
+        onAppleCredentialsReceived?(credentials)
+    }
+
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        // Handle error
+        print("Sign in with Apple failed: \(error.localizedDescription)")
+        onAppleCredentialsReceived?(nil)
+    }
+}
+
+extension PlatformLoginDelegate: ASAuthorizationControllerPresentationContextProviding {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        // Provide the window to present the sign-in UI
+        return UIApplication.shared.windows.first { $0.isKeyWindow }!
+    }
 }

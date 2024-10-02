@@ -25,6 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import app.wesplit.KotlinPlatform
+import app.wesplit.currentPlatform
 import app.wesplit.domain.model.account.Login
 import app.wesplit.ui.OrDivider
 import org.jetbrains.compose.resources.painterResource
@@ -65,7 +67,11 @@ internal fun LoginSection(
         Spacer(modifier = Modifier.height(4.dp))
         OrDivider()
         Spacer(modifier = Modifier.height(4.dp))
-        AnonymousLoginButton { onLoginRequest(Login.Anonymous) }
+        if (currentPlatform is KotlinPlatform.Ios) {
+            AppleLoginButton { onLoginRequest(Login.Social(Login.Social.Type.APPLE)) }
+        } else {
+            AnonymousLoginButton { onLoginRequest(Login.Anonymous) }
+        }
         Spacer(modifier = Modifier.height(32.dp))
         TermsAndPolicyText(modifier = Modifier.padding(horizontal = 32.dp).alpha(0.65f))
     }

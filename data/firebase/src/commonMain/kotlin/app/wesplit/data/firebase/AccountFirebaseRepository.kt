@@ -81,7 +81,7 @@ class AccountFirebaseRepository(
             is Login.Social -> {
                 val providerParam = mapOf(LOGIN_PROVIDER_PARAM to login.type.toString())
                 analytics.track(LOGIN_ATTEMPT_EVENT, providerParam)
-                loginDelegate.socialLogin(Login.Social.Type.GOOGLE) { result ->
+                loginDelegate.socialLogin(login.type) { result ->
                     if (result.isSuccess) {
                         analytics.track(LOGIN_SUCCEED_EVENT, providerParam)
                     } else {
