@@ -1,6 +1,6 @@
 [versions]
-versionName = "1.4.0"
-android-versionCode = "28"
+versionName = "1.5.0"
+android-versionCode = "29"
 
 agp = "8.5.2"
 coreGoogleShortcuts = "1.1.0"
