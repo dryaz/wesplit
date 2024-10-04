@@ -86,42 +86,48 @@ fun BalanceList(balance: Balance?) {
 
                 if (balance.undistributed.isNotEmpty()) {
                     HorizontalDivider()
-                    ListItem(
-                        colors =
-                            ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                            ),
-                        headlineContent = {
-                            Text(
-                                text = "Undistributed",
-                            )
-                        },
-                        leadingContent = {
-                            Icon(
-                                modifier = Modifier.width(56.dp),
-                                painter = painterResource(Res.drawable.ic_flag),
-                                contentDescription = "Undistributed",
-                            )
-                        },
-                        supportingContent = {
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(1f),
-                            ) {
-                                balance.undistributed.forEach { amount ->
-                                    SuggestionChip(
-                                        onClick = {},
-                                        label = { Text(amount.format()) },
-                                    )
-                                }
-                            }
-                        },
-                    )
+                    Undistributed(balance)
                 }
             }
         }
     } else {
         SettledBalances()
     }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Undistributed(balance: Balance) {
+    ListItem(
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        headlineContent = {
+            Text(
+                text = "Undistributed",
+            )
+        },
+        leadingContent = {
+            Icon(
+                modifier = Modifier.width(56.dp),
+                painter = painterResource(Res.drawable.ic_flag),
+                contentDescription = "Undistributed",
+            )
+        },
+        supportingContent = {
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(1f),
+            ) {
+                balance.undistributed.forEach { amount ->
+                    SuggestionChip(
+                        onClick = {},
+                        label = { Text(amount.format()) },
+                    )
+                }
+            }
+        },
+    )
 }
 
 @Composable

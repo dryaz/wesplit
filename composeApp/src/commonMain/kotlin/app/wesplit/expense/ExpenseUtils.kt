@@ -8,7 +8,7 @@ import app.wesplit.domain.model.group.Participant
 
 internal fun Expense.getInitialSplitOptions(extraParticipants: Collection<Participant> = emptySet()) =
     ExpenseDetailsViewModel.State.Data.SplitOptions(
-        selectedSplitType = if (shares.distinctBy { it.amount.value }.size == 1) SplitType.EQUAL else SplitType.SHARES,
+        selectedSplitType = if (shares.distinctBy { it.amount.value }.size == 1) SplitType.EQUAL else SplitType.AMOUNTS,
         splitValues =
             SplitType.entries.map {
                 it to
@@ -124,7 +124,6 @@ private fun calculateForSplitType(
         SplitType.AMOUNTS -> {
             when (splitType) {
                 SplitType.SHARES -> {
-                    val total = baseValue.values.sumOf { (it as Double) }
                     val sharePrice = baseValue.values.filter { (it as Double) != 0.0 }.minOfOrNull { it as Double } ?: 0.0
                     baseValue.mapValues { (it.value as Double) / sharePrice }
                 }

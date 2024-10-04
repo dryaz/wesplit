@@ -1,5 +1,6 @@
 package app.wesplit.expense
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,9 +33,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -73,6 +78,7 @@ import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
+import app.wesplit.filterDoubleInput
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -87,6 +93,7 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.create
 import split.composeapp.generated.resources.ic_down
+import split.composeapp.generated.resources.ic_flag
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_expense
 import split.composeapp.generated.resources.retry
@@ -186,9 +193,9 @@ private fun AddExpenseScreenView(
                 onClick = { deleteDialogShown = true },
                 modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
                 colors =
-                ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
             ) {
                 Text("Delete expense")
             }
@@ -238,9 +245,9 @@ private fun SharesDetails(
 ) {
     Card(
         colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         SharesDetailsHeader(data)
@@ -254,13 +261,13 @@ fun SharesDetailsParticipants(
     splitType: SplitType,
     onUpdated: (UpdateAction) -> Unit,
 ) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
+    val pagerState = rememberPagerState(pageCount = { 3 })
     var selectedTabIndex by remember {
         mutableIntStateOf(
             when (splitType) {
                 SplitType.EQUAL -> 0
                 SplitType.SHARES -> 1
-                SplitType.AMOUNTS -> TODO("Amounts not yet supported")
+                SplitType.AMOUNTS -> 2
             },
         )
     }
@@ -271,7 +278,8 @@ fun SharesDetailsParticipants(
             selectedTabIndex = selectedTabIndex,
         ) {
             Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text("Equal") })
-            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text("By Shares") })
+            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text("Shares") })
+            Tab(selected = selectedTabIndex == 2, onClick = { selectedTabIndex = 2 }, text = { Text("Amounts") })
         }
 
         HorizontalPager(
@@ -284,6 +292,7 @@ fun SharesDetailsParticipants(
                 when (index) {
                     0 -> SharesDetailsParticipantList(data, SplitType.EQUAL, onUpdated)
                     1 -> SharesDetailsParticipantList(data, SplitType.SHARES, onUpdated)
+                    2 -> SharesDetailsParticipantList(data, SplitType.AMOUNTS, onUpdated)
                 }
             }
         }
@@ -308,119 +317,185 @@ private fun SharesDetailsParticipantList(
 ) {
     data.allParticipants().forEach { participant ->
         when (splitType) {
-            SplitType.EQUAL -> {
-                val isParticipating = data.splitOptions.splitValues[splitType]!![participant] as Boolean
-                ParticipantListItem(
-                    participant = participant,
-                    onClick = { item ->
-                        onUpdated(
-                            UpdateAction.Split.Equal(
-                                participant = item,
-                                value = !isParticipating,
-                            ),
-                        )
-                    },
-                    action = {
-                        Checkbox(
-                            checked = isParticipating,
-                            onCheckedChange = { isChecked ->
-                                onUpdated(
-                                    UpdateAction.Split.Equal(
-                                        participant = participant,
-                                        value = isChecked,
-                                    ),
-                                )
-                            },
-                        )
-                    },
-                    subComposable = {
-                        Text(
-                            text =
-                            data.expense.shares.find { it.participant.id == participant.id }?.let {
-                                it.amount.format()
-                            } ?: "Not participating",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    },
-                )
-            }
+            SplitType.EQUAL -> EqualSplit(data, splitType, participant, onUpdated)
 
-            SplitType.SHARES -> {
-                ParticipantListItem(
-                    participant = participant,
-                    action = {
-                        val focusRequester = remember { FocusRequester() }
-                        var fieldValue by remember(data.splitOptions) {
-                            val splitValue = (data.splitOptions.splitValues[splitType]!![participant] ?: 0.0).toString()
-                            val strValue = if (splitValue.endsWith(".0")) splitValue.dropLast(2) else splitValue
-                            mutableStateOf(
-                                TextFieldValue(
-                                    text = strValue,
-                                    selection = TextRange(strValue.length),
-                                ),
-                            )
-                        }
-                        TextField(
-                            modifier =
-                            Modifier.width(74.dp).focusRequester(focusRequester)
-                                .onFocusChanged { focusState ->
-                                    if (focusState.isFocused) {
-                                        fieldValue =
-                                            fieldValue.copy(
-                                                selection = TextRange(0, fieldValue.text.length),
-                                            )
-                                    } else {
-                                        fieldValue =
-                                            fieldValue.copy(
-                                                selection = TextRange(fieldValue.text.length, fieldValue.text.length),
-                                            )
-                                    }
-                                },
-                            singleLine = true,
-                            value = fieldValue,
-                            keyboardOptions =
-                            KeyboardOptions(
-                                keyboardType = KeyboardType.Decimal,
-                            ),
-                            onValueChange = { newValue ->
-                                val newFilteredValue = newValue.text.replace(',', '.').filter { it.isDigit() || it == '.' }
-                                val isEndingWithDot = newFilteredValue.endsWith(".")
-                                var needUpdate = false
+            SplitType.SHARES ->
+                AmountsSplit(participant, data, splitType) { person, value ->
+                    onUpdated(
+                        UpdateAction.Split.Share(
+                            participant = person,
+                            value = value,
+                        ),
+                    )
+                }
 
-                                if (!isEndingWithDot) {
-                                    needUpdate = true
-                                }
-                                fieldValue = newValue.copy(text = newFilteredValue)
-
-                                if (needUpdate) {
-                                    val doubleValue = newFilteredValue.toDoubleOrNull() ?: 0.0
-                                    onUpdated(
-                                        UpdateAction.Split.Share(
-                                            participant = participant,
-                                            value = doubleValue,
-                                        ),
-                                    )
-                                }
-                            },
-                        )
-                    },
-                    subComposable = {
-                        Text(
-                            text =
-                            data.expense.shares.find { it.participant.id == participant.id }?.let {
-                                it.amount.format()
-                            } ?: "Not participating",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline,
-                        )
-                    },
-                )
-            }
-
-            SplitType.AMOUNTS -> TODO("Amount not supported yet")
+            SplitType.AMOUNTS ->
+                AmountsSplit(participant, data, splitType) { person, value ->
+                    onUpdated(
+                        UpdateAction.Split.Amount(
+                            participant = person,
+                            value = value,
+                        ),
+                    )
+                }
         }
     }
+
+    with(data.expense.undistributedAmount) {
+        val undist = this
+        AnimatedVisibility(visible = undist != null && undist.value != 0.0) {
+            ListItem(
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    ),
+                headlineContent = {
+                    Text(
+                        text = "Undistributed",
+                    )
+                },
+                leadingContent = {
+                    Icon(
+                        modifier = Modifier.width(56.dp),
+                        painter = painterResource(Res.drawable.ic_flag),
+                        contentDescription = "Undistributed",
+                    )
+                },
+                trailingContent = {
+                    undist?.let { amount ->
+                        FilterChip(
+                            selected = false,
+                            onClick = {},
+                            enabled = false,
+                            label = { Text(amount.format()) },
+                            colors =
+                                FilterChipDefaults.filterChipColors(
+                                    disabledContainerColor = MaterialTheme.colorScheme.error,
+                                    disabledLabelColor = MaterialTheme.colorScheme.onError,
+                                ),
+                        )
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun AmountsSplit(
+    participant: Participant,
+    data: ExpenseDetailsViewModel.State.Data,
+    splitType: SplitType,
+    onUpdated: (Participant, Double) -> Unit,
+) {
+    ParticipantListItem(
+        participant = participant,
+        action = {
+            val focusRequester = remember { FocusRequester() }
+            var fieldValue by remember(data.splitOptions) {
+                val splitValue = (data.splitOptions.splitValues[splitType]!![participant] ?: 0.0).toString()
+                val strValue = if (splitValue.endsWith(".0")) splitValue.dropLast(2) else splitValue
+                mutableStateOf(
+                    TextFieldValue(
+                        text = strValue,
+                        selection = TextRange(strValue.length),
+                    ),
+                )
+            }
+            TextField(
+                modifier =
+                    Modifier.width(90.dp).focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            if (focusState.isFocused) {
+                                fieldValue =
+                                    fieldValue.copy(
+                                        selection = TextRange(0, fieldValue.text.length),
+                                    )
+                            } else {
+                                fieldValue =
+                                    fieldValue.copy(
+                                        selection = TextRange(fieldValue.text.length, fieldValue.text.length),
+                                    )
+                            }
+                        },
+                singleLine = true,
+                value = fieldValue,
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                    ),
+                onValueChange = { newValue ->
+                    val newFilteredValue = newValue.text.filterDoubleInput()
+                    val isEndingWithDot = newFilteredValue.endsWith(".")
+                    var needUpdate = false
+
+                    if (!isEndingWithDot) {
+                        needUpdate = true
+                    }
+                    fieldValue = newValue.copy(text = newFilteredValue)
+
+                    if (needUpdate) {
+                        val doubleValue = newFilteredValue.toDoubleOrNull() ?: 0.0
+                        onUpdated(participant, doubleValue)
+                    }
+                },
+            )
+        },
+        subComposable = {
+            Text(
+                text =
+                    data.expense.shares.find { it.participant.id == participant.id }?.let {
+                        it.amount.format()
+                    } ?: "Not participating",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        },
+    )
+}
+
+@Composable
+private fun EqualSplit(
+    data: ExpenseDetailsViewModel.State.Data,
+    splitType: SplitType,
+    participant: Participant,
+    onUpdated: (UpdateAction) -> Unit,
+) {
+    val isParticipating = data.splitOptions.splitValues[splitType]!![participant] as Boolean
+    ParticipantListItem(
+        participant = participant,
+        onClick = { item ->
+            onUpdated(
+                UpdateAction.Split.Equal(
+                    participant = item,
+                    value = !isParticipating,
+                ),
+            )
+        },
+        action = {
+            Checkbox(
+                checked = isParticipating,
+                onCheckedChange = { isChecked ->
+                    onUpdated(
+                        UpdateAction.Split.Equal(
+                            participant = participant,
+                            value = isChecked,
+                        ),
+                    )
+                },
+            )
+        },
+        subComposable = {
+            Text(
+                text =
+                    data.expense.shares.find { it.participant.id == participant.id }?.let {
+                        it.amount.format()
+                    } ?: "Not participating",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        },
+    )
 }
 
 @Composable
@@ -454,17 +529,18 @@ private fun ExpenseDetails(
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showCurrencyPicker by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
 
     Card(
         colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 16.dp),
+            modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 16.dp).focusRequester(focusRequester),
             singleLine = true,
             value = data.expense.title,
             isError = data.expense.title.isNullOrBlank(),
@@ -525,9 +601,9 @@ private fun ExpenseDetails(
                 singleLine = true,
                 value = amount,
                 keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                ),
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                    ),
                 isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
                 onValueChange = { value ->
                     if (value.isNullOrBlank()) {
@@ -618,6 +694,10 @@ private fun ExpenseDetails(
             )
         }
     }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 }
 
 @Composable
@@ -645,15 +725,15 @@ private fun TopAppBareByState(
         actions = {
             Box(
                 modifier =
-                Modifier.fillMaxHeight(1f).clickable {
-                    when (state) {
-                        is ExpenseDetailsViewModel.State.Error -> {}
+                    Modifier.fillMaxHeight(1f).clickable {
+                        when (state) {
+                            is ExpenseDetailsViewModel.State.Error -> {}
 
-                        is ExpenseDetailsViewModel.State.Data -> if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
+                            is ExpenseDetailsViewModel.State.Data -> if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
 
-                        ExpenseDetailsViewModel.State.Loading -> {}
-                    }
-                }.padding(horizontal = 16.dp),
+                            ExpenseDetailsViewModel.State.Loading -> {}
+                        }
+                    }.padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 when (state) {

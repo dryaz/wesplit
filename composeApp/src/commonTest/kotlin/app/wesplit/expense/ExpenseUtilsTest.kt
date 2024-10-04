@@ -60,7 +60,7 @@ class ExpenseUtilsTest {
             )
 
         val options = expense.getInitialSplitOptions()
-        options.selectedSplitType shouldBe SplitType.SHARES
+        options.selectedSplitType shouldBe SplitType.AMOUNTS
         with(options.splitValues[SplitType.EQUAL]!!) {
             size shouldBe 2
             this[u1] shouldBe true
@@ -92,7 +92,7 @@ class ExpenseUtilsTest {
                     ),
             )
 
-        val options = expense.getInitialSplitOptions().update(UpdateAction.TotalAmount(150.0))
+        val options = expense.getInitialSplitOptions().update(UpdateAction.TotalAmount(150.0, "USD"))
         with(options.splitValues[SplitType.EQUAL]!!) {
             size shouldBe 2
             this[u1] shouldBe true
@@ -301,7 +301,7 @@ class ExpenseUtilsTest {
             )
 
         val options = expense.getInitialSplitOptions(listOf(u3))
-        options.selectedSplitType shouldBe SplitType.SHARES
+        options.selectedSplitType shouldBe SplitType.AMOUNTS
         with(options.splitValues[SplitType.EQUAL]!!) {
             size shouldBe 3
             this[u1] shouldBe true

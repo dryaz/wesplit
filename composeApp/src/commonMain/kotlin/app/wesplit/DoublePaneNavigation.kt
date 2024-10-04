@@ -87,8 +87,8 @@ fun DoublePaneNavigation(
     if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact) {
         Row(
             modifier =
-            Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding()
-                .imePadding().navigationBarsPadding(),
+                Modifier.fillMaxSize(1f).background(MaterialTheme.colorScheme.surfaceContainerHighest).displayCutoutPadding()
+                    .imePadding().navigationBarsPadding(),
         ) {
             // TODO: https://m3.material.io/ has navigation rail only on expanded but even not medium
             NavigationRail(
@@ -119,12 +119,12 @@ fun DoublePaneNavigation(
                     NavigationRailItem(icon = {
                         Icon(
                             painter =
-                            painterResource(
-                                when (localTheme.theme) {
-                                    Theme.Cupertino -> Res.drawable.ic_web
-                                    Theme.Material3 -> Res.drawable.ic_android
-                                },
-                            ),
+                                painterResource(
+                                    when (localTheme.theme) {
+                                        Theme.Cupertino -> Res.drawable.ic_web
+                                        Theme.Material3 -> Res.drawable.ic_android
+                                    },
+                                ),
                             contentDescription = stringResource(Res.string.change_theme),
                         )
                     }, selected = false, onClick = {
@@ -176,13 +176,13 @@ fun DoublePaneNavigation(
                 NavigationRailItem(icon = {
                     Icon(
                         painter =
-                        painterResource(
-                            when (localTheme.colorMode) {
-                                ColorMode.LIGHT -> Res.drawable.ic_light
-                                ColorMode.DARK -> Res.drawable.ic_dark
-                                ColorMode.SYSTEM -> Res.drawable.ic_system
-                            },
-                        ),
+                            painterResource(
+                                when (localTheme.colorMode) {
+                                    ColorMode.LIGHT -> Res.drawable.ic_light
+                                    ColorMode.DARK -> Res.drawable.ic_dark
+                                    ColorMode.SYSTEM -> Res.drawable.ic_system
+                                },
+                            ),
                         contentDescription = stringResource(Res.string.change_color_mode),
                     )
                 }, label = {
@@ -208,8 +208,8 @@ fun DoublePaneNavigation(
             }
             Row(
                 modifier =
-                Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(16.dp)
-                    .clip(RoundedCornerShape(20.dp)),
+                    Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(16.dp)
+                        .clip(RoundedCornerShape(20.dp)),
             ) {
                 val width = if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact) 220.dp else 320.dp
                 firstNavhost(Modifier.width(width).fillMaxHeight(1f))

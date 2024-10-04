@@ -186,8 +186,8 @@ private fun AccountInfo(
                 color = MaterialTheme.colorScheme.outline,
             )
         }
-        if (windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
-            && currentPlatform != KotlinPlatform.Ios
+        if (windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact &&
+            currentPlatform != KotlinPlatform.Ios
         ) {
             UnderConstruction()
         } else {
@@ -196,17 +196,17 @@ private fun AccountInfo(
         val uriHandler = LocalUriHandler.current
         ListItem(
             modifier =
-            Modifier.clickable {
-                if (shareDelegate.supportPlatformSharing()) {
-                    shareDelegate.open(ShareData.Link("https://wesplit.app/privacypolicy/"))
-                } else {
-                    uriHandler.openUri("https://wesplit.app/privacypolicy/")
-                }
-            },
+                Modifier.clickable {
+                    if (shareDelegate.supportPlatformSharing()) {
+                        shareDelegate.open(ShareData.Link("https://wesplit.app/privacypolicy/"))
+                    } else {
+                        uriHandler.openUri("https://wesplit.app/privacypolicy/")
+                    }
+                },
             colors =
-            ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                ),
             trailingContent = {
                 Icon(
                     AdaptiveIcons.Outlined.KeyboardArrowRight,
@@ -224,17 +224,17 @@ private fun AccountInfo(
 
         ListItem(
             modifier =
-            Modifier.clickable {
-                if (shareDelegate.supportPlatformSharing()) {
-                    shareDelegate.open(ShareData.Link("https://wesplit.app/terms/"))
-                } else {
-                    uriHandler.openUri("https://wesplit.app/terms/")
-                }
-            },
+                Modifier.clickable {
+                    if (shareDelegate.supportPlatformSharing()) {
+                        shareDelegate.open(ShareData.Link("https://wesplit.app/terms/"))
+                    } else {
+                        uriHandler.openUri("https://wesplit.app/terms/")
+                    }
+                },
             colors =
-            ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                ),
             trailingContent = {
                 Icon(
                     AdaptiveIcons.Outlined.KeyboardArrowRight,
@@ -254,10 +254,10 @@ private fun AccountInfo(
             ListItem(
                 modifier = Modifier.weight(1f).clickable { deleteDialogShown = true },
                 colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    headlineColor = MaterialTheme.colorScheme.error,
-                ),
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        headlineColor = MaterialTheme.colorScheme.error,
+                    ),
                 headlineContent = {
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),
@@ -270,10 +270,10 @@ private fun AccountInfo(
             ListItem(
                 modifier = Modifier.weight(1f).clickable { onAction(ProfileAction.Logout) },
                 colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    headlineColor = MaterialTheme.colorScheme.error,
-                ),
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        headlineColor = MaterialTheme.colorScheme.error,
+                    ),
                 headlineContent = {
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),
