@@ -186,9 +186,9 @@ private fun AddExpenseScreenView(
                 onClick = { deleteDialogShown = true },
                 modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
                 colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error,
-                    ),
+                ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
+                ),
             ) {
                 Text("Delete expense")
             }
@@ -238,9 +238,9 @@ private fun SharesDetails(
 ) {
     Card(
         colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            ),
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        ),
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         SharesDetailsHeader(data)
@@ -336,9 +336,9 @@ private fun SharesDetailsParticipantList(
                     subComposable = {
                         Text(
                             text =
-                                data.expense.shares.find { it.participant.id == participant.id }?.let {
-                                    it.amount.format()
-                                } ?: "Not participating",
+                            data.expense.shares.find { it.participant.id == participant.id }?.let {
+                                it.amount.format()
+                            } ?: "Not participating",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline,
                         )
@@ -363,47 +363,38 @@ private fun SharesDetailsParticipantList(
                         }
                         TextField(
                             modifier =
-                                Modifier.width(74.dp).focusRequester(focusRequester)
-                                    .onFocusChanged { focusState ->
-                                        if (focusState.isFocused) {
-                                            fieldValue =
-                                                fieldValue.copy(
-                                                    selection = TextRange(0, fieldValue.text.length),
-                                                )
-                                        } else {
-                                            fieldValue =
-                                                fieldValue.copy(
-                                                    selection = TextRange(fieldValue.text.length, fieldValue.text.length),
-                                                )
-                                        }
-                                    },
+                            Modifier.width(74.dp).focusRequester(focusRequester)
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        fieldValue =
+                                            fieldValue.copy(
+                                                selection = TextRange(0, fieldValue.text.length),
+                                            )
+                                    } else {
+                                        fieldValue =
+                                            fieldValue.copy(
+                                                selection = TextRange(fieldValue.text.length, fieldValue.text.length),
+                                            )
+                                    }
+                                },
                             singleLine = true,
                             value = fieldValue,
                             keyboardOptions =
-                                KeyboardOptions(
-                                    keyboardType = KeyboardType.Decimal,
-                                ),
+                            KeyboardOptions(
+                                keyboardType = KeyboardType.Decimal,
+                            ),
                             onValueChange = { newValue ->
-                                val isDeleting = newValue.text.length < fieldValue.text.length
-                                val isEndingWithDot = newValue.text.endsWith(".")
+                                val newFilteredValue = newValue.text.replace(',', '.').filter { it.isDigit() || it == '.' }
+                                val isEndingWithDot = newFilteredValue.endsWith(".")
                                 var needUpdate = false
 
-                                if (isDeleting && isEndingWithDot) {
-                                    fieldValue =
-                                        TextFieldValue(
-                                            newValue.text.dropLast(1),
-                                            selection = TextRange(newValue.text.length - 1),
-                                        )
+                                if (!isEndingWithDot) {
                                     needUpdate = true
-                                } else if (!isEndingWithDot) {
-                                    needUpdate = true
-                                    fieldValue = newValue
-                                } else {
-                                    fieldValue = newValue
                                 }
+                                fieldValue = newValue.copy(text = newFilteredValue)
 
                                 if (needUpdate) {
-                                    val doubleValue = newValue.text.toDoubleOrNull() ?: 0.0
+                                    val doubleValue = newFilteredValue.toDoubleOrNull() ?: 0.0
                                     onUpdated(
                                         UpdateAction.Split.Share(
                                             participant = participant,
@@ -417,9 +408,9 @@ private fun SharesDetailsParticipantList(
                     subComposable = {
                         Text(
                             text =
-                                data.expense.shares.find { it.participant.id == participant.id }?.let {
-                                    it.amount.format()
-                                } ?: "Not participating",
+                            data.expense.shares.find { it.participant.id == participant.id }?.let {
+                                it.amount.format()
+                            } ?: "Not participating",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline,
                         )
@@ -466,9 +457,9 @@ private fun ExpenseDetails(
 
     Card(
         colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            ),
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        ),
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -534,9 +525,9 @@ private fun ExpenseDetails(
                 singleLine = true,
                 value = amount,
                 keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Decimal,
-                    ),
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal,
+                ),
                 isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
                 onValueChange = { value ->
                     if (value.isNullOrBlank()) {
@@ -654,15 +645,15 @@ private fun TopAppBareByState(
         actions = {
             Box(
                 modifier =
-                    Modifier.fillMaxHeight(1f).clickable {
-                        when (state) {
-                            is ExpenseDetailsViewModel.State.Error -> {}
+                Modifier.fillMaxHeight(1f).clickable {
+                    when (state) {
+                        is ExpenseDetailsViewModel.State.Error -> {}
 
-                            is ExpenseDetailsViewModel.State.Data -> if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
+                        is ExpenseDetailsViewModel.State.Data -> if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
 
-                            ExpenseDetailsViewModel.State.Loading -> {}
-                        }
-                    }.padding(horizontal = 16.dp),
+                        ExpenseDetailsViewModel.State.Loading -> {}
+                    }
+                }.padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 when (state) {
