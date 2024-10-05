@@ -118,6 +118,8 @@ kotlin {
                 implementation(libs.kotlinx.io)
 
                 implementation(libs.firebase.common.auth)
+                implementation(libs.firebase.common.perf)
+                implementation(libs.firebase.common.installations)
                 implementation(libs.firebase.common.analytics)
                 implementation(libs.firebase.common.firestore)
                 implementation(libs.firebase.common.functions)

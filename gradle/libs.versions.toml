@@ -111,7 +111,9 @@ firebase-common-analytics = { module = "dev.gitlive:firebase-analytics", version
 firebase-common-functions = { module = "dev.gitlive:firebase-functions", version.ref = "firebase" }
 firebase-common-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebase" }
 firebase-common-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebase" }
+firebase-common-perf = { module = "dev.gitlive:firebase-perf", version.ref = "firebase" }
 firebase-common-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "firebase" }
+firebase-common-installations = { module = "dev.gitlive:firebase-installations", version.ref = "firebase" }
 
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
