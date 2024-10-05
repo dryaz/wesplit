@@ -66,6 +66,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -161,7 +163,7 @@ fun ExpenseDetailsScreen(
                     data = expenseState,
                 ) { action ->
                     viewModel.update(action)
-                    if (action == UpdateAction.Delete) {
+                    if (action == UpdateAction.Delete || action == UpdateAction.Commit) {
                         onAction(AddExpenseAction.Back)
                     }
                 }
@@ -544,6 +546,12 @@ private fun ExpenseDetails(
             singleLine = true,
             value = data.expense.title,
             isError = data.expense.title.isNullOrBlank(),
+            keyboardOptions =
+                KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Sentences,
+                ),
             supportingText = {
                 if (data.expense.title.isNullOrBlank()) Text("Title should be filled")
             },
@@ -602,6 +610,7 @@ private fun ExpenseDetails(
                 value = amount,
                 keyboardOptions =
                     KeyboardOptions(
+                        imeAction = ImeAction.Done,
                         keyboardType = KeyboardType.Decimal,
                     ),
                 isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
