@@ -1,5 +1,6 @@
 package app.wesplit.domain.model.user
 
+import app.wesplit.domain.model.group.Participant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -28,7 +29,15 @@ data class User(
     @SerialName("authIds")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val authIds: List<String> = emptyList(),
+    @SerialName("lastCur")
+    val lastUsedCurrency: String? = null,
 )
+
+fun User.participant(): Participant? =
+    Participant(
+        name = name,
+        user = this,
+    )
 
 fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email
 

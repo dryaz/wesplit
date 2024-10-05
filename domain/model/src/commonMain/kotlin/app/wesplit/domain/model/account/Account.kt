@@ -16,8 +16,8 @@ sealed interface Account {
     data object Restricted : Account
 
     data class Authorized(
-        val user: User,
         val authUser: FirebaseUser,
+        val user: User,
     ) : Account
 }
 

@@ -136,20 +136,21 @@ class ExpenseDetailsViewModel(
                         shortcutDelegate.push(ShortcutAction.NewExpense(group))
                     }
 
+                    val currencyCode = currencyFlow.value.lru.first()
                     val expense =
                         existingExpense ?: Expense(
                             id = null,
                             title = "",
                             payedBy = group.participants.find { it.isMe() } ?: group.participants.first(),
                             // TODO: Currency model/set not to have hardcoded USD, map to sybmol etc
-                            totalAmount = Amount(0.0, "USD"),
+                            totalAmount = Amount(0.0, currencyCode),
                             shares =
                                 group.participants.map { participant ->
                                     Share(
                                         participant = participant,
                                         // TODO: Currency should be first defined on the group level to have base currency for the group
                                         //  and in future implement FX. Meanwhile disable currency chooser on expense lvl.
-                                        amount = Amount(0.0, "USD"),
+                                        amount = Amount(0.0, currencyCode),
                                     )
                                 }.toSet(),
                             expenseType = ExpenseType.EXPENSE,

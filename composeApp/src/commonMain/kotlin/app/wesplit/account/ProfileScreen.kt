@@ -43,8 +43,8 @@ import app.wesplit.ShareDelegate
 import app.wesplit.currentPlatform
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.Login
-import app.wesplit.domain.model.account.participant
 import app.wesplit.domain.model.user.email
+import app.wesplit.domain.model.user.participant
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -159,7 +159,7 @@ private fun AccountInfo(
     onAccountDelete: () -> Unit,
 ) {
     var deleteDialogShown by remember { mutableStateOf(false) }
-    val participant = account.participant()
+    val participant = account.user.participant()
     val windowSizeClass = calculateWindowSizeClass()
     val shareDelegate: ShareDelegate = koinInject()
 

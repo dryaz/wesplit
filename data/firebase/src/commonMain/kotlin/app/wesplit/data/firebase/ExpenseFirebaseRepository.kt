@@ -4,6 +4,8 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.user.Setting
+import app.wesplit.domain.model.user.UserRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
@@ -26,6 +28,7 @@ private const val EXPENSE_SPLIT_TYPE_PARAM = "split_type"
 @Single
 class ExpenseFirebaseRepository(
     private val coroutineDispatcher: CoroutineDispatcher,
+    private val userRepository: UserRepository,
     private val analyticsManager: AnalyticsManager,
 ) : ExpenseRepository {
     // TODO: Check if firebase get local balances or maybe need to cache expenses by group id in order
@@ -71,6 +74,7 @@ class ExpenseFirebaseRepository(
         expense: Expense,
     ): Unit =
         withContext(coroutineDispatcher + NonCancellable) {
+            userRepository.update(Setting.Currency(expense.totalAmount.currencyCode))
             val expenseId = expense.id
             val eventName = if (expenseId != null) EXPENSE_UPDATE_EVENT else EXPENSE_CREATE_EVENT
 

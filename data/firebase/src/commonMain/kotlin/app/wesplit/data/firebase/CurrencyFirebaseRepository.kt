@@ -5,15 +5,18 @@ import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.currency.FxRates
 import app.wesplit.domain.model.currency.currencySymbols
+import app.wesplit.domain.model.user.UserRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
@@ -24,14 +27,26 @@ private const val FX_LATEST = "latest"
 @Single
 class CurrencyFirebaseRepository(
     private val analyticsManager: AnalyticsManager,
+    private val userRepository: UserRepository,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) : CurrencyRepository {
-    private val currencyCollection =
-        MutableStateFlow(
+    private val coroutinScope = CoroutineScope(coroutineDispatcher)
+
+    private val currencyCollection: StateFlow<CurrencyCodesCollection> =
+        userRepository.get().map { user ->
+            val lastUsed = user?.lastUsedCurrency
             CurrencyCodesCollection(
-                lru = listOf("USD", "EUR", "GBP", "CHF", "CAD"),
+                lru = (listOf(lastUsed) + listOf("USD", "EUR", "GBP", "CHF", "CAD").filter { it != lastUsed }).filterNotNull(),
                 all = currencySymbols.keys.toList(),
-            ),
+            )
+        }.stateIn(
+            scope = coroutinScope,
+            started = SharingStarted.Lazily,
+            initialValue =
+                CurrencyCodesCollection(
+                    lru = listOf("USD", "EUR", "GBP", "CHF", "CAD"),
+                    all = currencySymbols.keys.toList(),
+                ),
         )
 
     private val fxRates =
