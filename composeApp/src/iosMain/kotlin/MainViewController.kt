@@ -22,7 +22,7 @@ fun mainViewController(iosDiHelper: IosDiHelper): UIViewController {
                 single<AnalyticsManager> { IosAnalyticsManager() }
                 single<ShareDelegate> { iosDiHelper.shareDelegate }
                 single<DeepLinkHandler> { iosDiHelper.deepLinkHandler }
-                single<ShortcutDelegate> { ShortcutDelegateNotSupport }
+                single<ShortcutDelegate> { ShortcutIosDelegate() }
                 single<LoginIosNativeDelegate> { iosDiHelper.loginDelegate }
                 single<LoginDelegate> { LoginIosDelegate(get()) }
                 // TODO: Support contact list of iOS
