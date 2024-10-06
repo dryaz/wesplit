@@ -8,7 +8,6 @@ import app.wesplit.domain.model.user.ContactListDelegate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -30,7 +29,7 @@ class ParticipantPickerViewModel(
         viewModelScope.launch {
             searchText.debounce(150.milliseconds).flatMapLatest { query ->
                 groupRepository.getSuggestedParticipants(query).map { it to query }
-            }.collectLatest { data ->
+            }.collect { data ->
                 val query = data.second
                 val connections = data.first
                 val newParticipant = if (query.isNotBlank()) Participant(name = query) else null

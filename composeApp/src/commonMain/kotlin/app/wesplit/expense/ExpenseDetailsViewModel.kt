@@ -25,7 +25,6 @@ import dev.gitlive.firebase.firestore.fromMilliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
@@ -175,7 +174,7 @@ class ExpenseDetailsViewModel(
                     // TODO: Improve error handling, e.g. get reason and plot proper data
                     _state.update { State.Error(State.Error.Type.FETCH_ERROR) }
                 }
-                .collectLatest { state ->
+                .collect { state ->
                     _state.update { state }
                 }
         }

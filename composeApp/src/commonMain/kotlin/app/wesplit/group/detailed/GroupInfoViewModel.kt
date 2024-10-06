@@ -17,7 +17,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -111,7 +110,7 @@ class GroupInfoViewModel(
                         State.Error(State.Error.Type.FETCH_ERROR)
                     }
                 }
-                .collectLatest {
+                .collect {
                     _dataState.value = it
                 }
         }

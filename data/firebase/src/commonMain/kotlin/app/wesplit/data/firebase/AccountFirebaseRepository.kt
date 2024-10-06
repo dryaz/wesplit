@@ -44,7 +44,7 @@ class AccountFirebaseRepository(
             getAccount(user)
         }.stateIn(
             scope = coroutinScope,
-            started = SharingStarted.Lazily,
+            started = SharingStarted.Eagerly,
             initialValue = Account.Unknown,
         )
 

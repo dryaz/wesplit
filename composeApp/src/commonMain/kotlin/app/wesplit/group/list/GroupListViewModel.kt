@@ -12,7 +12,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
@@ -44,7 +43,7 @@ class GroupListViewModel(
                     analyticsManager.log(it)
                     _dataState.update { State.Empty }
                 }
-                .collectLatest { groups ->
+                .collect { groups ->
                     _dataState.update {
                         if (groups.isEmpty()) {
                             State.Empty

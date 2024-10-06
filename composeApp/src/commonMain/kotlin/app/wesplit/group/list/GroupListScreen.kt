@@ -181,17 +181,6 @@ private fun EmptyGroupList(
     ) {
         EmptyGroupAuthorized(modifier, onAction)
     }
-
-    AnimatedVisibility(
-        modifier = modifier.fillMaxSize(1f),
-        visible = accountState is Account.Unknown,
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-        ) {
-            CircularProgressIndicator()
-        }
-    }
 }
 
 @Composable

@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
@@ -121,7 +120,7 @@ class GroupSettingsViewModel(
                         // TODO: improve error handling
                         dataState.update { DataState.Error(DataState.Error.Type.FETCH_ERROR) }
                     }
-                    .collectLatest { groupResult ->
+                    .collect { groupResult ->
                         val exception = groupResult.exceptionOrNull()
                         exception?.let { analyticsManager.log(it) }
                         dataState.update {
