@@ -7,6 +7,8 @@ import app.wesplit.ShareDelegate
 import app.wesplit.ShortcutDelegate
 import app.wesplit.ShortcutDelegateNotSupport
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.AppReviewManager
+import app.wesplit.domain.model.NotSupportedAppReviewManager
 import app.wesplit.domain.model.account.LoginDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
@@ -51,6 +53,7 @@ fun main() {
                 module {
                     single<CoroutineDispatcher> { Dispatchers.Main }
                     single<LoginDelegate> { LoginJsDelegate() }
+                    single<AppReviewManager> { NotSupportedAppReviewManager }
                     single<ShareDelegate> { DefaultShareDelegate }
                     single<AnalyticsManager> { JsAnalyticsManager() }
                     single<ShortcutDelegate> { ShortcutDelegateNotSupport }

@@ -6,7 +6,12 @@ import androidx.lifecycle.viewModelScope
 import app.wesplit.ShortcutAction
 import app.wesplit.ShortcutDelegate
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.LogLevel
+import app.wesplit.domain.model.REVIEW_EVENT
+import app.wesplit.domain.model.REVIEW_SOURCE
+import app.wesplit.domain.model.REVIEW_TYPE
+import app.wesplit.domain.model.ReviewType
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
@@ -20,6 +25,8 @@ import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.routing.RightPane
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.get
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.fromMilliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +38,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
+
+private const val EXPENSE_COMMIT_COUNTER_KEY = "ex_com"
 
 sealed interface UpdateAction {
     // TODO: Update currency, FX feature and paywall - only for payed
@@ -65,6 +74,8 @@ class ExpenseDetailsViewModel(
     private val currencyRepository: CurrencyRepository,
     private val analyticsManager: AnalyticsManager,
     private val shortcutDelegate: ShortcutDelegate,
+    private val settings: Settings,
+    private val appReviewManager: AppReviewManager,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support add expense inside group
     private val groupId: String =
@@ -229,6 +240,18 @@ class ExpenseDetailsViewModel(
                 UpdateAction.Commit ->
                     (_state.value as? State.Data)?.expense?.let { exp ->
                         viewModelScope.launch {
+                            val commitedExpenses = settings.get<Int>(EXPENSE_COMMIT_COUNTER_KEY) ?: 0
+                            if ((commitedExpenses + 1) % 4 == 0) {
+                                appReviewManager.requestReview(ReviewType.IN_APP)
+                                analyticsManager.track(
+                                    REVIEW_EVENT,
+                                    mapOf(
+                                        REVIEW_SOURCE to "expense_create",
+                                        REVIEW_TYPE to ReviewType.IN_APP.name,
+                                    ),
+                                )
+                            }
+                            settings.putInt(EXPENSE_COMMIT_COUNTER_KEY, commitedExpenses + 1)
                             expenseRepository.commit(groupId, exp)
                         }
                         // TODO: should we check for success event from here to close the screen of Firebase could handle it properly

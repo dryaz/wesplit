@@ -5,6 +5,7 @@ import app.wesplit.ShareDelegate
 import app.wesplit.ShortcutDelegate
 import app.wesplit.ShortcutDelegateNotSupport
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.LoginDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
@@ -20,6 +21,7 @@ fun mainViewController(iosDiHelper: IosDiHelper): UIViewController {
             module {
                 single<CoroutineDispatcher> { Dispatchers.IO }
                 single<AnalyticsManager> { IosAnalyticsManager() }
+                single<AppReviewManager> { IosAppReviewManager() }
                 single<ShareDelegate> { iosDiHelper.shareDelegate }
                 single<DeepLinkHandler> { iosDiHelper.deepLinkHandler }
                 single<ShortcutDelegate> { ShortcutDelegateNotSupport }

@@ -67,6 +67,8 @@ kotlin {
                 implementation(libs.firebase.common.functions)
 
                 implementation(libs.kotlinx.datetime)
+
+                implementation(libs.multiplatform.settings)
             }
         }
     }

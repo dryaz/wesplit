@@ -32,6 +32,7 @@ import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.ExpenseRepository
@@ -50,6 +51,7 @@ import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
 import com.motorro.keeplink.deeplink.deepLink
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
@@ -571,6 +573,8 @@ fun RootNavigation(
                     val expenseRepository: ExpenseRepository = koinInject()
                     val shortcutDelegate: ShortcutDelegate = koinInject()
                     val currencyRepository: CurrencyRepository = koinInject()
+                    val settings: Settings = koinInject()
+                    val appReview: AppReviewManager = koinInject()
 
                     val groupId =
                         checkNotNull(
@@ -604,6 +608,8 @@ fun RootNavigation(
                                 currencyRepository,
                                 analyticsManager,
                                 shortcutDelegate,
+                                settings,
+                                appReview,
                             )
                         }
 

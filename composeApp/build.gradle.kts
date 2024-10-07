@@ -86,7 +86,7 @@ kotlin {
             implementation(libs.androidx.core.ktx)
             implementation(libs.androidx.core.google.shortcuts)
 
-//            implementation(libs.ktor.client.android)
+            implementation(libs.review.gplay)
         }
 
         commonMain {
@@ -129,6 +129,8 @@ kotlin {
 
                 implementation(libs.deeplink)
                 implementation(libs.kotlinx.datetime)
+
+                implementation(libs.multiplatform.settings)
             }
 
             desktopMain.dependencies {
@@ -142,6 +144,7 @@ kotlin {
             iosMain.dependencies {
 //                implementation(libs.ktor.client.darwin)
                 implementation(libs.firebase.common.crashlytics)
+                implementation(libs.review)
             }
 
 //            wasmJsMain.dependencies {

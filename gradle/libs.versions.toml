@@ -1,4 +1,6 @@
 [versions]
+inAppReview = "3.1.21"
+multiplatformSettings = "1.2.0"
 versionName = "1.5.0"
 android-versionCode = "30"
 
@@ -56,6 +58,9 @@ materialKolor = "1.7.0"
 androidx-core-google-shortcuts = { module = "androidx.core:core-google-shortcuts", version.ref = "coreGoogleShortcuts" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 deeplink = { module = "com.motorro.keeplink:deeplink", version.ref = "deeplink" }
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
+review = { module = "io.github.sergeimikhailovskii:in-app-review-kmp", version.ref = "inAppReview" }
+review-gplay = { module = "io.github.sergeimikhailovskii:in-app-review-kmp-google-play", version.ref = "inAppReview" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
