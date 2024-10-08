@@ -4,11 +4,13 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.expense.ExpenseStatus
 import app.wesplit.domain.model.user.Setting
 import app.wesplit.domain.model.user.UserRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
+import dev.gitlive.firebase.firestore.WriteBatch
 import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.NonCancellable
@@ -17,6 +19,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 
+private const val STATUS_FIELD = "status"
+
 private const val EXPENSE_COLLECTION = "expenses"
 private const val DATE_FIELD = "date"
 
@@ -24,6 +28,8 @@ private const val EXPENSE_CREATE_EVENT = "expense_create"
 private const val EXPENSE_UPDATE_EVENT = "expense_update"
 private const val EXPENSE_DELETE_EVENT = "expense_delete"
 private const val EXPENSE_SPLIT_TYPE_PARAM = "split_type"
+
+private const val SETTLED_COMPLETE = "settlment_completed"
 
 @Single
 class ExpenseFirebaseRepository(
@@ -74,8 +80,9 @@ class ExpenseFirebaseRepository(
         expense: Expense,
     ): Unit =
         withContext(coroutineDispatcher + NonCancellable) {
-            userRepository.update(Setting.Currency(expense.totalAmount.currencyCode))
-            val expenseId = expense.id
+            val newExpense = expense.copy(status = ExpenseStatus.NEW)
+            userRepository.update(Setting.Currency(newExpense.totalAmount.currencyCode))
+            val expenseId = newExpense.id
             val eventName = if (expenseId != null) EXPENSE_UPDATE_EVENT else EXPENSE_CREATE_EVENT
 
             analyticsManager.track(eventName)
@@ -91,7 +98,7 @@ class ExpenseFirebaseRepository(
                     ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).update(
                         strategy = Expense.serializer(),
                         // TODO: Point of improvement - send only changed values.
-                        data = expense,
+                        data = newExpense,
                     )
                 } else {
                     // TODO: Fire back and error to ui
@@ -100,7 +107,7 @@ class ExpenseFirebaseRepository(
             } else {
                 Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).collection(EXPENSE_COLLECTION).add(
                     strategy = Expense.serializer(),
-                    data = expense,
+                    data = newExpense,
                 )
             }
         }
@@ -118,6 +125,62 @@ class ExpenseFirebaseRepository(
                 ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).delete()
             } else {
                 analyticsManager.log("Try to delete expense with null ID", LogLevel.ERROR)
+            }
+        }
+    }
+
+    override suspend fun settle(groupId: String) {
+        // TODO: Stale balances here as well
+        withContext(coroutineDispatcher + NonCancellable) {
+            val firestore = Firebase.firestore
+            val expensesRef =
+                firestore
+                    .collection(GROUP_COLLECTION)
+                    .document(groupId)
+                    .collection(EXPENSE_COLLECTION)
+
+            // Use the 'where' method with field, operator, and value
+            val query =
+                expensesRef.where {
+                    (STATUS_FIELD equalTo null).or(STATUS_FIELD equalTo ExpenseStatus.NEW.name)
+                }
+
+            try {
+                val querySnapshot = query.get()
+                val documents = querySnapshot.documents
+
+                if (documents.isEmpty()) {
+                    analyticsManager.log("No expenses with status NEW to update", LogLevel.WARNING)
+                    return@withContext
+                }
+
+                // Prepare batches
+                val batches = mutableListOf<WriteBatch>()
+                var batch = firestore.batch()
+                var operationCount = 0
+
+                for ((index, document) in documents.withIndex()) {
+                    val expenseRef = document.reference
+                    batch.update(expenseRef, "status" to ExpenseStatus.SETTLED.name)
+                    operationCount++
+
+                    // Firestore allows a maximum of 500 operations per batch
+                    if (operationCount == 500 || index == documents.lastIndex) {
+                        analyticsManager.log("max batch of 500 reached", LogLevel.WARNING)
+                        batches.add(batch)
+                        batch = firestore.batch()
+                        operationCount = 0
+                    }
+                }
+
+                for ((batchIndex, batchToCommit) in batches.withIndex()) {
+                    batchToCommit.commit()
+                    analyticsManager.log("Batch ${batchIndex + 1} committed successfully.", LogLevel.DEBUG)
+                }
+
+                analyticsManager.track(SETTLED_COMPLETE)
+            } catch (e: Exception) {
+                analyticsManager.log(e)
             }
         }
     }

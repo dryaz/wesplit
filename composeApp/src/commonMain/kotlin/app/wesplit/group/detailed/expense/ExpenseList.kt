@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.Expense
+import app.wesplit.domain.model.expense.ExpenseStatus
 import app.wesplit.domain.model.expense.myAmount
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
@@ -286,6 +287,12 @@ private fun LentString(
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
         }
+    } else if (expense.status == ExpenseStatus.SETTLED) {
+        Text(
+            text = "Settled",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
     } else if (expense.myAmount(group).value == 0.0 && !expense.payedBy.isMe(group)) {
         Text(
             text = "You're not participating",

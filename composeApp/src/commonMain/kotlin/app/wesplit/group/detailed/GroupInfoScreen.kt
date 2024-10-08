@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,7 +79,7 @@ sealed interface GroupInfoAction {
     data class OpenExpenseDetails(val expense: Expense) : GroupInfoAction
 }
 
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun GroupInfoScreen(
     modifier: Modifier = Modifier,
@@ -272,7 +271,9 @@ private fun SplitView(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.TopCenter,
         ) {
-            BalanceList(balance)
+            BalanceList(balance) {
+                expenseViewModel.settleAll()
+            }
         }
     }
 }
@@ -311,7 +312,10 @@ private fun PaginationView(
                             }
                         }
 
-                    1 -> BalanceList(balance)
+                    1 ->
+                        BalanceList(balance) {
+                            expenseViewModel.settleAll()
+                        }
                 }
             }
         }

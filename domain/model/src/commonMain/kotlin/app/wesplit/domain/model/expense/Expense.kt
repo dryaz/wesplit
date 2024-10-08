@@ -35,6 +35,8 @@ data class Expense(
     val expenseType: ExpenseType,
     @SerialName("date")
     val date: BaseTimestamp = Timestamp.ServerTimestamp,
+    @SerialName("status")
+    val status: ExpenseStatus = ExpenseStatus.NEW,
     // TODO: Yet support only equal split in v1
 //    @SerialName("splitType")
 //    val splitType: SplitType = SplitType.EQUAL,

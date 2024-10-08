@@ -31,4 +31,6 @@ interface ExpenseRepository {
         groupId: String,
         expense: Expense,
     )
+
+    suspend fun settle(groupId: String)
 }

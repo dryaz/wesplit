@@ -10,6 +10,7 @@ import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -21,6 +22,8 @@ import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
 
 private const val PAGE_SIZE = 30
+
+private const val SETTLE_ALL_EVENT = "settle_all"
 
 class ExpenseSectionViewModel(
     private val groupId: String,
@@ -82,6 +85,15 @@ class ExpenseSectionViewModel(
     @FutureFeature
     fun loadNextPage() {
         TODO("Implement")
+    }
+
+    fun settleAll() {
+        analyticsManager.track(SETTLE_ALL_EVENT)
+        viewModelScope.launch {
+            with(NonCancellable) {
+                expenseRepository.settle(groupId)
+            }
+        }
     }
 
     sealed interface State {

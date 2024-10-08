@@ -1,14 +1,19 @@
 package app.wesplit.group.detailed.balance
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -20,21 +25,34 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.group.Balance
 import app.wesplit.participant.ParticipantListItem
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import org.jetbrains.compose.resources.painterResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_flag
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BalanceList(balance: Balance?) {
+fun BalanceList(
+    balance: Balance?,
+    onSettle: () -> Unit,
+) {
+    var settleDialogShown by remember { mutableStateOf(false) }
+
     if (balance != null) {
-        Box(
+        Column(
             modifier = Modifier.verticalScroll(rememberScrollState()),
         ) {
             Card(
@@ -88,10 +106,79 @@ fun BalanceList(balance: Balance?) {
                     HorizontalDivider()
                     Undistributed(balance)
                 }
+
+                AnimatedVisibility(
+                    modifier = Modifier.fillMaxWidth(1f),
+                    visible = balance.participantsBalance.any { it.amounts.any { it.value != 0.0 } },
+                ) {
+                    ListItem(
+                        modifier =
+                            Modifier.fillMaxWidth().clickable {
+                                settleDialogShown = true
+                            },
+                        colors =
+                            ListItemDefaults.colors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                headlineColor = MaterialTheme.colorScheme.onPrimary,
+                            ),
+                        headlineContent = {
+                            Text(
+                                modifier = Modifier.fillMaxSize(1f),
+                                text = "Settle balances",
+                                textAlign = TextAlign.Center,
+                            )
+                        },
+                    )
+                }
             }
         }
     } else {
         SettledBalances()
+    }
+
+    if (settleDialogShown) {
+        AlertDialog(
+            modifier = Modifier.widthIn(max = 450.dp),
+            onDismissRequest = { settleDialogShown = false },
+            title = { Text("Settle all balances?") },
+            text = {
+                Text(
+                    text = "Are you sure that you want to\n mark all current expenses as settled?",
+                    textAlign = TextAlign.Center,
+                )
+            },
+            icon = {
+                Icon(
+                    AdaptiveIcons.Outlined.Done,
+                    contentDescription = "Settled all expenses",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onSettle()
+                        settleDialogShown = false
+                    },
+                ) {
+                    Text(
+                        text = "Yes, Settle",
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        settleDialogShown = false
+                    },
+                ) {
+                    Text(
+                        text = "No, Wait",
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            },
+        )
     }
 }
 

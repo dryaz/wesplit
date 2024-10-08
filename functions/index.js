@@ -73,8 +73,12 @@ exports.recalculateBalances = functions.firestore
     // Initialize undistributed amounts map
     let undistributedMap = {};
 
+    // Query expenses where status == 'NEW' or status == null
+    const expensesQuery = groupRef.collection('expenses').where('status', '==', 'NEW');
+
     // Fetch all expenses in the group's expenses subcollection
-    const expensesSnapshot = await groupRef.collection('expenses').get();
+    const expensesSnapshot = await expensesQuery.get();
+
 
     // Iterate over each expense to update balances
     expensesSnapshot.forEach(expenseDoc => {
@@ -231,3 +235,30 @@ exports.updateCurrencyRates = functions.pubsub.schedule('0 0 * * *').timeZone('U
     console.error('Error in updateCurrencyRates function:', error);
   }
 });
+
+// Function to update expenses with null or missing status
+async function updateExpensesStatus(req, res) {
+  try {
+
+    // Proceed with updating expenses
+    const groupsSnapshot = await admin.firestore().collection('groups').get();
+
+    for (const groupDoc of groupsSnapshot.docs) {
+      const groupRef = groupDoc.ref;
+      const expensesSnapshot = await groupRef.collection('expenses').get();
+
+      for (const expenseDoc of expensesSnapshot.docs) {
+        await expenseDoc.ref.update({ status: 'NEW' });
+        console.log(`Updated expense ${expenseDoc.id} with status 'NEW'.`);
+      }
+    }
+
+    res.status(200).send('Expenses status updated successfully.');
+  } catch (error) {
+    console.error('Error updating expenses status:', error);
+    res.status(500).send('An error occurred while updating expenses status.');
+  }
+}
+
+// Export the function as an HTTPS function
+exports.updateExpensesStatus = functions.https.onRequest(updateExpensesStatus);
