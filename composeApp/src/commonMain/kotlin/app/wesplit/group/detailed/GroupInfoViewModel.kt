@@ -9,8 +9,10 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
+import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.domain.model.group.ParticipantBalance
 import app.wesplit.expense.ExpenseDetailsViewModel.State
 import app.wesplit.routing.RightPane
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -96,7 +98,28 @@ class GroupInfoViewModel(
                                         if (exception != null) {
                                             State.Error(State.Error.Type.FETCH_ERROR)
                                         } else {
-                                            State.GroupInfo(groupResult.getOrThrow())
+                                            val group = groupResult.getOrThrow()
+                                            val balance = group.balances ?: Balance()
+                                            val currentBalanceParticipants = balance.participantsBalance.map { it.participant }
+                                            val notReflectedParticipants = group.participants.filterNot { it in currentBalanceParticipants }
+                                            val processedGroup =
+                                                if (notReflectedParticipants.isEmpty()) {
+                                                    group
+                                                } else {
+                                                    group.copy(
+                                                        balances =
+                                                            balance.copy(
+                                                                participantsBalance =
+                                                                    balance.participantsBalance +
+                                                                        notReflectedParticipants.map { ppl ->
+                                                                            ParticipantBalance(
+                                                                                participant = ppl,
+                                                                            )
+                                                                        },
+                                                            ),
+                                                    )
+                                                }
+                                            State.GroupInfo(processedGroup)
                                         }
                                 }
                             }
