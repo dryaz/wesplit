@@ -222,6 +222,43 @@ class ExpenseUtilsTest {
     }
 
     @Test
+    fun update_zeros_to_amount() {
+        val u1 = Participant(name = "a")
+        val u2 = Participant(name = "b")
+        val u3 = Participant(name = "c")
+        val expense =
+            createExpense(
+                amount = 90.0,
+                shares =
+                    setOf(
+                        Share(u1, amount = Amount(10.0, CURRENCY)),
+                        Share(u2, amount = Amount(0.0, CURRENCY)),
+                        Share(u3, amount = Amount(0.0, CURRENCY)),
+                    ),
+            )
+
+        val options = expense.getInitialSplitOptions().update(UpdateAction.Split.Amount(u1, 0.0))
+        with(options.splitValues[SplitType.EQUAL]!!) {
+            size shouldBe 3
+            this[u1] shouldBe false
+            this[u2] shouldBe false
+            this[u3] shouldBe false
+        }
+        with(options.splitValues[SplitType.SHARES]!!) {
+            size shouldBe 3
+            this[u1] shouldBe 0.0
+            this[u2] shouldBe 0.0
+            this[u3] shouldBe 0.0
+        }
+        with(options.splitValues[SplitType.AMOUNTS]!!) {
+            size shouldBe 3
+            this[u1] shouldBe 0.0
+            this[u2] shouldBe 0.0
+            this[u3] shouldBe 0.0
+        }
+    }
+
+    @Test
     fun initial_equal_empty_shares_non_zero_value() {
         val u1 = Participant(name = "a")
         val u2 = Participant(name = "b")

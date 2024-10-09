@@ -125,10 +125,10 @@ private fun calculateForSplitType(
             when (splitType) {
                 SplitType.SHARES -> {
                     val sharePrice = baseValue.values.filter { (it as Double) != 0.0 }.minOfOrNull { it as Double } ?: 0.0
-                    baseValue.mapValues { (it.value as Double) / sharePrice }
+                    baseValue.mapValues { if (sharePrice == 0.0) 0.0 else (it.value as Double) / sharePrice }
                 }
 
-                SplitType.EQUAL -> baseValue.mapValues { true }
+                SplitType.EQUAL -> baseValue.mapValues { it.value != 0.0 }
                 SplitType.AMOUNTS -> throw IllegalStateException("Calculate for same split type: $splitType")
             }
         }
