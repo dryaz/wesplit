@@ -102,6 +102,7 @@ import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.select_payer_cd
 import split.composeapp.generated.resources.settings
+import kotlin.math.roundToInt
 
 sealed interface AddExpenseAction {
     data object Back : AddExpenseAction
@@ -395,8 +396,10 @@ private fun AmountsSplit(
         action = {
             val focusRequester = remember { FocusRequester() }
             var fieldValue by remember(data.splitOptions) {
-                val splitValue = (data.splitOptions.splitValues[splitType]!![participant] ?: 0.0).toString()
-                val strValue = if (splitValue.endsWith(".0")) splitValue.dropLast(2) else splitValue
+                val splitValue = (data.splitOptions.splitValues[splitType]!![participant] ?: 0.0) as Double
+                val roundedSplitValue = (splitValue * 100.0).roundToInt() / 100.0
+                val splitValueStr = roundedSplitValue.toString()
+                val strValue = if (splitValueStr.endsWith(".0")) splitValueStr.dropLast(2) else splitValueStr
                 mutableStateOf(
                     TextFieldValue(
                         text = strValue,
