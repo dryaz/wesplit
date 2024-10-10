@@ -56,6 +56,7 @@ fun main() {
                     single<AppReviewManager> { NotSupportedAppReviewManager }
                     single<ShareDelegate> { DefaultShareDelegate }
                     single<AnalyticsManager> { JsAnalyticsManager() }
+//                    single<AnalyticsManager> { DebugAnalyticsManager() }
                     single<ShortcutDelegate> { ShortcutDelegateNotSupport }
                     single<DeepLinkHandler> { deepLinkHandler }
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }

@@ -72,6 +72,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import app.wesplit.currency.CurrencyPicker
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.currency.format
@@ -91,6 +92,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.create
@@ -103,6 +105,11 @@ import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.select_payer_cd
 import split.composeapp.generated.resources.settings
 import kotlin.math.roundToInt
+
+private const val CHANGE_SPLIT_TYPE_EVENT = "exp_change_split_type"
+private const val CHANGE_SPLIT_TYPE_PARAM = "type"
+
+private const val COMMIT_INVALID = "try_commit_not_complete"
 
 sealed interface AddExpenseAction {
     data object Back : AddExpenseAction
@@ -120,10 +127,17 @@ fun ExpenseDetailsScreen(
     onAction: (AddExpenseAction) -> Unit,
 ) {
     val state = viewModel.state.collectAsState()
+    val analyticsManager: AnalyticsManager = koinInject()
 
     fun commit() {
-        viewModel.update(UpdateAction.Commit)
-        onAction(AddExpenseAction.Back)
+        (state.value as? ExpenseDetailsViewModel.State.Data)?.let {
+            if (it.isComplete) {
+                viewModel.update(UpdateAction.Commit)
+                onAction(AddExpenseAction.Back)
+            } else {
+                analyticsManager.track(COMMIT_INVALID)
+            }
+        }
     }
 
     Scaffold(
@@ -132,9 +146,7 @@ fun ExpenseDetailsScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    (state.value as? ExpenseDetailsViewModel.State.Data)?.let {
-                        if (it.isComplete) commit()
-                    }
+                    commit()
                     // TODO: Show error in case of it not yet ready?
                 },
             ) {
@@ -265,6 +277,7 @@ fun SharesDetailsParticipants(
     onUpdated: (UpdateAction) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { 3 })
+    val analyticsManager: AnalyticsManager = koinInject()
     var selectedTabIndex by remember {
         mutableIntStateOf(
             when (splitType) {
@@ -303,6 +316,21 @@ fun SharesDetailsParticipants(
 
     LaunchedEffect(key1 = selectedTabIndex) {
         pagerState.animateScrollToPage(selectedTabIndex)
+        val type =
+            when (selectedTabIndex) {
+                0 -> SplitType.EQUAL
+                1 -> SplitType.SHARES
+                2 -> SplitType.AMOUNTS
+                else -> null
+            }
+        type?.let {
+            analyticsManager.track(
+                CHANGE_SPLIT_TYPE_EVENT,
+                mapOf(
+                    CHANGE_SPLIT_TYPE_PARAM to type.name,
+                ),
+            )
+        }
     }
 
     LaunchedEffect(key1 = pagerState.currentPage, pagerState.isScrollInProgress) {
@@ -741,7 +769,7 @@ private fun TopAppBareByState(
                         when (state) {
                             is ExpenseDetailsViewModel.State.Error -> {}
 
-                            is ExpenseDetailsViewModel.State.Data -> if (state.isComplete) onToolbarAction(AddExpenseTollbarAction.Commit)
+                            is ExpenseDetailsViewModel.State.Data -> onToolbarAction(AddExpenseTollbarAction.Commit)
 
                             ExpenseDetailsViewModel.State.Loading -> {}
                         }

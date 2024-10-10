@@ -41,6 +41,12 @@ import org.koin.core.component.KoinComponent
 
 private const val EXPENSE_COMMIT_COUNTER_KEY = "ex_com"
 
+private const val UPDATE_TITLE_EVENT = "exp_update_title"
+private const val UPDATE_DATE_EVENT = "exp_update_date"
+private const val UPDATE_AMOUNT_EVENT = "exp_update_amount"
+private const val UPDATE_PAYER_EVENT = "exp_update_payer"
+private const val UPDATE_SHARES_EVENT = "exp_update_shares"
+
 sealed interface UpdateAction {
     // TODO: Update currency, FX feature and paywall - only for payed
     data class Title(val title: String) : UpdateAction
@@ -196,8 +202,12 @@ class ExpenseDetailsViewModel(
         currentData?.let { data ->
             val expense = data.expense
             when (action) {
-                is UpdateAction.Title -> _state.update { data.copy(expense = expense.copy(title = action.title)) }
-                is UpdateAction.Date ->
+                is UpdateAction.Title -> {
+                    analyticsManager.track(UPDATE_TITLE_EVENT)
+                    _state.update { data.copy(expense = expense.copy(title = action.title)) }
+                }
+                is UpdateAction.Date -> {
+                    analyticsManager.track(UPDATE_DATE_EVENT)
                     _state.update {
                         data.copy(
                             expense =
@@ -206,8 +216,10 @@ class ExpenseDetailsViewModel(
                                 ),
                         )
                     }
+                }
 
-                is UpdateAction.TotalAmount ->
+                is UpdateAction.TotalAmount -> {
+                    analyticsManager.track(UPDATE_AMOUNT_EVENT)
                     _state.update {
                         val newSplitOptions = data.splitOptions.update(action)
 
@@ -219,8 +231,10 @@ class ExpenseDetailsViewModel(
                             splitOptions = newSplitOptions,
                         )
                     }
+                }
 
-                is UpdateAction.Split ->
+                is UpdateAction.Split -> {
+                    analyticsManager.track(UPDATE_SHARES_EVENT)
                     _state.update {
                         val newSplitOptions = data.splitOptions.update(action)
 
@@ -229,6 +243,7 @@ class ExpenseDetailsViewModel(
                             splitOptions = newSplitOptions,
                         )
                     }
+                }
 
                 UpdateAction.Delete ->
                     (_state.value as? State.Data)?.expense?.let { exp ->
@@ -258,7 +273,10 @@ class ExpenseDetailsViewModel(
                         //  saving first in local and only then pushing to remote?
                     }
 
-                is UpdateAction.NewPayer -> _state.update { data.copy(expense = expense.copy(payedBy = action.participant)) }
+                is UpdateAction.NewPayer -> {
+                    analyticsManager.track(UPDATE_PAYER_EVENT)
+                    _state.update { data.copy(expense = expense.copy(payedBy = action.participant)) }
+                }
             }
         } ?: {
             // TODO: Show error on UI

@@ -63,6 +63,8 @@ import split.composeapp.generated.resources.ic_group
 import split.composeapp.generated.resources.ic_profile
 import split.composeapp.generated.resources.profile
 
+private const val SHARE_EVENT = "share"
+
 private const val SCREEN_VIEW = "screen_view"
 private const val SCREEN_NAME = "screen_name"
 private const val SCREEN_CLASS = "screen_class"
@@ -419,6 +421,7 @@ fun RootNavigation(
                         when (action) {
                             GroupInfoAction.Back -> secondPaneNavController.navigateUp()
                             is GroupInfoAction.Share -> {
+                                analyticsManager.track(SHARE_EVENT)
                                 val detailsAction =
                                     DeeplinkAction.Group.Details(
                                         groupId = action.group.id,
