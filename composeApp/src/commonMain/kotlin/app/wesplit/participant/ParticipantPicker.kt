@@ -2,6 +2,7 @@ package app.wesplit.participant
 
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,6 +30,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,17 +41,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.ContactListDelegate
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AccountBox
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -97,7 +104,7 @@ internal fun ParticipantPicker(
         )
 
     ModalBottomSheet(
-        modifier = Modifier,
+        modifier = Modifier.systemBarsPadding(),
         sheetState = sheetState,
         onDismissRequest = { onPickerClose() },
     ) {
@@ -138,7 +145,11 @@ internal fun ParticipantPicker(
                     LazyColumn(
                         state = lazyColumnListState,
                     ) {
-                        newParticipantItem(state, currentParticipants, participantClickHandler)
+                        newParticipantItem(state, currentParticipants) {
+                            participantClickHandler(it)
+                            viewModel.searchText.update { "" }
+                        }
+                        currentParticipants(currentParticipants, participantClickHandler)
                         currentConnectionsItem(state, currentParticipants, participantClickHandler)
                         contatctItem(state, currentParticipants, participantClickHandler)
                         item { Spacer(modifier = Modifier.navigationBarsPadding()) }
@@ -204,10 +215,30 @@ private fun LazyListScope.contatctItem(
                 }
             }
         } else if (state.contacts is ContactListDelegate.State.Contacts) {
-            items(items = state.contacts.data, key = { (it.user?.name ?: "") + it.name }) { participant ->
+            items(items = state.contacts.data, key = { it.id }) { participant ->
                 ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
                 HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
             }
+        }
+    }
+}
+
+private fun LazyListScope.currentParticipants(
+    currentParticipants: Set<Participant>,
+    onParticipantClick: (Participant) -> Unit,
+) {
+    if (currentParticipants.isNotEmpty()) {
+        item {
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+                text = "Current group participants",
+                style = MaterialTheme.typography.titleSmall,
+            )
+        }
+
+        items(items = currentParticipants.toList(), key = { it.id }) { participant ->
+            ParticipantPickerItem(participant, currentParticipants, onParticipantClick, AdaptiveIcons.Outlined.Delete)
+            HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
         }
     }
 }
@@ -226,7 +257,7 @@ private fun LazyListScope.currentConnectionsItem(
             )
         }
 
-        items(items = state.connections, key = { (it.user?.id ?: "") + it.name }) { participant ->
+        items(items = state.connections, key = { it.id }) { participant ->
             ParticipantPickerItem(participant, currentParticipants, onParticipantClick)
             HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
         }
@@ -248,7 +279,7 @@ private fun LazyListScope.newParticipantItem(
             ParticipantPickerItem(state.newParticipant, currentParticipants, onParticipantClick)
         } else {
             Row(
-                modifier = Modifier.fillMaxHeight(1f).padding(horizontal = 16.dp, vertical = 8.dp).padding(top = 16.dp),
+                modifier = Modifier.fillMaxHeight(1f).padding(horizontal = 16.dp, vertical = 24.dp).padding(start = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
@@ -272,20 +303,23 @@ private fun ParticipantPickerItem(
     participant: Participant,
     currentParticipants: Set<Participant>,
     onParticipantClick: (Participant) -> Unit,
+    inGroupIcon: ImageVector = AdaptiveIcons.Outlined.Done,
 ) {
+    val clickHandler: ((Participant) -> Unit)? = if (participant.isMe()) null else onParticipantClick
     ParticipantListItem(
+        modifier = if (participant.isMe()) Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh) else Modifier,
         participant = participant,
         action = {
-            if (participant in currentParticipants) {
+            if (participant in currentParticipants && !participant.isMe()) {
                 Icon(
-                    AdaptiveIcons.Outlined.Done,
+                    modifier = Modifier.minimumInteractiveComponentSize(),
+                    imageVector = inGroupIcon,
                     contentDescription = stringResource(Res.string.user_already_in_group),
                 )
             } else {
                 Unit
             }
         },
-    ) {
-        onParticipantClick(it)
-    }
+        onClick = clickHandler,
+    )
 }

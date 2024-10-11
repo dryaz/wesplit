@@ -300,17 +300,25 @@ private fun GroupSettingsView(
     }
 
     AnimatedVisibility(visible = userSelectorVisibility) {
+        val callback: (Participant) -> Unit =
+            remember(group.participants) {
+                { user ->
+                    val newParticipants =
+                        if (user in group.participants) {
+                            group.participants - user
+                        } else {
+                            group.participants + user
+                        }
+                    println(newParticipants)
+                    onUpdated(group.copy(participants = newParticipants))
+                }
+            }
         ParticipantPicker(
             currentParticipants = group.participants,
             isFullScreen = true,
             onPickerClose = { userSelectorVisibility = false },
-        ) { user ->
-            if (user in group.participants) {
-                onUpdated(group.copy(participants = group.participants - user))
-            } else {
-                onUpdated(group.copy(participants = group.participants + user))
-            }
-        }
+            onParticipantClick = callback,
+        )
     }
 
     if (leaveDialogShown) {

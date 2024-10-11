@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
                     single<CoroutineDispatcher> { Dispatchers.IO }
                     single<AppReviewManager> { AndroidAppReviewManager(get()) }
                     single<AnalyticsManager> { AndroidAnalyticsManager() }
+//                    single<AnalyticsManager> { DebugAnalyticsManager() }
                     single<ShareDelegate> { AndroidShareDelegate(get(), get()) }
                     single<DeepLinkHandler> { deepLinkHandler }
                     // TODO: Support user's contacts
