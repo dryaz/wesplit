@@ -12,6 +12,8 @@ import app.wesplit.domain.model.REVIEW_EVENT
 import app.wesplit.domain.model.REVIEW_SOURCE
 import app.wesplit.domain.model.REVIEW_TYPE
 import app.wesplit.domain.model.ReviewType
+import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
@@ -88,6 +90,7 @@ class ExpenseDetailsViewModel(
     private val shortcutDelegate: ShortcutDelegate,
     private val settings: Settings,
     private val appReviewManager: AppReviewManager,
+    private val accountRepository: AccountRepository,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support add expense inside group
     private val groupId: String =
@@ -130,12 +133,14 @@ class ExpenseDetailsViewModel(
                 }
 
             val currencyFlow = currencyRepository.getAvailableCurrencyCodes()
+            val accountFlow = accountRepository.get()
 
             combine(
                 groupRepository.get(groupId),
                 expenseFlow,
                 currencyFlow,
-            ) { groupResult, expenseResult, currencies ->
+                accountFlow,
+            ) { groupResult, expenseResult, currencies, account ->
                 if (groupResult.isFailure || expenseResult.isFailure) {
                     groupResult.exceptionOrNull()?.let {
                         analyticsManager.log(it)
@@ -189,6 +194,7 @@ class ExpenseDetailsViewModel(
                         isComplete = isComplete(expense),
                         splitOptions = expense.getInitialSplitOptions(extraParticipants),
                         availableCurrencies = currencies,
+                        account = account,
                     )
                 }
             }
@@ -329,6 +335,7 @@ class ExpenseDetailsViewModel(
         data class Data(
             val group: Group,
             val expense: Expense,
+            val account: Account,
             val isComplete: Boolean,
             val splitOptions: SplitOptions,
             val availableCurrencies: CurrencyCodesCollection,

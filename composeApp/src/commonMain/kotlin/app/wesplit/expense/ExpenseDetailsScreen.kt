@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.currency.CurrencyPicker
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.FutureFeature
+import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.SplitType
@@ -271,7 +272,7 @@ private fun ProtectionBlock(
             { onUpdated(UpdateAction.Protect(it)) }
         }
     val clickabeModifier =
-        if (data.expense.allowedToChange()) {
+        if (data.expense.allowedToChange() && data.account is Account.Authorized) {
             Modifier.clickable { protectCallback(!data.expense.isProtected()) }
         } else {
             Modifier
@@ -300,7 +301,11 @@ private fun ProtectionBlock(
             Text(
                 text =
                     if (data.expense.allowedToChange()) {
-                        "Only you able to update this expense"
+                        if (data.account is Account.Authorized) {
+                            "Only you able to update this expense"
+                        } else {
+                            "Login to protect this expense"
+                        }
                     } else {
                         "You're not allowed to update this expense"
                     },
@@ -311,7 +316,7 @@ private fun ProtectionBlock(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
             ),
         trailingContent = {
-            if (data.expense.allowedToChange()) {
+            if (data.expense.allowedToChange() && data.account is Account.Authorized) {
                 AdaptiveSwitch(
                     checked = data.expense.isProtected(),
                     enabled = data.expense.allowedToChange(),

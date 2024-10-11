@@ -615,6 +615,7 @@ fun RootNavigation(
                                 shortcutDelegate,
                                 settings,
                                 appReview,
+                                accountRepository,
                             )
                         }
 
