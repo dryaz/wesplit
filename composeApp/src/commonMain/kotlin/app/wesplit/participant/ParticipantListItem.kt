@@ -21,13 +21,20 @@ import split.composeapp.generated.resources.you
 
 @Composable
 fun ParticipantListItem(
-    participant: Participant,
     modifier: Modifier = Modifier,
+    participant: Participant,
+    enabled: Boolean = true,
     subComposable: @Composable (() -> Unit)? = null,
     action: @Composable (() -> Unit)? = null,
     onClick: ((Participant) -> Unit)? = null,
 ) {
-    val internalModifier = onClick?.let { modifier.clickable { onClick(participant) } } ?: modifier
+    val internalModifier =
+        if (onClick != null && enabled) {
+            modifier.clickable { onClick(participant) }
+        } else {
+            modifier
+        }
+
     Row(
         modifier =
             internalModifier

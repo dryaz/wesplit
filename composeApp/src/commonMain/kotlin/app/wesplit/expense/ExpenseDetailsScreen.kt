@@ -77,6 +77,8 @@ import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.SplitType
+import app.wesplit.domain.model.expense.allowedToChange
+import app.wesplit.domain.model.expense.isProtected
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
@@ -84,10 +86,13 @@ import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
 import app.wesplit.filterDoubleInput
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveSwitch
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Create
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Lock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
@@ -201,11 +206,13 @@ private fun AddExpenseScreenView(
         ExpenseDetails(data, onUpdated)
         Spacer(modifier = Modifier.height(16.dp))
         SharesDetails(data, onUpdated)
+
         if (data.expense.id != null) {
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(
                 // TODO: Confirmation
                 onClick = { deleteDialogShown = true },
+                enabled = data.expense.allowedToChange(),
                 modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
                 colors =
                     ButtonDefaults.outlinedButtonColors(
@@ -251,6 +258,68 @@ private fun AddExpenseScreenView(
             },
         )
     }
+}
+
+@OptIn(ExperimentalAdaptiveApi::class)
+@Composable
+private fun ProtectionBlock(
+    onUpdated: (UpdateAction) -> Unit,
+    data: ExpenseDetailsViewModel.State.Data,
+) {
+    val protectCallback: (Boolean) -> Unit =
+        remember {
+            { onUpdated(UpdateAction.Protect(it)) }
+        }
+    val clickabeModifier =
+        if (data.expense.allowedToChange()) {
+            Modifier.clickable { protectCallback(!data.expense.isProtected()) }
+        } else {
+            Modifier
+        }
+
+    ListItem(
+        modifier = clickabeModifier,
+        leadingContent = {
+            Icon(
+                modifier = Modifier.minimumInteractiveComponentSize(),
+                imageVector = AdaptiveIcons.Outlined.Lock,
+                contentDescription = "Protect expense from editing",
+            )
+        },
+        headlineContent = {
+            Text(
+                text =
+                    if (data.expense.allowedToChange()) {
+                        "Protect expense"
+                    } else {
+                        "Protected expense"
+                    },
+            )
+        },
+        supportingContent = {
+            Text(
+                text =
+                    if (data.expense.allowedToChange()) {
+                        "Only you able to update this expense"
+                    } else {
+                        "You're not allowed to update this expense"
+                    },
+            )
+        },
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        trailingContent = {
+            if (data.expense.allowedToChange()) {
+                AdaptiveSwitch(
+                    checked = data.expense.isProtected(),
+                    enabled = data.expense.allowedToChange(),
+                    onCheckedChange = { protectCallback(it) },
+                )
+            }
+        },
+    )
 }
 
 @Composable
@@ -452,6 +521,7 @@ private fun AmountsSplit(
                             }
                         },
                 singleLine = true,
+                enabled = data.expense.allowedToChange(),
                 value = fieldValue,
                 keyboardOptions =
                     KeyboardOptions(
@@ -497,6 +567,7 @@ private fun EqualSplit(
     val isParticipating = data.splitOptions.splitValues[splitType]!![participant] as Boolean
     ParticipantListItem(
         participant = participant,
+        enabled = data.expense.allowedToChange(),
         onClick = { item ->
             onUpdated(
                 UpdateAction.Split.Equal(
@@ -508,6 +579,7 @@ private fun EqualSplit(
         action = {
             Checkbox(
                 checked = isParticipating,
+                enabled = data.expense.allowedToChange(),
                 onCheckedChange = { isChecked ->
                     onUpdated(
                         UpdateAction.Split.Equal(
@@ -575,6 +647,7 @@ private fun ExpenseDetails(
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 16.dp).focusRequester(focusRequester),
             singleLine = true,
+            enabled = data.expense.allowedToChange(),
             value = data.expense.title,
             isError = data.expense.title.isNullOrBlank(),
             keyboardOptions =
@@ -609,7 +682,7 @@ private fun ExpenseDetails(
         ) {
             FilledTonalButton(
                 modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
-                enabled = true,
+                enabled = data.expense.allowedToChange(),
                 onClick = { showDatePicker = !showDatePicker },
                 shape = RoundedCornerShape(10.dp),
             ) {
@@ -629,6 +702,7 @@ private fun ExpenseDetails(
             FilledTonalButton(
                 modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
                 onClick = { showCurrencyPicker = true },
+                enabled = data.expense.allowedToChange(),
                 shape = RoundedCornerShape(10.dp),
             ) {
                 Text(data.expense.totalAmount.currencyCode.currencySymbol())
@@ -639,6 +713,7 @@ private fun ExpenseDetails(
                 modifier = Modifier.fillMaxWidth(1f),
                 singleLine = true,
                 value = amount,
+                enabled = data.expense.allowedToChange(),
                 keyboardOptions =
                     KeyboardOptions(
                         imeAction = ImeAction.Done,
@@ -680,6 +755,7 @@ private fun ExpenseDetails(
         // TODO: Change payer action
         ParticipantListItem(
             participant = data.expense.payedBy,
+            enabled = data.expense.allowedToChange(),
             onClick = { payerSelection = true },
             action = {
                 Icon(
@@ -696,6 +772,9 @@ private fun ExpenseDetails(
             onDismiss = { payerSelection = false },
             onUpdated = onUpdated,
         )
+
+        HorizontalDivider()
+        ProtectionBlock(onUpdated, data)
 
         val datePickerState =
             rememberDatePickerState(
@@ -820,7 +899,7 @@ private fun PayerChooser(
     ) {
         allParticipants.forEach { participant ->
             DropdownMenuItem(
-                text = { ParticipantListItem(participant) },
+                text = { ParticipantListItem(participant = participant) },
                 onClick = {
                     onUpdated(UpdateAction.NewPayer(participant))
                     onDismiss()

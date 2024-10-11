@@ -4,6 +4,8 @@ import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.BaseTimestamp
 import dev.gitlive.firebase.firestore.Timestamp
 import kotlinx.datetime.Instant
@@ -37,6 +39,9 @@ data class Expense(
     val date: BaseTimestamp = Timestamp.ServerTimestamp,
     @SerialName("status")
     val status: ExpenseStatus = ExpenseStatus.NEW,
+    @SerialName("protectedBy")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val protectionList: Set<String> = emptySet(),
     // TODO: Yet support only equal split in v1
 //    @SerialName("splitType")
 //    val splitType: SplitType = SplitType.EQUAL,
@@ -58,3 +63,7 @@ data class Share(
 fun Expense.myAmount() = shares.find { it.participant.isMe() }?.amount ?: Amount(0.0, totalAmount.currencyCode)
 
 fun Expense.myAmount(group: Group) = shares.find { it.participant.isMe(group) }?.amount ?: Amount(0.0, totalAmount.currencyCode)
+
+fun Expense.allowedToChange() = protectionList.isEmpty() || Firebase.auth.currentUser?.uid in protectionList
+
+fun Expense.isProtected() = protectionList.isNotEmpty()

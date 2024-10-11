@@ -27,6 +27,8 @@ import app.wesplit.domain.model.group.isMe
 import app.wesplit.routing.RightPane
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.fromMilliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,6 +49,8 @@ private const val UPDATE_AMOUNT_EVENT = "exp_update_amount"
 private const val UPDATE_PAYER_EVENT = "exp_update_payer"
 private const val UPDATE_SHARES_EVENT = "exp_update_shares"
 
+private const val UPDATE_PROTECTION = "exp_update_protection"
+
 sealed interface UpdateAction {
     // TODO: Update currency, FX feature and paywall - only for payed
     data class Title(val title: String) : UpdateAction
@@ -60,6 +64,8 @@ sealed interface UpdateAction {
     data object Delete : UpdateAction
 
     data class NewPayer(val participant: Participant) : UpdateAction
+
+    data class Protect(val isProtected: Boolean) : UpdateAction
 
     sealed interface Split : UpdateAction {
         abstract val participant: Participant
@@ -276,6 +282,18 @@ class ExpenseDetailsViewModel(
                 is UpdateAction.NewPayer -> {
                     analyticsManager.track(UPDATE_PAYER_EVENT)
                     _state.update { data.copy(expense = expense.copy(payedBy = action.participant)) }
+                }
+
+                is UpdateAction.Protect -> {
+                    analyticsManager.track(UPDATE_PROTECTION)
+                    val protectionList =
+                        if (action.isProtected) {
+                            expense.protectionList + Firebase.auth.currentUser?.uid
+                        } else {
+                            expense.protectionList - Firebase.auth.currentUser?.uid
+                        }
+
+                    _state.update { data.copy(expense = expense.copy(protectionList = protectionList.filterNotNull().toSet())) }
                 }
             }
         } ?: {
