@@ -45,6 +45,7 @@ import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.group.detailed.balance.BalanceList
 import app.wesplit.group.detailed.expense.ExpenseAction
@@ -73,6 +74,8 @@ sealed interface GroupInfoAction {
 
     // TODO: How to share group
     data class Share(val group: Group) : GroupInfoAction
+
+    data class Invite(val participant: Participant) : GroupInfoAction
 
     data class Edit(val group: Group) : GroupInfoAction
 
@@ -222,21 +225,33 @@ private fun GroupInfoContent(
             )
         }
 
+    // TODO: Hack to share group instead of invite participant (in future).
+    val actionInterceptor: (GroupInfoAction) -> Unit =
+        remember(group, onAction) {
+            { action ->
+                if (action is GroupInfoAction.Invite) {
+                    onAction(GroupInfoAction.Share(group))
+                } else {
+                    onAction(action)
+                }
+            }
+        }
+
     Column(
         modifier = Modifier.fillMaxSize(1f),
     ) {
         if (windowSizeClass.widthSizeClass != WindowWidthSizeClass.Compact &&
             windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
         ) {
-            GroupHeader(group, onAction)
+            GroupHeader(group, actionInterceptor)
         }
 
         if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
             windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
         ) {
-            SplitView(expenseViewModel, group.balances, onAction)
+            SplitView(expenseViewModel, group.balances, actionInterceptor)
         } else {
-            PaginationView(expenseViewModel, group.balances, onAction)
+            PaginationView(expenseViewModel, group.balances, actionInterceptor)
         }
     }
 }
@@ -271,7 +286,10 @@ private fun SplitView(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.TopCenter,
         ) {
-            BalanceList(balance) {
+            BalanceList(
+                balance = balance,
+                onInvite = { onAction(GroupInfoAction.Invite(it)) },
+            ) {
                 expenseViewModel.settleAll()
             }
         }
@@ -313,7 +331,10 @@ private fun PaginationView(
                         }
 
                     1 ->
-                        BalanceList(balance) {
+                        BalanceList(
+                            balance = balance,
+                            onInvite = { onAction(GroupInfoAction.Invite(it)) },
+                        ) {
                             expenseViewModel.settleAll()
                         }
                 }

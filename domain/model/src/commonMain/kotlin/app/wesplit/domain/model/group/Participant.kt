@@ -37,3 +37,7 @@ fun Participant.isMe(group: Group): Boolean {
         }?.id
     return this.id == groupPartId
 }
+
+fun Participant.isConnected(): Boolean {
+    return user != null && user.authIds.isNotEmpty()
+}

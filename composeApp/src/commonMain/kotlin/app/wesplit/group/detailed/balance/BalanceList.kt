@@ -12,14 +12,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -36,9 +39,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.group.Balance
+import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isConnected
 import app.wesplit.participant.ParticipantListItem
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Email
 import org.jetbrains.compose.resources.painterResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_flag
@@ -47,6 +53,7 @@ import split.composeapp.generated.resources.ic_flag
 @Composable
 fun BalanceList(
     balance: Balance?,
+    onInvite: (Participant) -> Unit,
     onSettle: () -> Unit,
 ) {
     var settleDialogShown by remember { mutableStateOf(false) }
@@ -67,7 +74,39 @@ fun BalanceList(
                         .padding(bottom = 64.dp),
             ) {
                 balance.participantsBalance.forEach { balanceItem ->
+                    val action: @Composable (() -> Unit)? =
+                        if (!balanceItem.participant.isConnected()) {
+                            {
+                                FilledIconButton(
+                                    colors =
+                                        IconButtonDefaults.filledIconButtonColors(
+                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        ),
+                                    shape = CircleShape,
+                                    onClick = {
+                                        onInvite(balanceItem.participant)
+                                    },
+                                ) {
+                                    Icon(
+                                        AdaptiveIcons.Outlined.Email,
+                                        contentDescription = "Invite user",
+                                    )
+                                }
+                            }
+                        } else {
+                            null
+                        }
+
+                    val callback: ((Participant) -> Unit)? =
+                        if (!balanceItem.participant.isConnected()) {
+                            { participant -> onInvite(participant) }
+                        } else {
+                            null
+                        }
+
                     ParticipantListItem(
+                        action = action,
+                        onClick = callback,
                         participant = balanceItem.participant,
                         subComposable = {
                             FlowRow(

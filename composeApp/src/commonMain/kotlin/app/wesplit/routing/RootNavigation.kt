@@ -470,6 +470,8 @@ fun RootNavigation(
                                         },
                                 )
                             }
+
+                            is GroupInfoAction.Invite -> TODO("We support only sharing of the group yet")
                         }
                     }
                 }
