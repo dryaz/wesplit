@@ -45,7 +45,7 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.user.email
 import app.wesplit.domain.model.user.participant
-import app.wesplit.participant.ParticipantAvatar
+import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
@@ -167,25 +167,23 @@ private fun AccountInfo(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
         participant?.let {
-            ParticipantAvatar(participant = it)
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        account.user.name.let { name ->
-            Text(
-                text = name,
-                style = MaterialTheme.typography.labelMedium,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-        }
-        account.user.email()?.let { email ->
-            Text(
-                text = email,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
+            ParticipantListItem(
+                modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 8.dp),
+                participant = it,
+                subComposable =
+                    account.user.email()?.let { email ->
+                        {
+                            Text(
+                                text = email,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
+                        }
+                    },
             )
         }
+
         if (windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact &&
             currentPlatform != KotlinPlatform.Ios
         ) {
