@@ -9,6 +9,7 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.REVIEW_EVENT
+import app.wesplit.domain.model.REVIEW_RESULT
 import app.wesplit.domain.model.REVIEW_SOURCE
 import app.wesplit.domain.model.REVIEW_TYPE
 import app.wesplit.domain.model.ReviewType
@@ -32,6 +33,7 @@ import dev.gitlive.firebase.firestore.fromMilliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
@@ -256,15 +258,22 @@ class ExpenseDetailsViewModel(
                     (_state.value as? State.Data)?.expense?.let { exp ->
                         viewModelScope.launch {
                             val commitedExpenses = settings.get<Int>(EXPENSE_COMMIT_COUNTER_KEY) ?: 0
-                            if ((commitedExpenses + 1) % 4 == 0) {
-                                appReviewManager.requestReview(ReviewType.IN_APP)
-                                analyticsManager.track(
-                                    REVIEW_EVENT,
-                                    mapOf(
-                                        REVIEW_SOURCE to "expense_create",
-                                        REVIEW_TYPE to ReviewType.IN_APP.name,
-                                    ),
-                                )
+                            if ((commitedExpenses + 1) % 5 == 0) {
+                                appReviewManager.requestReview(ReviewType.IN_APP).collectLatest { result ->
+                                    analyticsManager.track(
+                                        REVIEW_EVENT,
+                                        mapOf(
+                                            REVIEW_SOURCE to "expense_create",
+                                            REVIEW_TYPE to ReviewType.IN_APP.name,
+                                            REVIEW_RESULT to
+                                                if (result.isSuccess) {
+                                                    "success"
+                                                } else {
+                                                    result.exceptionOrNull()?.message ?: "Unknown"
+                                                },
+                                        ),
+                                    )
+                                }
                             }
                             settings.putInt(EXPENSE_COMMIT_COUNTER_KEY, commitedExpenses + 1)
                             expenseRepository.commit(groupId, exp)
