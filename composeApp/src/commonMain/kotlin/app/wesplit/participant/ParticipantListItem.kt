@@ -24,6 +24,8 @@ fun ParticipantListItem(
     modifier: Modifier = Modifier,
     participant: Participant,
     enabled: Boolean = true,
+    showImage: Boolean = true,
+    showMeBadge: Boolean = true,
     subComposable: @Composable (() -> Unit)? = null,
     action: @Composable (() -> Unit)? = null,
     onClick: ((Participant) -> Unit)? = null,
@@ -42,7 +44,10 @@ fun ParticipantListItem(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ParticipantAvatar(participant = participant)
+        if (showImage) {
+            ParticipantAvatar(participant = participant)
+        }
+
         val suffix =
             if (participant.isMe()) {
                 " (${stringResource(Res.string.you)})"
@@ -57,7 +62,7 @@ fun ParticipantListItem(
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = participant.name + suffix,
+                text = participant.name + if (showMeBadge) suffix else "",
             )
             subComposable?.let { it() }
         }

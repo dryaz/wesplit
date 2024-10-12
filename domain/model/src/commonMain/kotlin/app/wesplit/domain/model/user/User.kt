@@ -31,6 +31,8 @@ data class User(
     val authIds: List<String> = emptyList(),
     @SerialName("lastCur")
     val lastUsedCurrency: String? = null,
+    @SerialName("subs")
+    val subscription: Subscription = Subscription.BASIC,
 )
 
 fun User.participant(): Participant? =
@@ -63,4 +65,14 @@ sealed interface Contact {
         @SerialName("account")
         val account: String,
     ) : Contact
+}
+
+@Serializable
+@SerialName("subs")
+enum class Subscription {
+    @SerialName("basic")
+    BASIC,
+
+    @SerialName("plus")
+    PLUS,
 }
