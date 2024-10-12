@@ -51,10 +51,12 @@ import app.wesplit.domain.model.user.email
 import app.wesplit.domain.model.user.participant
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.PlusProtected
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowRight
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Lock
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Menu
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -182,15 +184,15 @@ private fun AccountInfo(
                 showImage = windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact,
                 showMeBadge = false,
                 subComposable =
-                    account.user.email()?.let { email ->
-                        {
-                            Text(
-                                text = email,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline,
-                            )
-                        }
-                    },
+                account.user.email()?.let { email ->
+                    {
+                        Text(
+                            text = email,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                },
             )
         }
 
@@ -200,17 +202,17 @@ private fun AccountInfo(
         val uriHandler = LocalUriHandler.current
         ListItem(
             modifier =
-                Modifier.clickable {
-                    if (shareDelegate.supportPlatformSharing()) {
-                        shareDelegate.open(ShareData.Link("https://wesplit.app/privacypolicy/"))
-                    } else {
-                        uriHandler.openUri("https://wesplit.app/privacypolicy/")
-                    }
-                },
+            Modifier.clickable {
+                if (shareDelegate.supportPlatformSharing()) {
+                    shareDelegate.open(ShareData.Link("https://wesplit.app/privacypolicy/"))
+                } else {
+                    uriHandler.openUri("https://wesplit.app/privacypolicy/")
+                }
+            },
             colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                ),
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
             trailingContent = {
                 Icon(
                     AdaptiveIcons.Outlined.KeyboardArrowRight,
@@ -228,17 +230,17 @@ private fun AccountInfo(
 
         ListItem(
             modifier =
-                Modifier.clickable {
-                    if (shareDelegate.supportPlatformSharing()) {
-                        shareDelegate.open(ShareData.Link("https://wesplit.app/terms/"))
-                    } else {
-                        uriHandler.openUri("https://wesplit.app/terms/")
-                    }
-                },
+            Modifier.clickable {
+                if (shareDelegate.supportPlatformSharing()) {
+                    shareDelegate.open(ShareData.Link("https://wesplit.app/terms/"))
+                } else {
+                    uriHandler.openUri("https://wesplit.app/terms/")
+                }
+            },
             colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                ),
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
             trailingContent = {
                 Icon(
                     AdaptiveIcons.Outlined.KeyboardArrowRight,
@@ -258,10 +260,10 @@ private fun AccountInfo(
             ListItem(
                 modifier = Modifier.weight(1f).clickable { deleteDialogShown = true },
                 colors =
-                    ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        headlineColor = MaterialTheme.colorScheme.error,
-                    ),
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    headlineColor = MaterialTheme.colorScheme.error,
+                ),
                 headlineContent = {
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),
@@ -274,10 +276,10 @@ private fun AccountInfo(
             ListItem(
                 modifier = Modifier.weight(1f).clickable { onAction(ProfileAction.Logout) },
                 colors =
-                    ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                        headlineColor = MaterialTheme.colorScheme.error,
-                    ),
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    headlineColor = MaterialTheme.colorScheme.error,
+                ),
                 headlineContent = {
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),
@@ -338,9 +340,9 @@ private fun ColumnScope.Plan(
 ) {
     Card(
         colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            ),
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        ),
         modifier = Modifier.fillMaxWidth(1f).padding(16.dp),
     ) {
         val title =
@@ -379,13 +381,15 @@ private fun ColumnScope.Plan(
         ListItem(
             modifier = modifier,
             colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                ),
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
             headlineContent = {
-                Text(
-                    text = title,
-                )
+                PlusProtected {
+                    Text(
+                        text = title,
+                    )
+                }
             },
             supportingContent = {
                 Text(
@@ -399,7 +403,7 @@ private fun ColumnScope.Plan(
 
         HorizontalDivider()
 
-        FeaturesList()
+        FeaturesList(account.user.subscription)
 
         AnimatedVisibility(
             modifier = Modifier.fillMaxWidth(1f),
@@ -407,14 +411,14 @@ private fun ColumnScope.Plan(
         ) {
             ListItem(
                 modifier =
-                    Modifier.fillMaxWidth().clickable {
-                        onSubscribe()
-                    },
+                Modifier.fillMaxWidth().clickable {
+                    onSubscribe()
+                },
                 colors =
-                    ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        headlineColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    headlineColor = MaterialTheme.colorScheme.onPrimary,
+                ),
                 headlineContent = {
                     Text(
                         modifier = Modifier.minimumInteractiveComponentSize().fillMaxWidth(1f),
@@ -428,7 +432,12 @@ private fun ColumnScope.Plan(
 }
 
 @Composable
-private fun FeaturesList() {
+private fun FeaturesList(subscription: Subscription) {
+    val icon = when (subscription) {
+        Subscription.BASIC -> AdaptiveIcons.Outlined.Lock
+        Subscription.PLUS -> AdaptiveIcons.Outlined.Done
+    }
+
     val featuresMap = mapOf(
         Res.string.plus_feature_1_title to Res.string.plus_feature_1_descr,
         Res.string.plus_feature_2_title to Res.string.plus_feature_2_descr,
@@ -444,7 +453,7 @@ private fun FeaturesList() {
             leadingContent = {
                 Icon(
                     modifier = Modifier.minimumInteractiveComponentSize(),
-                    imageVector = AdaptiveIcons.Outlined.Done,
+                    imageVector = icon,
                     contentDescription = stringResource(feature.value),
                 )
             },
@@ -470,10 +479,10 @@ private fun PlusPlan() {
     ListItem(
         modifier = Modifier.fillMaxWidth(),
         colors =
-            ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                headlineColor = MaterialTheme.colorScheme.onPrimary,
-            ),
+        ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            headlineColor = MaterialTheme.colorScheme.onPrimary,
+        ),
         headlineContent = {
             Text(
                 modifier = Modifier.fillMaxSize(1f),
