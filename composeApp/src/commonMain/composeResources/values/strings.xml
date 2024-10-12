@@ -52,5 +52,10 @@
     <string name="profile_under_construction">More features coming soon!</string>
     <string name="edit_group">Edit group</string>
     <string name="share_link_copied">Sharable link copied!</string>
-
+    <string name="plus_feature_1_title">Protected expense</string>
+    <string name="plus_feature_1_descr">Ensure consistancy for it</string>
+    <string name="plus_feature_2_title">Granular control</string>
+    <string name="plus_feature_2_descr">Settle single expense</string>
+    <string name="plus_feature_3_title">FX Rates</string>
+    <string name="plus_feature_3_descr">Simplify multi currency debts</string>
 </resources>

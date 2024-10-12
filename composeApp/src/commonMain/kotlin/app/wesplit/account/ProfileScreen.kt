@@ -60,6 +60,12 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
+import split.composeapp.generated.resources.plus_feature_1_descr
+import split.composeapp.generated.resources.plus_feature_1_title
+import split.composeapp.generated.resources.plus_feature_2_descr
+import split.composeapp.generated.resources.plus_feature_2_title
+import split.composeapp.generated.resources.plus_feature_3_descr
+import split.composeapp.generated.resources.plus_feature_3_title
 import split.composeapp.generated.resources.profile
 
 sealed interface ProfileAction {
@@ -393,34 +399,7 @@ private fun ColumnScope.Plan(
 
         HorizontalDivider()
 
-        (0..2).map {
-            ListItem(
-                modifier = Modifier.fillMaxWidth(),
-                colors =
-                    ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    ),
-                leadingContent = {
-                    Icon(
-                        modifier = Modifier.minimumInteractiveComponentSize(),
-                        imageVector = AdaptiveIcons.Outlined.Done,
-                        contentDescription = "Description of feature #$it",
-                    )
-                },
-                headlineContent = {
-                    Text(
-                        text = "Feature #$it",
-                    )
-                },
-                supportingContent = {
-                    Text(
-                        text = "Description of feature #$it",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                },
-            )
-        }
+        FeaturesList()
 
         AnimatedVisibility(
             modifier = Modifier.fillMaxWidth(1f),
@@ -447,6 +426,44 @@ private fun ColumnScope.Plan(
         }
     }
 }
+
+@Composable
+private fun FeaturesList() {
+    val featuresMap = mapOf(
+        Res.string.plus_feature_1_title to Res.string.plus_feature_1_descr,
+        Res.string.plus_feature_2_title to Res.string.plus_feature_2_descr,
+        Res.string.plus_feature_3_title to Res.string.plus_feature_3_descr,
+    )
+    featuresMap.map { feature ->
+        ListItem(
+            modifier = Modifier.fillMaxWidth(),
+            colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+            leadingContent = {
+                Icon(
+                    modifier = Modifier.minimumInteractiveComponentSize(),
+                    imageVector = AdaptiveIcons.Outlined.Done,
+                    contentDescription = stringResource(feature.value),
+                )
+            },
+            headlineContent = {
+                Text(
+                    text = stringResource(feature.key),
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = stringResource(feature.value),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            },
+        )
+    }
+}
+
 
 @Composable
 private fun PlusPlan() {
