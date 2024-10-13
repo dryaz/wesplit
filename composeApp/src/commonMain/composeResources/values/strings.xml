@@ -52,11 +52,17 @@
     <string name="profile_under_construction">More features coming soon!</string>
     <string name="edit_group">Edit group</string>
     <string name="share_link_copied">Sharable link copied!</string>
-    <string name="plus_feature_1_title">Protected expense</string>
-    <string name="plus_feature_1_descr">Ensure consistancy for it</string>
-    <string name="plus_feature_2_title">FX Rates</string>
-    <string name="plus_feature_2_descr">Simplify multi currency debts</string>
-    <string name="plus_feature_3_title">And more...</string>
-    <string name="plus_feature_3_descr">Click to see benefits</string>
     <string name="plus_subs_title">Plus benefits</string>
+    <!-- Plus features descr -->
+    <string name="plus_feature_protect_title">Protected expense</string>
+    <string name="plus_feature_protect_descr_short">Ensure consistancy for it</string>
+    <string name="plus_feature_protect_descr_full">Keep critical costs under your control.\nPrevent unauthorized changes and maintain financial integrity effortlessly.</string>
+
+    <string name="plus_feature_currencies_title">FX rates</string>
+    <string name="plus_feature_currencies_descr_short">Simplify multi currency debts</string>
+    <string name="plus_feature_currencies_descr_full">Effortlessly manage and convert multiple currencies. Use different currencies in one group. Convert to the base one when settling.</string>
+
+    <string name="plus_feature_more_title">And more...</string>
+    <string name="plus_feature_more_descr">Click to see benefits</string>
+    <!--    -->
 </resources>

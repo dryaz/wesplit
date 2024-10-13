@@ -62,12 +62,12 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
-import split.composeapp.generated.resources.plus_feature_1_descr
-import split.composeapp.generated.resources.plus_feature_1_title
-import split.composeapp.generated.resources.plus_feature_2_descr
-import split.composeapp.generated.resources.plus_feature_2_title
-import split.composeapp.generated.resources.plus_feature_3_descr
-import split.composeapp.generated.resources.plus_feature_3_title
+import split.composeapp.generated.resources.plus_feature_currencies_descr_short
+import split.composeapp.generated.resources.plus_feature_currencies_title
+import split.composeapp.generated.resources.plus_feature_more_descr
+import split.composeapp.generated.resources.plus_feature_more_title
+import split.composeapp.generated.resources.plus_feature_protect_descr_short
+import split.composeapp.generated.resources.plus_feature_protect_title
 import split.composeapp.generated.resources.profile
 
 sealed interface ProfileAction {
@@ -449,9 +449,9 @@ private fun FeaturesList(
 
     val featuresMap =
         mapOf(
-            Res.string.plus_feature_1_title to Res.string.plus_feature_1_descr,
-            Res.string.plus_feature_2_title to Res.string.plus_feature_2_descr,
-            Res.string.plus_feature_3_title to Res.string.plus_feature_3_descr,
+            Res.string.plus_feature_protect_title to Res.string.plus_feature_protect_descr_short,
+            Res.string.plus_feature_currencies_title to Res.string.plus_feature_currencies_descr_short,
+            Res.string.plus_feature_more_title to Res.string.plus_feature_more_descr,
         )
     featuresMap.map { feature ->
         ListItem(
