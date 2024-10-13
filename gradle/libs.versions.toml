@@ -1,8 +1,8 @@
 [versions]
 inAppReview = "3.1.21"
 multiplatformSettings = "1.2.0"
-versionName = "1.6.0"
-android-versionCode = "35"
+versionName = "2.0.0"
+android-versionCode = "37"
 
 agp = "8.5.2"
 coreGoogleShortcuts = "1.1.0"
@@ -43,6 +43,7 @@ kermit = "2.0.4"
 crashlytics = "3.0.2"
 dokka = "1.9.20"
 kotest = "5.5.4"
+billing-android = "7.1.1"
 
 # wasmJs support
 koin = "4.0.0-RC1"
@@ -129,6 +130,8 @@ cupertino-adaptive = { module = "io.github.alexzhirkevich:cupertino-adaptive", v
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotest-framework-datatest = { module = "io.kotest:kotest-framework-datatest", version.ref = "kotest" }
+
+billing-android = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing-android" }
 
 [bundles]
 ktor-common = ["ktor-client-core", "ktor-client-json", "ktor-client-logging", "ktor-client-serialization", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]

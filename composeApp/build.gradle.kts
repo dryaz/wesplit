@@ -87,6 +87,7 @@ kotlin {
             implementation(libs.androidx.core.google.shortcuts)
 
             implementation(libs.review.gplay)
+            implementation(libs.billing.android)
         }
 
         commonMain {

@@ -10,9 +10,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import app.wesplit.billing.GooglePlayBillingDelegate
 import app.wesplit.di.AndroidAppModule
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
+import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
 import kotlinx.coroutines.CoroutineDispatcher
@@ -41,6 +43,17 @@ class MainActivity : ComponentActivity() {
                 AndroidAppModule().module,
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
                 module {
+                    single<BillingDelegate> {
+                        GooglePlayBillingDelegate(
+                            activityProvider = get(),
+                            context = application,
+                            billingStateRepository = get(),
+                            pricingMapper = get(),
+                            periodMapper = get(),
+                            userRepository = get(),
+                            analytics = get(),
+                        )
+                    }
                     single<ShortcutDelegate> { ShortcutAndroidDelegate(application) }
                     single<CoroutineDispatcher> { Dispatchers.IO }
                     single<AppReviewManager> { AndroidAppReviewManager(get()) }

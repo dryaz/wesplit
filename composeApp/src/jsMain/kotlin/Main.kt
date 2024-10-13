@@ -10,6 +10,8 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.NotSupportedAppReviewManager
 import app.wesplit.domain.model.account.LoginDelegate
+import app.wesplit.domain.model.paywall.BillingDelegate
+import app.wesplit.domain.model.paywall.UnsupportedBiilingDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
 import dev.gitlive.firebase.Firebase
@@ -54,6 +56,7 @@ fun main() {
                     single<CoroutineDispatcher> { Dispatchers.Main }
                     single<LoginDelegate> { LoginJsDelegate() }
                     single<AppReviewManager> { NotSupportedAppReviewManager }
+                    single<BillingDelegate> { UnsupportedBiilingDelegate(get()) }
                     single<ShareDelegate> { DefaultShareDelegate }
                     single<AnalyticsManager> { JsAnalyticsManager() }
 //                    single<AnalyticsManager> { DebugAnalyticsManager() }

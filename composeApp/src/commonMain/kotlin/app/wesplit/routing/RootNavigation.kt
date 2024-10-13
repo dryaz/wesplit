@@ -39,6 +39,7 @@ import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.domain.model.paywall.PaywallRepository
 import app.wesplit.expense.AddExpenseAction
 import app.wesplit.expense.ExpenseDetailsScreen
 import app.wesplit.expense.ExpenseDetailsViewModel
@@ -54,6 +55,7 @@ import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
 import app.wesplit.paywall.PaywallAction
 import app.wesplit.paywall.PaywallRoute
+import app.wesplit.paywall.PaywallViewModel
 import com.motorro.keeplink.deeplink.deepLink
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.CoroutineDispatcher
@@ -422,7 +424,19 @@ fun RootNavigation(
                         )
                     },
                 ) {
-                    PaywallRoute { action ->
+                    val paywallRepository: PaywallRepository = koinInject()
+                    val ioDispatcher: CoroutineDispatcher = koinInject()
+
+                    val paywallViewModel: PaywallViewModel =
+                        viewModel {
+                            PaywallViewModel(
+                                paywallRepository = paywallRepository,
+                                coroutineDispatcher = ioDispatcher,
+                            )
+                        }
+                    PaywallRoute(
+                        viewModel = paywallViewModel,
+                    ) { action ->
                         when (action) {
                             PaywallAction.Back -> secondPaneNavController.popBackStack()
                         }
