@@ -1,5 +1,7 @@
 package app.wesplit.routing
 
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -70,6 +72,11 @@ private const val SHARE_EVENT = "share"
 private const val SCREEN_VIEW = "screen_view"
 private const val SCREEN_NAME = "screen_name"
 private const val SCREEN_CLASS = "screen_class"
+
+private const val SUBS_EVENT = "paywall"
+private const val SUBS_SOURCE = "source"
+
+private const val PROFILE_PAYWALL_SOURCE = "profile"
 
 sealed class PaneNavigation(
     val route: String,
@@ -175,6 +182,22 @@ fun RootNavigation(
     val coroutineScope = rememberCoroutineScope()
     val shareDelegate: ShareDelegate = koinInject()
     val clipboardManager = LocalClipboardManager.current
+
+    val onSubscriptionRequest: (String) -> Unit =
+        remember {
+            {
+                analyticsManager.track(
+                    SUBS_EVENT,
+                    mapOf(
+                        SUBS_SOURCE to it,
+                    ),
+                )
+                secondPaneNavController.navigate(
+                    RightPane.Paywall.destination(),
+                    navOptions = navOptions { launchSingleTop = true },
+                )
+            }
+        }
 
     val menuItems =
         remember {
@@ -307,10 +330,7 @@ fun RootNavigation(
 
                                 ProfileAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
                                 ProfileAction.Paywall -> {
-                                    secondPaneNavController.navigate(
-                                        RightPane.Paywall.destination(),
-                                        navOptions = navOptions { launchSingleTop = true },
-                                    )
+                                    onSubscriptionRequest(PROFILE_PAYWALL_SOURCE)
                                 }
                             }
                         },
@@ -389,7 +409,19 @@ fun RootNavigation(
                     NoGroupScreen()
                 }
 
-                composable(route = RightPane.Paywall.route) {
+                composable(
+                    route = RightPane.Paywall.route,
+                    enterTransition = {
+                        slideInVertically(
+                            initialOffsetY = { it * 2 },
+                        )
+                    },
+                    exitTransition = {
+                        slideOutVertically(
+                            targetOffsetY = { it * 2 },
+                        )
+                    },
+                ) {
                     PaywallRoute { action ->
                         when (action) {
                             PaywallAction.Back -> secondPaneNavController.popBackStack()
@@ -634,6 +666,7 @@ fun RootNavigation(
                                 settings,
                                 appReview,
                                 accountRepository,
+                                onSubscriptionRequest,
                             )
                         }
 

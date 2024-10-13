@@ -15,6 +15,7 @@ import app.wesplit.domain.model.REVIEW_TYPE
 import app.wesplit.domain.model.ReviewType
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.account.isPlus
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
@@ -46,6 +47,7 @@ import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
 private const val EXPENSE_COMMIT_COUNTER_KEY = "ex_com"
+private const val EXP_PROTECT_PAYWALL_SOURCE = "exp_protection"
 
 private const val UPDATE_TITLE_EVENT = "exp_update_title"
 private const val UPDATE_DATE_EVENT = "exp_update_date"
@@ -93,6 +95,7 @@ class ExpenseDetailsViewModel(
     private val settings: Settings,
     private val appReviewManager: AppReviewManager,
     private val accountRepository: AccountRepository,
+    private val onSubscriptionRequest: (String) -> Unit,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support add expense inside group
     private val groupId: String =
@@ -300,15 +303,20 @@ class ExpenseDetailsViewModel(
                 }
 
                 is UpdateAction.Protect -> {
-                    analyticsManager.track(UPDATE_PROTECTION)
-                    val protectionList =
-                        if (action.isProtected) {
-                            expense.protectionList + Firebase.auth.currentUser?.uid
-                        } else {
-                            expense.protectionList - Firebase.auth.currentUser?.uid
-                        }
+                    if (accountRepository.get().value.isPlus()) {
+                        analyticsManager.track(UPDATE_PROTECTION)
+                        val protectionList =
+                            if (action.isProtected) {
+                                expense.protectionList + Firebase.auth.currentUser?.uid
+                            } else {
+                                expense.protectionList - Firebase.auth.currentUser?.uid
+                            }
 
-                    _state.update { data.copy(expense = expense.copy(protectionList = protectionList.filterNotNull().toSet())) }
+                        _state.update { data.copy(expense = expense.copy(protectionList = protectionList.filterNotNull().toSet())) }
+                    } else {
+                        onSubscriptionRequest(EXP_PROTECT_PAYWALL_SOURCE)
+                        _state.update { data.copy(expense = expense.copy(protectionList = emptySet())) }
+                    }
                 }
             }
         } ?: {

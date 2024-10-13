@@ -1,6 +1,7 @@
 package app.wesplit.domain.model.account
 
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.user.Subscription
 import app.wesplit.domain.model.user.User
 import dev.gitlive.firebase.auth.FirebaseUser
 
@@ -28,3 +29,5 @@ fun Account.participant(): Participant? =
             user = user,
         )
     }
+
+fun Account.isPlus() = (this as? Account.Authorized)?.user?.subscription == Subscription.PLUS
