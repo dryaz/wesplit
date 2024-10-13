@@ -54,8 +54,9 @@
     <string name="share_link_copied">Sharable link copied!</string>
     <string name="plus_feature_1_title">Protected expense</string>
     <string name="plus_feature_1_descr">Ensure consistancy for it</string>
-    <string name="plus_feature_2_title">Granular control</string>
-    <string name="plus_feature_2_descr">Settle single expense</string>
-    <string name="plus_feature_3_title">FX Rates</string>
-    <string name="plus_feature_3_descr">Simplify multi currency debts</string>
+    <string name="plus_feature_2_title">FX Rates</string>
+    <string name="plus_feature_2_descr">Simplify multi currency debts</string>
+    <string name="plus_feature_3_title">And more...</string>
+    <string name="plus_feature_3_descr">Click to see benefits</string>
+    <string name="plus_subs_title">Plus benefits</string>
 </resources>

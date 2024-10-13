@@ -14,17 +14,14 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_plus
 
 @Composable
-fun PlusProtected(
-    content : @Composable () -> Unit,
-) {
+fun PlusProtected(content: @Composable () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         content()
         Spacer(modifier = Modifier.width(8.dp))
         Image(
             modifier = Modifier.height(16.dp),
             painter = painterResource(Res.drawable.ic_plus),
-            contentDescription = "Plus badge"
+            contentDescription = "Plus badge",
         )
     }
-
 }

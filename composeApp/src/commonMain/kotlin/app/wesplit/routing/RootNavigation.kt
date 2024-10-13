@@ -50,6 +50,8 @@ import app.wesplit.group.list.GroupListViewModel
 import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
+import app.wesplit.paywall.PaywallAction
+import app.wesplit.paywall.PaywallRoute
 import com.motorro.keeplink.deeplink.deepLink
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.CoroutineDispatcher
@@ -87,6 +89,8 @@ sealed class RightPane(
     route: String,
 ) : PaneNavigation(route) {
     data object Empty : RightPane("empty")
+
+    data object Paywall : RightPane("paywall")
 
     data object Group : RightPane("group/{${Param.GROUP_ID.paramName}}?${Param.TOKEN.paramName}={${Param.TOKEN.paramName}}") {
         enum class Param(
@@ -302,6 +306,12 @@ fun RootNavigation(
                                 }
 
                                 ProfileAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
+                                ProfileAction.Paywall -> {
+                                    secondPaneNavController.navigate(
+                                        RightPane.Paywall.destination(),
+                                        navOptions = navOptions { launchSingleTop = true },
+                                    )
+                                }
                             }
                         },
                     )
@@ -377,6 +387,14 @@ fun RootNavigation(
             ) {
                 composable(route = RightPane.Empty.route) {
                     NoGroupScreen()
+                }
+
+                composable(route = RightPane.Paywall.route) {
+                    PaywallRoute { action ->
+                        when (action) {
+                            PaywallAction.Back -> secondPaneNavController.popBackStack()
+                        }
+                    }
                 }
 
                 composable(

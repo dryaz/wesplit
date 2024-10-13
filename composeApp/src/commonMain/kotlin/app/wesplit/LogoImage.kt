@@ -39,17 +39,18 @@ fun AppLogo(
 
     Image(
         modifier = modifier,
-        painter = painterResource(
-            if (isColorfull) {
-                if (isPlus) Res.drawable.img_logo_color_plus else Res.drawable.img_logo_color
-            } else {
-                when (LocalThemeState.current.colorMode) {
-                    ColorMode.LIGHT -> Res.drawable.img_logo_black
-                    ColorMode.DARK -> Res.drawable.img_logo_white
-                    ColorMode.SYSTEM -> if (isSystemInDarkTheme()) Res.drawable.img_logo_white else Res.drawable.img_logo_black
-                }
-            },
-        ),
+        painter =
+            painterResource(
+                if (isColorfull) {
+                    if (isPlus) Res.drawable.img_logo_color_plus else Res.drawable.img_logo_color
+                } else {
+                    when (LocalThemeState.current.colorMode) {
+                        ColorMode.LIGHT -> Res.drawable.img_logo_black
+                        ColorMode.DARK -> Res.drawable.img_logo_white
+                        ColorMode.SYSTEM -> if (isSystemInDarkTheme()) Res.drawable.img_logo_white else Res.drawable.img_logo_black
+                    }
+                },
+            ),
         contentDescription = stringResource(Res.string.app_name),
     )
 }

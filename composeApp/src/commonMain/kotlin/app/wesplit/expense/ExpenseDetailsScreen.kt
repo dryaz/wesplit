@@ -217,9 +217,9 @@ private fun AddExpenseScreenView(
                 enabled = data.expense.allowedToChange(),
                 modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
                 colors =
-                ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error,
-                ),
+                    ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
             ) {
                 Text("Delete expense")
             }
@@ -289,35 +289,35 @@ private fun ProtectionBlock(
             )
         },
         headlineContent = {
-            PlusProtected{
+            PlusProtected {
                 Text(
                     text =
-                    if (data.expense.allowedToChange()) {
-                        "Protect expense"
-                    } else {
-                        "Protected expense"
-                    },
+                        if (data.expense.allowedToChange()) {
+                            "Protect expense"
+                        } else {
+                            "Protected expense"
+                        },
                 )
             }
         },
         supportingContent = {
             Text(
                 text =
-                if (data.expense.allowedToChange()) {
-                    if (data.account is Account.Authorized) {
-                        "Only you able to update this expense"
+                    if (data.expense.allowedToChange()) {
+                        if (data.account is Account.Authorized) {
+                            "Only you able to update this expense"
+                        } else {
+                            "Login to protect this expense"
+                        }
                     } else {
-                        "Login to protect this expense"
-                    }
-                } else {
-                    "You're not allowed to update this expense"
-                },
+                        "You're not allowed to update this expense"
+                    },
             )
         },
         colors =
-        ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
         trailingContent = {
             if (data.expense.allowedToChange() && data.account is Account.Authorized) {
                 AdaptiveSwitch(
@@ -337,9 +337,9 @@ private fun SharesDetails(
 ) {
     Card(
         colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         SharesDetailsHeader(data)
@@ -454,9 +454,9 @@ private fun SharesDetailsParticipantList(
         AnimatedVisibility(visible = undist != null && undist.value != 0.0) {
             ListItem(
                 colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                ),
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    ),
                 headlineContent = {
                     Text(
                         text = "Undistributed",
@@ -477,10 +477,10 @@ private fun SharesDetailsParticipantList(
                             enabled = false,
                             label = { Text(amount.format()) },
                             colors =
-                            FilterChipDefaults.filterChipColors(
-                                disabledContainerColor = MaterialTheme.colorScheme.error,
-                                disabledLabelColor = MaterialTheme.colorScheme.onError,
-                            ),
+                                FilterChipDefaults.filterChipColors(
+                                    disabledContainerColor = MaterialTheme.colorScheme.error,
+                                    disabledLabelColor = MaterialTheme.colorScheme.onError,
+                                ),
                         )
                     }
                 },
@@ -514,27 +514,27 @@ private fun AmountsSplit(
             }
             TextField(
                 modifier =
-                Modifier.width(90.dp).focusRequester(focusRequester)
-                    .onFocusChanged { focusState ->
-                        if (focusState.isFocused) {
-                            fieldValue =
-                                fieldValue.copy(
-                                    selection = TextRange(0, fieldValue.text.length),
-                                )
-                        } else {
-                            fieldValue =
-                                fieldValue.copy(
-                                    selection = TextRange(fieldValue.text.length, fieldValue.text.length),
-                                )
-                        }
-                    },
+                    Modifier.width(90.dp).focusRequester(focusRequester)
+                        .onFocusChanged { focusState ->
+                            if (focusState.isFocused) {
+                                fieldValue =
+                                    fieldValue.copy(
+                                        selection = TextRange(0, fieldValue.text.length),
+                                    )
+                            } else {
+                                fieldValue =
+                                    fieldValue.copy(
+                                        selection = TextRange(fieldValue.text.length, fieldValue.text.length),
+                                    )
+                            }
+                        },
                 singleLine = true,
                 enabled = data.expense.allowedToChange(),
                 value = fieldValue,
                 keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                ),
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                    ),
                 onValueChange = { newValue ->
                     val newFilteredValue = newValue.text.filterDoubleInput()
                     val isEndingWithDot = newFilteredValue.endsWith(".")
@@ -555,9 +555,9 @@ private fun AmountsSplit(
         subComposable = {
             Text(
                 text =
-                data.expense.shares.find { it.participant.id == participant.id }?.let {
-                    it.amount.format()
-                } ?: "Not participating",
+                    data.expense.shares.find { it.participant.id == participant.id }?.let {
+                        it.amount.format()
+                    } ?: "Not participating",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
             )
@@ -601,9 +601,9 @@ private fun EqualSplit(
         subComposable = {
             Text(
                 text =
-                data.expense.shares.find { it.participant.id == participant.id }?.let {
-                    it.amount.format()
-                } ?: "Not participating",
+                    data.expense.shares.find { it.participant.id == participant.id }?.let {
+                        it.amount.format()
+                    } ?: "Not participating",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
             )
@@ -646,9 +646,9 @@ private fun ExpenseDetails(
 
     Card(
         colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
@@ -659,11 +659,11 @@ private fun ExpenseDetails(
             value = data.expense.title,
             isError = data.expense.title.isNullOrBlank(),
             keyboardOptions =
-            KeyboardOptions(
-                imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.Text,
-                capitalization = KeyboardCapitalization.Sentences,
-            ),
+                KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Sentences,
+                ),
             supportingText = {
                 if (data.expense.title.isNullOrBlank()) Text("Title should be filled")
             },
@@ -723,10 +723,10 @@ private fun ExpenseDetails(
                 value = amount,
                 enabled = data.expense.allowedToChange(),
                 keyboardOptions =
-                KeyboardOptions(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Decimal,
-                ),
+                    KeyboardOptions(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Decimal,
+                    ),
                 isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
                 onValueChange = { value ->
                     if (value.isNullOrBlank()) {
@@ -852,15 +852,15 @@ private fun TopAppBareByState(
         actions = {
             Box(
                 modifier =
-                Modifier.fillMaxHeight(1f).clickable {
-                    when (state) {
-                        is ExpenseDetailsViewModel.State.Error -> {}
+                    Modifier.fillMaxHeight(1f).clickable {
+                        when (state) {
+                            is ExpenseDetailsViewModel.State.Error -> {}
 
-                        is ExpenseDetailsViewModel.State.Data -> onToolbarAction(AddExpenseTollbarAction.Commit)
+                            is ExpenseDetailsViewModel.State.Data -> onToolbarAction(AddExpenseTollbarAction.Commit)
 
-                        ExpenseDetailsViewModel.State.Loading -> {}
-                    }
-                }.padding(horizontal = 16.dp),
+                            ExpenseDetailsViewModel.State.Loading -> {}
+                        }
+                    }.padding(horizontal = 16.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 when (state) {
