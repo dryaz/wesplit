@@ -708,7 +708,7 @@ private fun ExpenseDetails(
             }
             Spacer(modifier = Modifier.width(8.dp))
             FilledTonalButton(
-                modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
+                modifier = Modifier.fillMaxHeight(1f),
                 onClick = { showCurrencyPicker = true },
                 enabled = data.expense.allowedToChange(),
                 shape = RoundedCornerShape(10.dp),
