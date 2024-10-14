@@ -27,11 +27,10 @@ class PaywallViewModel(
 
     private fun refresh() =
         coroutinScope.launch {
-            if (!paywallRepository.isBillingSupported())
-                {
-                    _state.update { State.BillingNotSupported }
-                    return@launch
-                }
+            if (!paywallRepository.isBillingSupported()) {
+                _state.update { State.BillingNotSupported }
+                return@launch
+            }
             val result = paywallRepository.getProducts()
             if (result.isFailure) {
                 _state.update { State.Error }

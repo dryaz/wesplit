@@ -14,8 +14,14 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_plus
 
 @Composable
-fun PlusProtected(content: @Composable () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+fun PlusProtected(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         content()
         Spacer(modifier = Modifier.width(8.dp))
         Image(

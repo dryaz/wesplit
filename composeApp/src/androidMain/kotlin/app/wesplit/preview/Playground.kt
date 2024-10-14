@@ -1,33 +1,50 @@
 package app.wesplit.preview
 
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.paywall.Subscription
 import app.wesplit.theme.AppTheme
+import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.OrDivider
 import org.jetbrains.compose.resources.painterResource
 import split.composeapp.generated.resources.Res
@@ -42,81 +59,212 @@ import split.composeapp.generated.resources.img_best_offer
 @Preview(showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 fun Playground() =
     AppTheme {
-        Box {
-            Card(
-                modifier = Modifier.padding(3.dp),
-                colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    ),
-            ) {
-                products.sortedBy { (it as? Subscription)?.monthlyPrice?.value ?: 0.0 }.mapIndexed { index, subs ->
-                    ListItem(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth(1f)
-                                .height(IntrinsicSize.Max)
-                                .padding(end = 16.dp),
-                        colors =
-                            ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                            ),
-                        overlineContent = {
-                            Text(
-                                text = "Try for free",
-                                style = MaterialTheme.typography.labelSmall,
-                            )
-                        },
-                        headlineContent = {
-                            Text(
-                                text = subs.title,
-                                style = MaterialTheme.typography.titleMedium,
-                            )
-                        },
-                        supportingContent = {
-                            Text(
-                                text = subs.description,
-                                style = MaterialTheme.typography.bodyMedium,
-                            )
-                        },
-                        trailingContent = {
-                            Column(
-                                modifier =
-                                    Modifier
-                                        .fillMaxHeight(1f)
-                                        .width(IntrinsicSize.Max)
-                                        .widthIn(min = 80.dp),
-                                verticalArrangement = Arrangement.Center,
-                            ) {
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(1f),
-                                    text = subs.formattedPrice,
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.End,
-                                )
-                                Text(
-                                    modifier = Modifier.fillMaxWidth(1f),
-                                    text = "${subs.monthlyPrice.format()}/Month",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.End,
-                                )
-                            }
-                        },
-                    )
-                    if (index != products.size - 1) {
-                        OrDivider()
-                    }
-                }
+        Column(modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)) {
+            Box(modifier = Modifier.padding(16.dp)) {
+                PricingList(subscriptions = products) {}
             }
-            Image(
-                modifier = Modifier.width(64.dp).align(Alignment.TopEnd),
-                painter = painterResource(Res.drawable.img_best_offer),
-                contentDescription = "Best offer badge",
-            )
+            Box(modifier = Modifier.padding(13.dp)) {
+                PricingSelection(subscriptions = products) {}
+            }
         }
     }
+
+@Composable
+private fun PricingSelection(
+    modifier: Modifier = Modifier,
+    subscriptions: List<Subscription>,
+    onSelected: (Subscription) -> Unit,
+) {
+    var selected by remember {
+        mutableStateOf(subscriptions.sortedBy { it.monthlyPrice.value }[0])
+    }
+
+    Column(modifier = modifier) {
+        val unSelectedModifier =
+            Modifier
+                .padding(3.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(15.dp))
+
+        val selectedModifier =
+            unSelectedModifier
+                .border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(15.dp))
+
+        subscriptions.sortedBy { it.monthlyPrice.value }.mapIndexed { index, subscription ->
+            if (index == 0) {
+                Box {
+                    SubscriptionItem(
+                        modifier =
+                            Modifier
+                                .padding(3.dp)
+                                .clip(RoundedCornerShape(15.dp))
+                                .border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(15.dp)),
+                        isSelected = selected == subscription,
+                        subscription = subscription,
+                    ) {
+                        selected = it
+                    }
+                    Image(
+                        modifier =
+                            Modifier
+                                .width(64.dp)
+                                .align(Alignment.TopEnd),
+                        painter = painterResource(Res.drawable.img_best_offer),
+                        contentDescription = "Best offer badge",
+                    )
+                }
+            } else {
+                SubscriptionItem(
+                    modifier =
+                        Modifier
+                            .padding(3.dp)
+                            .clip(RoundedCornerShape(15.dp)),
+                    isSelected = selected == subscription,
+                    subscription = subscription,
+                ) {
+                    selected = it
+                }
+            }
+            Spacer(modifier = Modifier.height(5.dp))
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        FilledTonalButton(
+            colors =
+                ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                    contentColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                ),
+            modifier =
+                Modifier
+                    .height(52.dp)
+                    .padding(4.dp)
+                    .fillMaxWidth(1f),
+            onClick = { onSelected(selected) },
+            shape = RoundedCornerShape(10.dp),
+        ) {
+            Text(
+                text = "Subscribe for ${selected.formattedPrice}",
+                style =
+                    MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.7.sp,
+                    ),
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun PricingList(
+    modifier: Modifier = Modifier,
+    subscriptions: List<Subscription>,
+    onSelected: (Subscription) -> Unit,
+) {
+    Box(modifier = modifier) {
+        Card(
+            modifier = Modifier.padding(3.dp),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
+        ) {
+            subscriptions.sortedBy { (it as? Subscription)?.monthlyPrice?.value ?: 0.0 }.mapIndexed { index, subscription ->
+                SubscriptionItem(subscription = subscription) {
+                    onSelected(subscription)
+                }
+                if (index != subscriptions.size - 1) {
+                    OrDivider()
+                }
+            }
+        }
+        Image(
+            modifier =
+                Modifier
+                    .width(64.dp)
+                    .align(Alignment.TopEnd),
+            painter = painterResource(Res.drawable.img_best_offer),
+            contentDescription = "Best offer badge",
+        )
+    }
+}
+
+@Composable
+private fun SubscriptionItem(
+    modifier: Modifier = Modifier,
+    isSelected: Boolean = true,
+    subscription: Subscription,
+    onClick: (Subscription) -> Unit,
+) {
+    ListItem(
+        modifier =
+            modifier
+                .fillMaxWidth(1f)
+                .height(IntrinsicSize.Max)
+                .alpha(if (isSelected) 1f else 0.50f)
+                .clickable {
+                    onClick(subscription)
+                },
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        overlineContent = {
+            Text(
+                text = "Try for free",
+                style = MaterialTheme.typography.labelSmall,
+            )
+        },
+        headlineContent = {
+            Text(
+                text =
+                    when (subscription.period) {
+                        Subscription.Period.WEEK -> "Week Plus"
+                        Subscription.Period.MONTH -> "Month Plus"
+                        Subscription.Period.YEAR -> "Year Plus"
+                    },
+                style = MaterialTheme.typography.titleMedium,
+            )
+        },
+        supportingContent = {
+            Text(
+                text =
+                    when (subscription.period) {
+                        Subscription.Period.WEEK -> "Try Wesplit for 1 week"
+                        Subscription.Period.MONTH -> "Use Wesplit for 1 month"
+                        Subscription.Period.YEAR -> "Enjoy Wesplit for 1 year"
+                    },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        trailingContent = {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxHeight(1f)
+                        .padding(end = 8.dp)
+                        .width(IntrinsicSize.Max)
+                        .widthIn(min = 80.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(1f),
+                    text = subscription.formattedPrice,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.End,
+                )
+                Text(
+                    modifier = Modifier.fillMaxWidth(1f),
+                    text = "${subscription.monthlyPrice.format()}/Month",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.End,
+                )
+            }
+        },
+    )
+}
 
 val products =
     listOf<Subscription>(

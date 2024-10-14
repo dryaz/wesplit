@@ -71,5 +71,5 @@ class UnsupportedBiilingDelegate(val repository: BillingDelegate.StateRepository
         TODO("Not yet implemented")
     }
 
-    override fun isBillingSupported(): Boolean = true
+    override fun isBillingSupported(): Boolean = false
 }
