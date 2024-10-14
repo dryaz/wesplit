@@ -46,7 +46,7 @@ import app.wesplit.ShareData
 import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.Login
-import app.wesplit.domain.model.user.Subscription
+import app.wesplit.domain.model.user.Plan
 import app.wesplit.domain.model.user.email
 import app.wesplit.domain.model.user.participant
 import app.wesplit.participant.ParticipantListItem
@@ -348,26 +348,26 @@ private fun ColumnScope.Plan(
         modifier = Modifier.fillMaxWidth(1f).padding(16.dp),
     ) {
         val title =
-            when (account.user.subscription) {
-                Subscription.BASIC -> "Try Plus"
-                Subscription.PLUS -> "Your have Plus+"
+            when (account.user.plan) {
+                Plan.BASIC -> "Try Plus"
+                Plan.PLUS -> "Your have Plus+"
             }
 
         val desc =
-            when (account.user.subscription) {
-                Subscription.BASIC -> "Unlock all features"
-                Subscription.PLUS -> "All features unlocked"
+            when (account.user.plan) {
+                Plan.BASIC -> "Unlock all features"
+                Plan.PLUS -> "All features unlocked"
             }
 
         val modifier =
-            when (account.user.subscription) {
-                Subscription.BASIC -> Modifier.fillMaxWidth().clickable { onSubscribe() }
-                Subscription.PLUS -> Modifier
+            when (account.user.plan) {
+                Plan.BASIC -> Modifier.fillMaxWidth().clickable { onSubscribe() }
+                Plan.PLUS -> Modifier
             }
 
         val trailing: @Composable (() -> Unit)? =
-            when (account.user.subscription) {
-                Subscription.BASIC -> {
+            when (account.user.plan) {
+                Plan.BASIC -> {
                     {
                         Icon(
                             modifier = Modifier.minimumInteractiveComponentSize(),
@@ -377,7 +377,7 @@ private fun ColumnScope.Plan(
                     }
                 }
 
-                Subscription.PLUS -> null
+                Plan.PLUS -> null
             }
 
         ListItem(
@@ -406,13 +406,13 @@ private fun ColumnScope.Plan(
         HorizontalDivider()
 
         FeaturesList(
-            subscription = account.user.subscription,
+            subscription = account.user.plan,
             onSubscribe = onSubscribe,
         )
 
         AnimatedVisibility(
             modifier = Modifier.fillMaxWidth(1f),
-            visible = account.user.subscription == Subscription.BASIC,
+            visible = account.user.plan == Plan.BASIC,
         ) {
             ListItem(
                 modifier =
@@ -438,13 +438,13 @@ private fun ColumnScope.Plan(
 
 @Composable
 private fun FeaturesList(
-    subscription: Subscription,
+    subscription: Plan,
     onSubscribe: () -> Unit,
 ) {
     val icon =
         when (subscription) {
-            Subscription.BASIC -> AdaptiveIcons.Outlined.Lock
-            Subscription.PLUS -> AdaptiveIcons.Outlined.Done
+            Plan.BASIC -> AdaptiveIcons.Outlined.Lock
+            Plan.PLUS -> AdaptiveIcons.Outlined.Done
         }
 
     val featuresMap =

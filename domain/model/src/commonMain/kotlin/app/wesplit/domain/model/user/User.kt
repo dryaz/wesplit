@@ -32,7 +32,7 @@ data class User(
     @SerialName("lastCur")
     val lastUsedCurrency: String? = null,
     @SerialName("subs")
-    val subscription: Subscription = Subscription.BASIC,
+    val plan: Plan = Plan.BASIC,
 )
 
 fun User.participant(): Participant? =
@@ -69,7 +69,7 @@ sealed interface Contact {
 
 @Serializable
 @SerialName("subs")
-enum class Subscription {
+enum class Plan {
     @SerialName("basic")
     BASIC,
 

@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.core.bundle.Bundle
 import androidx.lifecycle.SavedStateHandle
@@ -184,6 +185,7 @@ fun RootNavigation(
     val coroutineScope = rememberCoroutineScope()
     val shareDelegate: ShareDelegate = koinInject()
     val clipboardManager = LocalClipboardManager.current
+    val uriHandler = LocalUriHandler.current
 
     val onSubscriptionRequest: (String) -> Unit =
         remember {
@@ -439,6 +441,13 @@ fun RootNavigation(
                     ) { action ->
                         when (action) {
                             PaywallAction.Back -> secondPaneNavController.popBackStack()
+                            PaywallAction.DownloadMobile -> {
+                                if (shareDelegate.supportPlatformSharing()) {
+                                    shareDelegate.open(ShareData.Link("https://wesplit.app"))
+                                } else {
+                                    uriHandler.openUri("https://wesplit.app")
+                                }
+                            }
                         }
                     }
                 }

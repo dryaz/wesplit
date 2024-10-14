@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WeSplit</string>
+    <string name="app_name">Wesplit</string>
     <string name="app_version">v2.0.0+37</string>
     <string name="no_image_group_cd">No image for group %s</string>
     <string name="login">Login</string>
@@ -55,7 +55,7 @@
     <string name="plus_subs_title">Plus benefits</string>
     <!-- Plus features descr -->
     <string name="plus_feature_protect_title">Protected expense</string>
-    <string name="plus_feature_protect_descr_short">Ensure consistancy for it</string>
+    <string name="plus_feature_protect_descr_short">Ensure expense integrity</string>
     <string name="plus_feature_protect_descr_full">Keep critical costs under your control.\nPrevent unauthorized changes and maintain financial integrity effortlessly.</string>
 
     <string name="plus_feature_currencies_title">FX rates</string>

@@ -2,7 +2,7 @@ package app.wesplit.paywall
 
 import androidx.lifecycle.ViewModel
 import app.wesplit.domain.model.paywall.PaywallRepository
-import app.wesplit.domain.model.paywall.Product
+import app.wesplit.domain.model.paywall.Subscription
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +27,11 @@ class PaywallViewModel(
 
     private fun refresh() =
         coroutinScope.launch {
+            if (!paywallRepository.isBillingSupported())
+                {
+                    _state.update { State.BillingNotSupported }
+                    return@launch
+                }
             val result = paywallRepository.getProducts()
             if (result.isFailure) {
                 _state.update { State.Error }
@@ -41,6 +46,8 @@ class PaywallViewModel(
 
         data object Error : State
 
-        data class Data(val products: List<Product>) : State
+        data object BillingNotSupported : State
+
+        data class Data(val products: List<Subscription>) : State
     }
 }

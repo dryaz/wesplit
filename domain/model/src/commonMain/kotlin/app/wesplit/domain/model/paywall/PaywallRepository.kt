@@ -1,23 +1,25 @@
 package app.wesplit.domain.model.paywall
 
-interface PaywallRepository {
-    suspend fun getProducts(): Result<List<Product>>
+import app.wesplit.domain.model.currency.Amount
 
-    suspend fun subscribe(period: Product.Subscription.Period): Result<Boolean>
+interface PaywallRepository {
+    suspend fun getProducts(): Result<List<Subscription>>
+
+    suspend fun subscribe(period: Subscription.Period): Result<Boolean>
+
+    fun isBillingSupported(): Boolean
 }
 
-sealed interface Product {
-    data class Subscription(
-        val title: String,
-        val description: String,
-        val formattedPrice: String,
-        val amountMicros: Long,
-        val period: Period,
-    ) : Product {
-        enum class Period {
-            WEEK,
-            MONTH,
-            YEAR,
-        }
+data class Subscription(
+    val title: String,
+    val description: String,
+    val formattedPrice: String,
+    val monthlyPrice: Amount,
+    val period: Period,
+) {
+    enum class Period {
+        WEEK,
+        MONTH,
+        YEAR,
     }
 }

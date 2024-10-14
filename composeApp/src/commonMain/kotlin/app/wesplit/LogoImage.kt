@@ -10,7 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
-import app.wesplit.domain.model.user.Subscription
+import app.wesplit.domain.model.user.Plan
 import app.wesplit.theme.ColorMode
 import app.wesplit.theme.LocalThemeState
 import org.jetbrains.compose.resources.painterResource
@@ -33,7 +33,7 @@ fun AppLogo(
 
     val isPlus by remember(account) {
         derivedStateOf {
-            (account.value as? Account.Authorized)?.user?.subscription == Subscription.PLUS
+            (account.value as? Account.Authorized)?.user?.plan == Plan.PLUS
         }
     }
 

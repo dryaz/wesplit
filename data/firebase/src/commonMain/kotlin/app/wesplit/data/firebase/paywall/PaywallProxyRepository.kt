@@ -5,7 +5,7 @@ import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.paywall.BillingState
 import app.wesplit.domain.model.paywall.PaywallRepository
 import app.wesplit.domain.model.paywall.PaywallRestrictionException
-import app.wesplit.domain.model.paywall.Product
+import app.wesplit.domain.model.paywall.Subscription
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Single
@@ -23,7 +23,7 @@ class PaywallProxyRepository(
     private val billingStateRepository: BillingDelegate.StateRepository,
     private val analytics: AnalyticsManager,
 ) : PaywallRepository {
-    override suspend fun getProducts(): Result<List<Product>> {
+    override suspend fun getProducts(): Result<List<Subscription>> {
         // TODO: If it's already purchased - return exception?
         billingDelegate.requestPricingUpdate()
 
@@ -39,7 +39,7 @@ class PaywallProxyRepository(
         }
     }
 
-    override suspend fun subscribe(period: Product.Subscription.Period): Result<Boolean> {
+    override suspend fun subscribe(period: Subscription.Period): Result<Boolean> {
         analytics.track(PURCHASE_ATTEMPT_EVENT, mapOf(PURCHASE_PERIOD_PARAM to period.name))
 
         // TODO: If it's already purchased - return exception?
@@ -76,4 +76,6 @@ class PaywallProxyRepository(
             else -> throw IllegalStateException("Purchases or Error states only should be pro purchase call")
         }
     }
+
+    override fun isBillingSupported(): Boolean = billingDelegate.isBillingSupported()
 }

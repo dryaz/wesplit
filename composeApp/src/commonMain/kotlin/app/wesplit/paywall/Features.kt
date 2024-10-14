@@ -25,6 +25,12 @@ internal val features: List<Feature> =
             fullDescr = Res.string.plus_feature_currencies_descr_full,
             image = Res.drawable.img_feature_protect,
         ),
+        Feature(
+            title = Res.string.plus_feature_currencies_title,
+            shortDescr = Res.string.plus_feature_currencies_descr_short,
+            fullDescr = Res.string.plus_feature_currencies_descr_full,
+            image = Res.drawable.img_feature_protect,
+        ),
     )
 
 internal data class Feature(

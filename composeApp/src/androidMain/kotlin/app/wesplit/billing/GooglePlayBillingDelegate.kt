@@ -6,8 +6,8 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.paywall.PaywallRestrictionException
-import app.wesplit.domain.model.paywall.Product
 import app.wesplit.domain.model.paywall.PurchaseState
+import app.wesplit.domain.model.paywall.Subscription
 import app.wesplit.domain.model.user.UserRepository
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 private const val TAG = "GooglePlayBillingDelegate"
 
-private const val PRO_SUB_ID = "pro"
+private const val PLUS_SUB_ID = "plus"
 private const val DELAY_THRESHOLD = 2000L
 
 @Single
@@ -72,7 +72,7 @@ class GooglePlayBillingDelegate(
             val productList = mutableListOf<QueryProductDetailsParams.Product>()
             productList.add(
                 QueryProductDetailsParams.Product.newBuilder()
-                    .setProductId(PRO_SUB_ID)
+                    .setProductId(PLUS_SUB_ID)
                     .setProductType(BillingClient.ProductType.SUBS)
                     .build(),
             )
@@ -109,7 +109,7 @@ class GooglePlayBillingDelegate(
         }
     }
 
-    override fun subscribe(period: Product.Subscription.Period) {
+    override fun subscribe(period: Subscription.Period) {
         // TODO: Add exception handler to write in logs
         mainScope.launch {
             ensureConnection()
@@ -146,6 +146,8 @@ class GooglePlayBillingDelegate(
             billingClient.value.launchBillingFlow(activity, billingFlowParams)
         }
     }
+
+    override fun isBillingSupported(): Boolean = true
 
     private fun startConnection() {
         billingClient.value.startConnection(

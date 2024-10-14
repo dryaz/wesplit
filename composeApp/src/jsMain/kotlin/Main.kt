@@ -48,7 +48,7 @@ fun main() {
         val deepLinkHandler = DeepLinkHandler()
         deepLinkHandler.handleDeeplink(window.location.toString())
 
-        CanvasBasedWindow("WeSplit") {
+        CanvasBasedWindow("Wesplit") {
             // TODO: Support initial destination
             // TODO: Provide parsed UTM into Common app to have SSOT for utm tracking
             App(

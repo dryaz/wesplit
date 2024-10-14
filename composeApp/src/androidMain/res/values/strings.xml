@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">WeSplit</string>
+    <string name="app_name" translatable="false">Wesplit</string>
     <string name="shortcut_add_expense_short">%s</string>
     <string name="shortcut_add_expense_long">Add new expense to group "%s"</string>
 </resources>
