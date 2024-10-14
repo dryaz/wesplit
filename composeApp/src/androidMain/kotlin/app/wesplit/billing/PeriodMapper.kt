@@ -17,6 +17,6 @@ class PeriodMapper {
         when (period) {
             Subscription.Period.YEAR -> "P1Y"
             Subscription.Period.MONTH -> "P1M"
-            Subscription.Period.WEEK -> null
+            Subscription.Period.WEEK -> "P1W"
         }
 }

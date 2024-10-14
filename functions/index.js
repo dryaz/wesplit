@@ -1,8 +1,11 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const axios = require('axios');
+const { getFirestore } = require('firebase-admin/firestore');
 
 admin.initializeApp();
+
+const db = getFirestore();
 
 exports.generateGroupToken = functions.https.onCall(async (data, context) => {
   const { groupId, publicToken } = data;
@@ -211,7 +214,6 @@ exports.updateCurrencyRates = functions.pubsub.schedule('0 0 * * *').timeZone('U
 
     if (data.result === 'success') {
       // Write data to Firestore
-      const db = admin.firestore();
       const timestamp = admin.firestore.FieldValue.serverTimestamp();
 
       await db.collection('fxrates').doc('latest').set({
@@ -262,3 +264,116 @@ async function updateExpensesStatus(req, res) {
 
 // Export the function as an HTTPS function
 exports.updateExpensesStatus = functions.https.onRequest(updateExpensesStatus);
+
+// Import necessary modules
+const { onMessagePublished } = require('firebase-functions/v2/pubsub');
+const logger = require('firebase-functions/logger');
+const { google } = require('googleapis');
+const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
+const { GoogleAuth } = require('google-auth-library');
+
+// Function to get service account credentials from Secret Manager
+async function getServiceAccountCredentials() {
+  const secretClient = new SecretManagerServiceClient();
+  const [version] = await secretClient.accessSecretVersion({
+    name: 'projects/548791587175/secrets/play-in-app/versions/latest',
+  });
+  const keyFileContent = version.payload.data.toString('utf8');
+  return JSON.parse(keyFileContent);
+}
+
+exports.handleSubscriptionUpdates = onMessagePublished('in-app-android', async (event) => {
+  const pubsubMessage = event.data.message;
+  const data = pubsubMessage.json;
+
+  if (data) {
+    const notification = data;
+    const { subscriptionNotification } = notification;
+    const { purchaseToken, subscriptionId } = subscriptionNotification;
+
+    // Authenticate with Google Play Developer API
+    const keyFileObject = await getServiceAccountCredentials();
+    const auth = new GoogleAuth({
+      credentials: keyFileObject,
+      scopes: ['https://www.googleapis.com/auth/androidpublisher'],
+    });
+
+    const authClient = await auth.getClient();
+
+    const publisher = google.androidpublisher({
+      version: 'v3',
+      auth: authClient,
+    });
+
+    const packageName = 'app.wesplit'; // Replace with your app's package name
+
+    try {
+      // Verify the purchase with Google Play Developer API
+      const res = await publisher.purchases.subscriptions.get({
+        packageName,
+        subscriptionId,
+        token: purchaseToken,
+      });
+
+      const purchase = res.data;
+
+      // Access obfuscatedExternalAccountId
+      const userId = purchase.obfuscatedExternalAccountId;
+
+      if (userId) {
+        // Use obfuscatedAccountId to find the user
+        const usersSnapshot = await db.collection('users').doc(userId).get();
+
+        if (!usersSnapshot.empty) {
+          // Acknowledge the purchase if not already acknowledged
+          if (purchase.acknowledgementState === 0) {
+            await publisher.purchases.subscriptions.acknowledge({
+              packageName,
+              subscriptionId,
+              token: purchaseToken,
+              requestBody: {
+                // Optional developer payload you can use to track this acknowledgement
+                developerPayload: 'Acknowledged via Cloud Function',
+              },
+            });
+            console.log('Subscription purchase acknowledged.');
+          } else {
+            console.log('Subscription purchase already acknowledged.');
+          }
+
+          // Determine subscription status
+          const currentTime = Date.now();
+          const expiryTime = parseInt(purchase.expiryTimeMillis);
+
+          let subsStatus = 'basic';
+          if (
+            purchase.paymentState === 1 && // Payment received
+            expiryTime > currentTime &&    // Subscription has not expired
+            purchase.cancelReason == null  // No cancellation
+          ) {
+            subsStatus = 'plus';
+          }
+
+          await db.collection('users').doc(userId).update({
+            subs: subsStatus,
+          });
+
+          logger.info(`Subscription status updated for user: ${userId} to ${subsStatus}`);
+        } else {
+          logger.error('No user found for obfuscatedAccountId:', userId);
+        }
+      } else {
+        logger.error('obfuscatedExternalAccountId not found in purchase data');
+      }
+    } catch (error) {
+      logger.error('Error verifying subscription:', {
+        message: error.message,
+        code: error.code,
+        errors: error.errors,
+        response: error.response ? error.response.data : null,
+      });
+    }
+  } else {
+    logger.error('Pub/Sub message data is empty');
+  }
+});

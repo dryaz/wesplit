@@ -41,6 +41,7 @@ import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.paywall.PaywallRepository
+import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.expense.AddExpenseAction
 import app.wesplit.expense.ExpenseDetailsScreen
 import app.wesplit.expense.ExpenseDetailsViewModel
@@ -427,6 +428,7 @@ fun RootNavigation(
                     },
                 ) {
                     val paywallRepository: PaywallRepository = koinInject()
+                    val userRepository: UserRepository = koinInject()
                     val ioDispatcher: CoroutineDispatcher = koinInject()
 
                     val paywallViewModel: PaywallViewModel =
@@ -434,6 +436,7 @@ fun RootNavigation(
                             PaywallViewModel(
                                 paywallRepository = paywallRepository,
                                 coroutineDispatcher = ioDispatcher,
+                                userRepository = userRepository,
                             )
                         }
                     PaywallRoute(

@@ -31,6 +31,8 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -39,6 +41,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,6 +65,8 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
 import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowLeft
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Lock
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -87,8 +92,13 @@ fun PaywallRoute(
     val accountRepository: AccountRepository = koinInject()
     val accountState = accountRepository.get().collectAsState()
     val productsState = viewModel.state.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         topBar = {
@@ -122,6 +132,20 @@ fun PaywallRoute(
             productState = productsState.value,
             onAction = onAction,
         ) {
+            viewModel.subscribe(it)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collectLatest { event ->
+            when (event) {
+                is PaywallViewModel.Event.Error -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(event.msg)
+                    }
+                }
+                PaywallViewModel.Event.Purchased -> onAction(PaywallAction.Back)
+            }
         }
     }
 }
@@ -222,6 +246,30 @@ fun PaywallScreen(
                         },
                     )
                 }
+
+                PaywallViewModel.State.AlreadySubscribed -> {
+                    ListItem(
+                        modifier =
+                            Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
+                                onAction(PaywallAction.DownloadMobile)
+                            },
+                        colors =
+                            ListItemDefaults.colors(
+                                containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                                headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                                leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                                supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                            ),
+                        headlineContent = { Text("Your plus subscription") },
+                        supportingContent = { Text("Enjoy all features in Wesplit") },
+                        leadingContent = {
+                            Icon(
+                                imageVector = AdaptiveIcons.Outlined.Done,
+                                contentDescription = "Plus plan activated",
+                            )
+                        },
+                    )
+                }
             }
         }
 
@@ -305,6 +353,7 @@ fun PaywallScreen(
             SubscriptionButton(it) {
                 onSubscribe(it)
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
