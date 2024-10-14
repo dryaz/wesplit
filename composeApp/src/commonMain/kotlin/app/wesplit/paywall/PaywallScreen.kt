@@ -260,7 +260,7 @@ fun PaywallScreen(
                                 leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
                                 supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
                             ),
-                        headlineContent = { Text("Your plus subscription") },
+                        headlineContent = { Text("Your plus is active") },
                         supportingContent = { Text("Enjoy all features in Wesplit") },
                         leadingContent = {
                             Icon(
