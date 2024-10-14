@@ -51,11 +51,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.wesplit.domain.model.account.Account
-import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.paywall.Subscription
 import app.wesplit.domain.model.user.Plan
+import app.wesplit.domain.model.user.User
+import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.OrDivider
@@ -89,8 +89,8 @@ fun PaywallRoute(
     viewModel: PaywallViewModel,
     onAction: (PaywallAction) -> Unit,
 ) {
-    val accountRepository: AccountRepository = koinInject()
-    val accountState = accountRepository.get().collectAsState()
+    val userRepository: UserRepository = koinInject()
+    val userState = userRepository.get().collectAsState()
     val productsState = viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -128,7 +128,7 @@ fun PaywallRoute(
     ) { paddings ->
         PaywallScreen(
             modifier = Modifier.padding(paddings),
-            account = accountState.value,
+            user = userState.value,
             productState = productsState.value,
             onAction = onAction,
         ) {
@@ -154,13 +154,13 @@ fun PaywallRoute(
 @Composable
 fun PaywallScreen(
     modifier: Modifier = Modifier,
-    account: Account,
+    user: User?,
     productState: PaywallViewModel.State,
     onAction: (PaywallAction) -> Unit,
     onSubscribe: (Subscription) -> Unit,
 ) {
     val trailingIcon =
-        if ((account as? Account.Authorized)?.user?.plan == Plan.BASIC) {
+        if (user?.plan == Plan.BASIC) {
             AdaptiveIcons.Outlined.Lock
         } else {
             AdaptiveIcons.Outlined.Done

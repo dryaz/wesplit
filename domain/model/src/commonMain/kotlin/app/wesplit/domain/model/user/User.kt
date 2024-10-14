@@ -35,14 +35,6 @@ data class User(
     val plan: Plan = Plan.BASIC,
 )
 
-fun User.participant(): Participant? =
-    Participant(
-        name = name,
-        user = this,
-    )
-
-fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email
-
 @Serializable
 sealed interface Contact {
     @Serializable
@@ -76,3 +68,13 @@ enum class Plan {
     @SerialName("plus")
     PLUS,
 }
+
+fun User.participant(): Participant =
+    Participant(
+        name = name,
+        user = this,
+    )
+
+fun User.isPlus() = plan == Plan.PLUS
+
+fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email

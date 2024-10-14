@@ -8,9 +8,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import app.wesplit.domain.model.account.Account
-import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.user.Plan
+import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.theme.ColorMode
 import app.wesplit.theme.LocalThemeState
 import org.jetbrains.compose.resources.painterResource
@@ -28,12 +27,12 @@ fun AppLogo(
     modifier: Modifier = Modifier,
     isColorfull: Boolean = true,
 ) {
-    val accountRepository: AccountRepository = koinInject()
-    val account = accountRepository.get().collectAsState()
+    val userRepository: UserRepository = koinInject()
+    val user = userRepository.get().collectAsState()
 
-    val isPlus by remember(account) {
+    val isPlus by remember(user) {
         derivedStateOf {
-            (account.value as? Account.Authorized)?.user?.plan == Plan.PLUS
+            user.value?.plan == Plan.PLUS
         }
     }
 

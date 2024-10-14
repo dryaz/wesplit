@@ -96,7 +96,7 @@ class GroupSettingsViewModel(
                     } else {
                         val me = (accountRepository.get().first { it is Account.Authorized } as Account.Authorized).user
                         participants.map {
-                            if (it.id != asParticipant.id) it else it.copy(user = me)
+                            if (it.id != asParticipant.id) it else it.copy(user = me.value)
                         }
                     }
 

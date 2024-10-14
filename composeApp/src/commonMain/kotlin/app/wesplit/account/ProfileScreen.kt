@@ -47,6 +47,7 @@ import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.user.Plan
+import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.email
 import app.wesplit.domain.model.user.participant
 import app.wesplit.participant.ParticipantListItem
@@ -137,13 +138,17 @@ fun ProfileScreen(
         },
     ) { padding ->
         when (accountState) {
-            is Account.Authorized ->
-                AccountInfo(
-                    modifier = Modifier.padding(padding),
-                    account = accountState,
-                    onAction = onAction,
-                    onAccountDelete = onAccountDelete,
-                )
+            is Account.Authorized -> {
+                val user = accountState.user.collectAsState()
+                user.value?.let {
+                    AccountInfo(
+                        modifier = Modifier.padding(padding),
+                        user = it,
+                        onAction = onAction,
+                        onAccountDelete = onAccountDelete,
+                    )
+                }
+            }
 
             Account.Unknown -> {
                 Box(modifier = Modifier.fillMaxSize(1f)) {
@@ -166,12 +171,12 @@ fun ProfileScreen(
 @Composable
 private fun AccountInfo(
     modifier: Modifier = Modifier,
-    account: Account.Authorized,
+    user: User,
     onAction: (ProfileAction) -> Unit,
     onAccountDelete: () -> Unit,
 ) {
     var deleteDialogShown by remember { mutableStateOf(false) }
-    val participant = account.user.participant()
+    val participant = user.participant()
     val windowSizeClass = calculateWindowSizeClass()
     val shareDelegate: ShareDelegate = koinInject()
 
@@ -186,7 +191,7 @@ private fun AccountInfo(
                 showImage = windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact,
                 showMeBadge = false,
                 subComposable =
-                    account.user.email()?.let { email ->
+                    user.email()?.let { email ->
                         {
                             Text(
                                 text = email,
@@ -198,7 +203,7 @@ private fun AccountInfo(
             )
         }
 
-        Plan(account) { onAction(ProfileAction.Paywall) }
+        Plan(user) { onAction(ProfileAction.Paywall) }
         Spacer(modifier = Modifier.weight(1f))
 
         val uriHandler = LocalUriHandler.current
@@ -337,7 +342,7 @@ private fun AccountInfo(
 
 @Composable
 private fun ColumnScope.Plan(
-    account: Account.Authorized,
+    user: User,
     onSubscribe: () -> Unit,
 ) {
     Card(
@@ -348,25 +353,25 @@ private fun ColumnScope.Plan(
         modifier = Modifier.fillMaxWidth(1f).padding(16.dp),
     ) {
         val title =
-            when (account.user.plan) {
+            when (user.plan) {
                 Plan.BASIC -> "Try Plus"
                 Plan.PLUS -> "Your have Plus+"
             }
 
         val desc =
-            when (account.user.plan) {
+            when (user.plan) {
                 Plan.BASIC -> "Unlock all features"
                 Plan.PLUS -> "All features unlocked"
             }
 
         val modifier =
-            when (account.user.plan) {
+            when (user.plan) {
                 Plan.BASIC -> Modifier.fillMaxWidth().clickable { onSubscribe() }
                 Plan.PLUS -> Modifier
             }
 
         val trailing: @Composable (() -> Unit)? =
-            when (account.user.plan) {
+            when (user.plan) {
                 Plan.BASIC -> {
                     {
                         Icon(
@@ -406,13 +411,13 @@ private fun ColumnScope.Plan(
         HorizontalDivider()
 
         FeaturesList(
-            subscription = account.user.plan,
+            subscription = user.plan,
             onSubscribe = onSubscribe,
         )
 
         AnimatedVisibility(
             modifier = Modifier.fillMaxWidth(1f),
-            visible = account.user.plan == Plan.BASIC,
+            visible = user.plan == Plan.BASIC,
         ) {
             ListItem(
                 modifier =
