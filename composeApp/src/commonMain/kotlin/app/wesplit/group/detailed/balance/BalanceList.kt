@@ -41,7 +41,10 @@ import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isConnected
+import app.wesplit.group.detailed.checkBalanceTutorialStepFlow
 import app.wesplit.participant.ParticipantListItem
+import app.wesplit.ui.LocalTutorialControl
+import app.wesplit.ui.TutorialItem
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Email
@@ -57,117 +60,126 @@ fun BalanceList(
     onSettle: () -> Unit,
 ) {
     var settleDialogShown by remember { mutableStateOf(false) }
+    val tutorialControl = LocalTutorialControl.current
 
     if (balance != null) {
-        Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
-        ) {
-            Card(
-                colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    ),
-                modifier =
-                    Modifier
-                        .fillMaxWidth(1f)
-                        .padding(16.dp)
-                        .padding(bottom = 64.dp),
+        TutorialItem(
+            onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[1], it) },
+        ) { modifier ->
+            Column(
+                modifier = modifier.verticalScroll(rememberScrollState()),
             ) {
-                balance.participantsBalance.forEach { balanceItem ->
-                    val action: @Composable (() -> Unit)? =
-                        if (!balanceItem.participant.isConnected()) {
-                            {
-                                FilledIconButton(
-                                    colors =
-                                        IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        ),
-                                    shape = CircleShape,
-                                    onClick = {
-                                        onInvite(balanceItem.participant)
-                                    },
-                                ) {
-                                    Icon(
-                                        AdaptiveIcons.Outlined.Email,
-                                        contentDescription = "Invite user",
-                                    )
-                                }
-                            }
-                        } else {
-                            null
-                        }
-
-                    val callback: ((Participant) -> Unit)? =
-                        if (!balanceItem.participant.isConnected()) {
-                            { participant -> onInvite(participant) }
-                        } else {
-                            null
-                        }
-
-                    ParticipantListItem(
-                        action = action,
-                        onClick = callback,
-                        participant = balanceItem.participant,
-                        subComposable = {
-                            FlowRow(
-                                modifier = Modifier.fillMaxWidth(1f),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                balanceItem.amounts.filter { it.value != 0.0 }.forEach { amount ->
-                                    FilterChip(
-                                        selected = false,
-                                        onClick = {},
-                                        enabled = false,
-                                        label = { Text(amount.format()) },
-                                        colors =
-                                            FilterChipDefaults.filterChipColors(
-                                                disabledContainerColor =
-                                                    if (amount.value > 0.0) {
-                                                        MaterialTheme.colorScheme.secondaryContainer
-                                                    } else {
-                                                        MaterialTheme.colorScheme.error
-                                                    },
-                                                disabledLabelColor =
-                                                    if (amount.value > 0.0) {
-                                                        MaterialTheme.colorScheme.onSecondaryContainer
-                                                    } else {
-                                                        MaterialTheme.colorScheme.onError
-                                                    },
-                                            ),
-                                    )
-                                }
-                            }
-                        },
-                    )
-                }
-
-                if (balance.undistributed.isNotEmpty()) {
-                    HorizontalDivider()
-                    Undistributed(balance)
-                }
-
-                AnimatedVisibility(
-                    modifier = Modifier.fillMaxWidth(1f),
-                    visible = balance.participantsBalance.any { it.amounts.any { it.value != 0.0 } },
+                Card(
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        ),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(1f)
+                            .padding(16.dp)
+                            .padding(bottom = 64.dp),
                 ) {
-                    ListItem(
-                        modifier =
-                            Modifier.fillMaxWidth().clickable {
-                                settleDialogShown = true
+                    balance.participantsBalance.forEach { balanceItem ->
+                        val action: @Composable (() -> Unit)? =
+                            if (!balanceItem.participant.isConnected()) {
+                                {
+                                    FilledIconButton(
+                                        colors =
+                                            IconButtonDefaults.filledIconButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                            ),
+                                        shape = CircleShape,
+                                        onClick = {
+                                            onInvite(balanceItem.participant)
+                                        },
+                                    ) {
+                                        Icon(
+                                            AdaptiveIcons.Outlined.Email,
+                                            contentDescription = "Invite user",
+                                        )
+                                    }
+                                }
+                            } else {
+                                null
+                            }
+
+                        val callback: ((Participant) -> Unit)? =
+                            if (!balanceItem.participant.isConnected()) {
+                                { participant -> onInvite(participant) }
+                            } else {
+                                null
+                            }
+
+                        ParticipantListItem(
+                            action = action,
+                            onClick = callback,
+                            participant = balanceItem.participant,
+                            subComposable = {
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(1f),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    balanceItem.amounts.filter { it.value != 0.0 }.forEach { amount ->
+                                        FilterChip(
+                                            selected = false,
+                                            onClick = {},
+                                            enabled = false,
+                                            label = { Text(amount.format()) },
+                                            colors =
+                                                FilterChipDefaults.filterChipColors(
+                                                    disabledContainerColor =
+                                                        if (amount.value > 0.0) {
+                                                            MaterialTheme.colorScheme.secondaryContainer
+                                                        } else {
+                                                            MaterialTheme.colorScheme.error
+                                                        },
+                                                    disabledLabelColor =
+                                                        if (amount.value > 0.0) {
+                                                            MaterialTheme.colorScheme.onSecondaryContainer
+                                                        } else {
+                                                            MaterialTheme.colorScheme.onError
+                                                        },
+                                                ),
+                                        )
+                                    }
+                                }
                             },
-                        colors =
-                            ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                headlineColor = MaterialTheme.colorScheme.onPrimary,
-                            ),
-                        headlineContent = {
-                            Text(
-                                modifier = Modifier.fillMaxSize(1f),
-                                text = "Settle balances",
-                                textAlign = TextAlign.Center,
+                        )
+                    }
+
+                    if (balance.undistributed.isNotEmpty()) {
+                        HorizontalDivider()
+                        Undistributed(balance)
+                    }
+
+                    TutorialItem(
+                        onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[2], it) },
+                    ) { modifier ->
+                        AnimatedVisibility(
+                            modifier = modifier.fillMaxWidth(1f),
+                            visible = balance.participantsBalance.any { it.amounts.any { it.value != 0.0 } },
+                        ) {
+                            ListItem(
+                                modifier =
+                                    Modifier.fillMaxWidth().clickable {
+                                        settleDialogShown = true
+                                    },
+                                colors =
+                                    ListItemDefaults.colors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        headlineColor = MaterialTheme.colorScheme.onPrimary,
+                                    ),
+                                headlineContent = {
+                                    Text(
+                                        modifier = Modifier.fillMaxSize(1f),
+                                        text = "Settle balances",
+                                        textAlign = TextAlign.Center,
+                                    )
+                                },
                             )
-                        },
-                    )
+                        }
+                    }
                 }
             }
         }

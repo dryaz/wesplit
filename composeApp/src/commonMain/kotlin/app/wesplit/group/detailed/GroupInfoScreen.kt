@@ -55,6 +55,8 @@ import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.HelpOverlayPosition
+import app.wesplit.ui.LocalTutorialControl
+import app.wesplit.ui.TutorialItem
 import app.wesplit.ui.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
@@ -94,7 +96,7 @@ private val addExpenseTutorialStep =
         helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
     )
 
-private val checkBalanceTutorialStepFlow =
+internal val checkBalanceTutorialStepFlow =
     listOf(
         TutorialStep(
             title = "Balances tab",
@@ -104,12 +106,12 @@ private val checkBalanceTutorialStepFlow =
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
         TutorialStep(
-            title = "Add expense to group",
+            title = "Check balances",
             description =
                 "Here you could see who owes what. -X means that person ows money. " +
                     "+Y means that person is need to pay back.",
             onboardingStep = OnboardingStep.BALANCE_PREVIEW,
-            isModal = false,
+            isModal = true,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
         TutorialStep(
@@ -136,6 +138,8 @@ fun GroupInfoScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val tutorialControl = LocalTutorialControl.current
+
     // TODO: Doesnt work for some reason
     val shareMsg = stringResource(Res.string.share_link_copied)
 
@@ -146,21 +150,30 @@ fun GroupInfoScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        tutorialControl.stepRequest(listOf(addExpenseTutorialStep))
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         floatingActionButton = {
             (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                FloatingActionButton(
-                    modifier = Modifier,
-                    onClick = {
-                        onAction(GroupInfoAction.AddExpense(group))
-                    },
-                ) {
-                    Icon(
-                        AdaptiveIcons.Outlined.Add,
-                        contentDescription = stringResource(Res.string.add_expense_to_group),
-                    )
+                TutorialItem(
+                    onPositioned = { tutorialControl.onPositionRecieved(addExpenseTutorialStep, it) },
+                ) { modifier ->
+                    FloatingActionButton(
+                        modifier = modifier,
+                        onClick = {
+                            tutorialControl.onNext()
+                            onAction(GroupInfoAction.AddExpense(group))
+                        },
+                    ) {
+                        Icon(
+                            AdaptiveIcons.Outlined.Add,
+                            contentDescription = stringResource(Res.string.add_expense_to_group),
+                        )
+                    }
                 }
             }
         },
@@ -251,6 +264,7 @@ private fun GroupInfoContent(
     val expenseRepository: ExpenseRepository = koinInject()
     val groupRepository: GroupRepository = koinInject()
     val analyticsManager: AnalyticsManager = koinInject()
+    val tutorialControl = LocalTutorialControl.current
 
     val windowSizeClass = calculateWindowSizeClass()
 
@@ -293,6 +307,12 @@ private fun GroupInfoContent(
             PaginationView(expenseViewModel, group.balances, actionInterceptor)
         }
     }
+
+    LaunchedEffect(group.balances) {
+        if (group.balances?.participantsBalance?.any { it.amounts.any { it.value != 0.0 } } == true) {
+            tutorialControl.stepRequest(checkBalanceTutorialStepFlow)
+        }
+    }
 }
 
 @Composable
@@ -301,13 +321,21 @@ private fun SplitView(
     balance: Balance?,
     onAction: (GroupInfoAction) -> Unit,
 ) {
+    val tutorialControl = LocalTutorialControl.current
+
     Column {
         TabRow(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             selectedTabIndex = 2,
         ) {
             Tab(selected = false, onClick = {}, text = { Text("Transactions") })
-            Tab(selected = false, onClick = {}, text = { Text("Balances") })
+            TutorialItem(
+                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
+            ) { modifier ->
+                Tab(modifier = modifier, selected = false, onClick = {
+                    tutorialControl.onNext()
+                }, text = { Text("Balances") })
+            }
         }
     }
     Row {
@@ -343,6 +371,7 @@ private fun PaginationView(
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tutorialControl = LocalTutorialControl.current
 
     Column {
         TabRow(
@@ -350,7 +379,14 @@ private fun PaginationView(
             selectedTabIndex = selectedTabIndex,
         ) {
             Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text("Transactions") })
-            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text("Balances") })
+            TutorialItem(
+                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
+            ) { modifier ->
+                Tab(modifier = modifier, selected = selectedTabIndex == 1, onClick = {
+                    tutorialControl.onNext()
+                    selectedTabIndex = 1
+                }, text = { Text("Balances") })
+            }
         }
 
         HorizontalPager(

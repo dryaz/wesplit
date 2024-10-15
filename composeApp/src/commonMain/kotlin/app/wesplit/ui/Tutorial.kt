@@ -2,6 +2,7 @@ package app.wesplit.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -152,8 +153,11 @@ fun TutorialOverlay(
                     }
                 }.then(
                     if (step.isModal) {
-                        Modifier.clickable(enabled = false) {
-                            // Prevent clicks from passing through
+                        Modifier.clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                        ) {
+                            onClose()
                         }
                     } else {
                         Modifier
@@ -233,7 +237,7 @@ fun TutorialOverlay(
                             TextButton(onClick = onClose) {
                                 Text(
                                     text = "Got it",
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = MaterialTheme.extraColorScheme.warning,
                                 )
                             }
                         }
