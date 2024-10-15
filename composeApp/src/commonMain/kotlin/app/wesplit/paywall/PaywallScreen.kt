@@ -75,7 +75,6 @@ import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.ic_mobile_app
 import split.composeapp.generated.resources.ic_plus
 import split.composeapp.generated.resources.img_best_offer
-import split.composeapp.generated.resources.img_feature_protect
 
 sealed interface PaywallAction {
     data object Back : PaywallAction
@@ -308,7 +307,7 @@ fun PaywallScreen(
                         modifier = Modifier.widthIn(max = 360.dp),
                     ) {
                         Image(
-                            painter = painterResource(Res.drawable.img_feature_protect),
+                            painter = painterResource(feature.image),
                             contentDescription = stringResource(feature.title),
                         )
                         ListItem(
