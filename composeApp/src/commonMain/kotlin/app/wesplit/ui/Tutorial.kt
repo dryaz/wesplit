@@ -51,6 +51,90 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
 import kotlin.math.roundToInt
 
+/* Usage
+
+Root:
+
+    var showTutorial by remember { mutableStateOf(false) }
+    var steps by remember { mutableStateOf<List<TutorialStep>>(emptyList()) }
+    var currentStepIndex by remember { mutableStateOf(0) }
+    val targetPositions = remember { mutableStateMapOf<TutorialStep, Rect>() }
+
+    val tutorialControl = remember {
+        TutorialControl(
+            stepRequest = { requestedSteps ->
+                currentStepIndex = 0
+                steps = requestedSteps
+                showTutorial = true
+            },
+            onPositionRecieved = { step, rect ->
+                targetPositions[step] = rect
+            },
+            onNext = {
+                currentStepIndex++
+            },
+        )
+    }
+
+    CompositionLocalProvider(
+        LocalTutorialControl provides tutorialControl,
+    ) {
+        Navigation(
+            ....
+        )
+    }
+....
+
+Usage:
+
+  internal val checkBalanceTutorialStepFlow =
+    listOf(
+        TutorialStep(
+            title = "Balances tab",
+            description = "This section contains info about who ows whom.",
+            onboardingStep = OnboardingStep.BALANCE_CHOOSER,
+            isModal = false,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+        TutorialStep(
+            title = "Check balances",
+            description =
+                "Here you could see who owes what. -X means that person ows money. " +
+                    "+Y means that person is need to pay back.",
+            onboardingStep = OnboardingStep.BALANCE_PREVIEW,
+            isModal = true,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+        TutorialStep(
+            title = "Settle up when you're ready",
+            description = "When it's time to settleup, press this button ;)",
+            onboardingStep = OnboardingStep.SETTLE_UP,
+            isModal = true,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+    )
+
+Composable with tutorial option should be wrapped to:
+
+    TutorialItem(
+        onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
+    ) { modifier ->
+        Tab(modifier = modifier, selected = selectedTabIndex == 1, onClick = {
+            tutorialControl.onNext()
+            selectedTabIndex = 1
+        }, text = { Text("Balances") })
+    }
+
+NB:
+    - onPositioned should provide received rect to tutorialControl
+    - content inside TutorialItem should use provided modifier which calculate it's bounds
+    - user has an option to click on 'got it' button
+    - dev could programatically call tutorialControl.onNext() to go to the next step (or tutorial close if no any furhter steps)
+    - if step isModal user could got further with onNext or with 'got it' button
+    - if step is NOT isModal user could click on any place to close step
+    - OnboardingStep defined outside for persistence usage - save which tutorials already have been shown (not yet impl).
+ */
+
 data class TutorialStep(
     val title: String,
     val description: String,
