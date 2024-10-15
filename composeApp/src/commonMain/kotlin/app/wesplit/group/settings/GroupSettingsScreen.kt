@@ -32,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,9 +47,13 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
+import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.TutorialControl
+import app.wesplit.ui.TutorialItem
+import app.wesplit.ui.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
@@ -82,6 +87,7 @@ private sealed interface GroupSettingTollbarAction {
 fun GroupSettingsScreen(
     modifier: Modifier = Modifier,
     viewModel: GroupSettingsViewModel,
+    tutorialControl: TutorialControl,
     onAction: (GroupSettingsAction) -> Unit,
 ) {
     val state = viewModel.state.collectAsState()
@@ -124,6 +130,7 @@ fun GroupSettingsScreen(
                     onJoin = { participant ->
                         viewModel.join(participant)
                     },
+                    tutorialControl = tutorialControl,
                 ) { group ->
                     viewModel.update(group)
                 }
@@ -140,6 +147,7 @@ private fun GroupSettingsView(
     modifier: Modifier = Modifier,
     group: GroupSettingsViewModel.DataState.Group,
     account: Account,
+    tutorialControl: TutorialControl,
     onDone: () -> Unit,
     onJoin: (Participant?) -> Unit,
     onLeave: () -> Unit,
@@ -147,6 +155,7 @@ private fun GroupSettingsView(
 ) {
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
+    val tutorialStep = remember { TutorialStep("Add participant", OnboardingStep.ADD_NEW_USER, isModal = false) }
 
     Column(
         modifier =
@@ -205,25 +214,29 @@ private fun GroupSettingsView(
                     .fillMaxWidth(1f)
                     .padding(16.dp),
         ) {
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(1f)
-                        .clickable {
-                            userSelectorVisibility = true
-                        }.padding(16.dp),
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_user_add),
-                    modifier = Modifier.width(48.dp),
-                    contentDescription = stringResource(Res.string.add_user_to_group),
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = stringResource(Res.string.add_user_to_group),
-                )
+            TutorialItem(
+                onPositioned = { tutorialControl.onPositionRecieved(tutorialStep, it) },
+            ) { modifier ->
+                Row(
+                    modifier =
+                        modifier
+                            .fillMaxWidth(1f)
+                            .clickable {
+                                tutorialControl.onNext()
+                                userSelectorVisibility = true
+                            }.padding(16.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_user_add),
+                        modifier = Modifier.width(48.dp),
+                        contentDescription = stringResource(Res.string.add_user_to_group),
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = stringResource(Res.string.add_user_to_group),
+                    )
+                }
             }
-
             // TODO: Add/Remove with animation. Lazycolumn?
             val isMeParticipating = remember(group) { group.participants.any { it.isMe() } }
             group.participants.forEachIndexed { index, participant ->
@@ -359,6 +372,10 @@ private fun GroupSettingsView(
                 }
             },
         )
+    }
+
+    LaunchedEffect(Unit) {
+        tutorialControl.stepRequest(listOf(tutorialStep))
     }
 }
 

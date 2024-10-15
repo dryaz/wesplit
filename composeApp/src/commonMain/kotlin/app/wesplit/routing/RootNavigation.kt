@@ -1,5 +1,8 @@
 package app.wesplit.routing
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.material3.DrawerValue
@@ -8,10 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.buildAnnotatedString
@@ -58,6 +63,9 @@ import app.wesplit.group.settings.GroupSettingsViewModel
 import app.wesplit.paywall.PaywallAction
 import app.wesplit.paywall.PaywallRoute
 import app.wesplit.paywall.PaywallViewModel
+import app.wesplit.ui.TutorialControl
+import app.wesplit.ui.TutorialOverlay
+import app.wesplit.ui.TutorialStep
 import com.motorro.keeplink.deeplink.deepLink
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.CoroutineDispatcher
@@ -182,37 +190,6 @@ fun RootNavigation(
 ) {
     var secondNavControllerEmpty by remember { mutableStateOf(false) }
     val analyticsManager: AnalyticsManager = koinInject()
-    val accountRepository: AccountRepository = koinInject()
-    val coroutineScope = rememberCoroutineScope()
-    val shareDelegate: ShareDelegate = koinInject()
-    val clipboardManager = LocalClipboardManager.current
-    val uriHandler = LocalUriHandler.current
-
-    val onSubscriptionRequest: (String) -> Unit =
-        remember {
-            {
-                analyticsManager.track(
-                    SUBS_EVENT,
-                    mapOf(
-                        SUBS_SOURCE to it,
-                    ),
-                )
-                secondPaneNavController.navigate(
-                    RightPane.Paywall.destination(),
-                    navOptions = navOptions { launchSingleTop = true },
-                )
-            }
-        }
-
-    val menuItems =
-        remember {
-            mutableStateListOf(
-                MenuItem.Profile,
-                MenuItem.Group,
-            )
-        }
-
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
 
     fun trackScreen(
         destination: NavDestination,
@@ -262,6 +239,104 @@ fun RootNavigation(
             },
         )
     }
+
+    var showTutorial by remember { mutableStateOf(false) }
+    var steps by remember { mutableStateOf<List<TutorialStep>>(emptyList()) }
+    var currentStepIndex by remember { mutableStateOf(0) }
+    val targetPositions = remember { mutableStateMapOf<TutorialStep, Rect>() }
+
+    // TODO: remember?
+    val tutorialControl =
+        remember {
+            TutorialControl(
+                stepRequest = { requestedSteps ->
+                    println("Step request received: $requestedSteps")
+                    currentStepIndex = 0
+                    steps = requestedSteps
+                    showTutorial = true
+                    targetPositions.clear()
+                },
+                onPositionRecieved = { step, rect ->
+                    println("PositionedReceived for $step")
+                    targetPositions[step] = rect
+                },
+                onNext = {
+                    currentStepIndex++
+                },
+            )
+        }
+
+    Navigation(
+        secondNavControllerEmpty,
+        selectedMenuItem,
+        onSelectMenuItem,
+        firstPaneNavController,
+        secondPaneNavController,
+        analyticsManager,
+        tutorialControl,
+    )
+
+    AnimatedVisibility(
+        visible = showTutorial && currentStepIndex < steps.size,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        val step = steps[minOf(currentStepIndex, steps.size - 1)]
+        val targetRect = targetPositions[step]
+
+        TutorialOverlay(
+            targetBounds = targetRect,
+            step = step,
+            onClose = { currentStepIndex++ },
+        )
+    }
+
+    LaunchedEffect(currentStepIndex) {
+        if (currentStepIndex >= steps.size - 1) {
+            println("User completed $steps")
+        }
+    }
+}
+
+@Composable
+private fun Navigation(
+    secondNavControllerEmpty: Boolean,
+    selectedMenuItem: NavigationMenuItem,
+    onSelectMenuItem: (NavigationMenuItem) -> Unit,
+    firstPaneNavController: NavHostController,
+    secondPaneNavController: NavHostController,
+    analyticsManager: AnalyticsManager,
+    tutorialControl: TutorialControl,
+) {
+    val menuItems =
+        remember {
+            mutableStateListOf(
+                MenuItem.Profile,
+                MenuItem.Group,
+            )
+        }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val accountRepository: AccountRepository = koinInject()
+    val coroutineScope = rememberCoroutineScope()
+    val shareDelegate: ShareDelegate = koinInject()
+    val clipboardManager = LocalClipboardManager.current
+    val uriHandler = LocalUriHandler.current
+
+    val onSubscriptionRequest: (String) -> Unit =
+        remember {
+            {
+                analyticsManager.track(
+                    SUBS_EVENT,
+                    mapOf(
+                        SUBS_SOURCE to it,
+                    ),
+                )
+                secondPaneNavController.navigate(
+                    RightPane.Paywall.destination(),
+                    navOptions = navOptions { launchSingleTop = true },
+                )
+            }
+        }
 
     DoublePaneNavigation(
         secondNavhostEmpty = secondNavControllerEmpty,
@@ -399,6 +474,7 @@ fun RootNavigation(
                     GroupListRoute(
                         viewModel = viewModel,
                         onAction = callback,
+                        tutorialControl = tutorialControl,
                     )
                 }
             }
@@ -567,7 +643,10 @@ fun RootNavigation(
                             )
                         }
 
-                    GroupSettingsScreen(viewModel = viewModel) { action ->
+                    GroupSettingsScreen(
+                        viewModel = viewModel,
+                        tutorialControl = tutorialControl,
+                    ) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
                             GroupSettingsAction.Home ->
@@ -617,7 +696,10 @@ fun RootNavigation(
                             )
                         }
 
-                    GroupSettingsScreen(viewModel = viewModel) { action ->
+                    GroupSettingsScreen(
+                        viewModel = viewModel,
+                        tutorialControl = tutorialControl,
+                    ) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
                             GroupSettingsAction.Home ->

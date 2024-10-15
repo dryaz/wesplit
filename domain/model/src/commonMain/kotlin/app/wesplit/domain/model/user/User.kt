@@ -33,6 +33,9 @@ data class User(
     val lastUsedCurrency: String? = null,
     @SerialName("subs")
     val plan: Plan = Plan.BASIC,
+    @SerialName("onboard")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val completedOnboardingSteps: List<OnboardingStep> = emptyList(),
 )
 
 @Serializable
@@ -67,6 +70,23 @@ enum class Plan {
 
     @SerialName("plus")
     PLUS,
+}
+
+@Serializable
+@SerialName("step")
+enum class OnboardingStep {
+    @SerialName("ga")
+    GROUP_ADD,
+
+    @SerialName("anu")
+    ADD_NEW_USER,
+
+    @SerialName("bp")
+    BALANCE_PREVIEW,
+
+    @SerialName("ea")
+    EXPENSE_ADD,
+    // TODO: Settle onboard
 }
 
 fun User.participant(): Participant =

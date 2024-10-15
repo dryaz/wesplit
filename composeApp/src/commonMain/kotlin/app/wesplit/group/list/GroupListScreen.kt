@@ -24,10 +24,12 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -42,7 +44,11 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.uiTitle
+import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.TutorialControl
+import app.wesplit.ui.TutorialItem
+import app.wesplit.ui.TutorialStep
 import com.seiko.imageloader.model.ImageAction
 import com.seiko.imageloader.rememberImageSuccessPainter
 import com.seiko.imageloader.ui.AutoSizeBox
@@ -75,6 +81,7 @@ fun GroupListRoute(
     modifier: Modifier = Modifier,
     viewModel: GroupListViewModel,
     onAction: (GroupListAction) -> Unit,
+    tutorialControl: TutorialControl,
 ) {
     val dataState = viewModel.dataState.collectAsState()
     val accountState = viewModel.accountState.collectAsState()
@@ -84,6 +91,7 @@ fun GroupListRoute(
         dataState = dataState.value,
         accountState = accountState.value,
         onAction = onAction,
+        tutorialControl = tutorialControl,
     )
 }
 
@@ -95,8 +103,10 @@ fun GroupListScreen(
     dataState: GroupListViewModel.State,
     accountState: Account,
     onAction: (GroupListAction) -> Unit,
+    tutorialControl: TutorialControl,
 ) {
     val windowSizeClass = calculateWindowSizeClass()
+    val tutorialStep = remember { TutorialStep("Create new group", OnboardingStep.GROUP_ADD, isModal = false) }
 
     val navigationIconClick =
         remember(windowSizeClass) {
@@ -126,15 +136,16 @@ fun GroupListScreen(
                 },
                 actions = {
                     if (accountState is Account.Authorized) {
-                        Box(
-                            modifier =
-                                Modifier.size(48.dp).clickable {
-                                    onAction(GroupListAction.CreateNewGroup)
-                                },
-                            contentAlignment = Alignment.Center,
-                        ) {
+                        TutorialItem(
+                            onPositioned = { rect -> tutorialControl.onPositionRecieved(tutorialStep, rect) },
+                        ) { modifier ->
                             Icon(
-                                AdaptiveIcons.Outlined.AddCircle,
+                                modifier =
+                                    modifier.minimumInteractiveComponentSize().clickable {
+                                        tutorialControl.onNext()
+                                        onAction(GroupListAction.CreateNewGroup)
+                                    },
+                                imageVector = AdaptiveIcons.Outlined.AddCircle,
                                 contentDescription = stringResource(Res.string.add_group_cd),
                                 tint = MaterialTheme.colorScheme.primary,
                             )
@@ -156,6 +167,10 @@ fun GroupListScreen(
                     onAction = { onAction(it) },
                 )
         }
+    }
+
+    LaunchedEffect(Unit) {
+        tutorialControl.stepRequest(listOf(tutorialStep))
     }
 }
 

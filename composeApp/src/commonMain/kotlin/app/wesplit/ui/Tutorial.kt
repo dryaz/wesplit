@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalButton
@@ -28,6 +29,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
@@ -39,17 +41,27 @@ import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.theme.extraColorScheme
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
 import kotlin.math.roundToInt
 
+// TODO: Title + descr
 data class TutorialStep(
     val description: String,
+    val onboardingStep: OnboardingStep,
     val isModal: Boolean = true,
+)
+
+class TutorialControl(
+    val stepRequest: (List<TutorialStep>) -> Unit,
+    val onPositionRecieved: (TutorialStep, Rect) -> Unit,
+    val onNext: () -> Unit,
 )
 
 @Composable
@@ -57,9 +69,9 @@ fun TestTutorial() {
     var showTutorial by remember { mutableStateOf(true) }
     val steps =
         listOf(
-            TutorialStep("First tutorial", isModal = false),
-            TutorialStep("SecondTutorial", isModal = false),
-            TutorialStep("ThirdTutorial"),
+            TutorialStep("First tutorial", OnboardingStep.GROUP_ADD, isModal = false),
+            TutorialStep("SecondTutorial", OnboardingStep.GROUP_ADD, isModal = false),
+            TutorialStep("ThirdTutorial", OnboardingStep.GROUP_ADD),
         )
     var currentStepIndex by remember { mutableStateOf(0) }
     val targetPositions = remember { mutableStateMapOf<TutorialStep, Rect>() }
@@ -70,9 +82,8 @@ fun TestTutorial() {
     ) {
         TutorialItem(
             modifier = Modifier.padding(start = 60.dp),
-            step = steps[1],
-            onPositioned = { tutorial, rect ->
-                targetPositions[tutorial] = rect
+            onPositioned = { rect ->
+                targetPositions[steps[1]] = rect
             },
         ) { modifier ->
             FloatingActionButton(
@@ -88,9 +99,8 @@ fun TestTutorial() {
 
         TutorialItem(
             modifier = Modifier.padding(start = 30.dp),
-            step = steps[0],
-            onPositioned = { tutorial, rect ->
-                targetPositions[tutorial] = rect
+            onPositioned = { rect ->
+                targetPositions[steps[0]] = rect
             },
         ) { modifier ->
             FilledTonalButton(
@@ -103,9 +113,8 @@ fun TestTutorial() {
 
         TutorialItem(
             modifier = Modifier.padding(start = 99.dp),
-            step = steps[2],
-            onPositioned = { tutorial, rect ->
-                targetPositions[tutorial] = rect
+            onPositioned = { rect ->
+                targetPositions[steps[2]] = rect
             },
         ) { modifier ->
             Box(modifier = modifier.size(90.dp).background(Color.Magenta))
@@ -129,14 +138,13 @@ fun TestTutorial() {
 @Composable
 fun TutorialItem(
     modifier: Modifier = Modifier,
-    step: TutorialStep,
-    onPositioned: (TutorialStep, Rect) -> Unit,
+    onPositioned: (Rect) -> Unit,
     content: @Composable (Modifier) -> Unit,
 ) {
     content(
         modifier.then(
             Modifier.onGloballyPositioned { layoutCoordinates ->
-                val position = layoutCoordinates.positionInParent()
+                val position = layoutCoordinates.positionInRoot()
                 val size = layoutCoordinates.size
                 val rect =
                     Rect(
@@ -145,7 +153,7 @@ fun TutorialItem(
                         right = position.x + size.width,
                         bottom = position.y + size.height,
                     )
-                onPositioned(step, rect)
+                onPositioned(rect)
             },
         ),
     )
@@ -153,7 +161,7 @@ fun TutorialItem(
 
 @Composable
 fun TutorialOverlay(
-    targetBounds: Rect,
+    targetBounds: Rect?,
     step: TutorialStep,
     onClose: () -> Unit,
 ) {
@@ -170,12 +178,14 @@ fun TutorialOverlay(
                             // Add the entire screen as a path
                             addRect(Rect(0f, 0f, size.width, size.height))
                             // Add the hole (target area)
-                            addRoundRect(
-                                RoundRect(
-                                    rect = targetBounds,
-                                    cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
-                                ),
-                            )
+                            targetBounds?.let { bounds ->
+                                addRoundRect(
+                                    RoundRect(
+                                        rect = bounds,
+                                        cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
+                                    ),
+                                )
+                            }
                             // Use EvenOdd to create a hole
                             fillType = PathFillType.EvenOdd
                         }
@@ -187,24 +197,26 @@ fun TutorialOverlay(
                         style = Fill,
                     )
 
-                    // Define the path for the stroke around the hole
-                    val strokePath =
-                        Path().apply {
-                            addRoundRect(
-                                RoundRect(
-                                    rect = targetBounds,
-                                    cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
-                                ),
-                            )
-                            fillType = PathFillType.EvenOdd
-                        }
+                    targetBounds?.let { bounds ->
+                        // Define the path for the stroke around the hole
+                        val strokePath =
+                            Path().apply {
+                                addRoundRect(
+                                    RoundRect(
+                                        rect = bounds,
+                                        cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
+                                    ),
+                                )
+                                fillType = PathFillType.EvenOdd
+                            }
 
-                    // Draw the stroke around the hole
-                    drawPath(
-                        path = strokePath,
-                        color = highlightColor,
-                        style = Stroke(width = 4.dp.toPx()),
-                    )
+                        // Draw the stroke around the hole
+                        drawPath(
+                            path = strokePath,
+                            color = highlightColor,
+                            style = Stroke(width = 4.dp.toPx()),
+                        )
+                    }
                 }.then(
                     if (step.isModal) {
                         Modifier.clickable(enabled = false) {
@@ -215,29 +227,45 @@ fun TutorialOverlay(
                     },
                 ),
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .offset {
-                        IntOffset(
-                            x = targetBounds.left.roundToInt(),
-                            y = (targetBounds.bottom + 16).roundToInt(),
+        targetBounds?.let { bounds ->
+            Box(
+                modifier =
+                    Modifier
+                        .offset {
+                            IntOffset(
+                                x = bounds.left.roundToInt(),
+                                y = (bounds.bottom + 16).roundToInt(),
+                            )
+                        }
+                        .background(MaterialTheme.extraColorScheme.infoContainer, RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                        .widthIn(max = 200.dp),
+            ) {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = AdaptiveIcons.Outlined.Info,
+                            contentDescription = "Tutorial information",
+                            tint = MaterialTheme.extraColorScheme.onInfoContainer,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = step.description,
+                            color = MaterialTheme.extraColorScheme.onInfoContainer,
                         )
                     }
-                    .background(Color.White, RoundedCornerShape(8.dp))
-                    .padding(16.dp)
-                    .widthIn(max = 200.dp),
-        ) {
-            Column {
-                Text(text = step.description, color = Color.Black)
-                Spacer(modifier = Modifier.height(8.dp))
-                if (step.isModal) {
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        TextButton(onClick = onClose) {
-                            Text("Got it")
+                    if (step.isModal) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            TextButton(onClick = onClose) {
+                                Text(
+                                    text = "Got it",
+                                    color = MaterialTheme.extraColorScheme.onInfoContainer,
+                                )
+                            }
                         }
                     }
                 }
