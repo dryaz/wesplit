@@ -169,7 +169,7 @@ fun TutorialOverlay(
             var boxSize by remember { mutableStateOf(IntSize(0, 0)) }
 
             val x =
-                remember(boxSize, helpOverlayPosition) {
+                remember(boxSize, bounds) {
                     when (helpOverlayPosition) {
                         HelpOverlayPosition.TOP_LEFT,
                         HelpOverlayPosition.BOTTOM_LEFT,
@@ -181,7 +181,7 @@ fun TutorialOverlay(
                 }
 
             val y =
-                remember(boxSize, helpOverlayPosition) {
+                remember(boxSize, bounds) {
                     when (helpOverlayPosition) {
                         HelpOverlayPosition.TOP_LEFT,
                         HelpOverlayPosition.TOP_RIGHT,
