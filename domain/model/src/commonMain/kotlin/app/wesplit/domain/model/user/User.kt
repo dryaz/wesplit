@@ -93,12 +93,17 @@ enum class OnboardingStep {
     @SerialName("ach")
     APPLY_CHANGES,
 
+    @SerialName("ea")
+    EXPENSE_ADD,
+
+    @SerialName("bc")
+    BALANCE_CHOOSER,
+
     @SerialName("bp")
     BALANCE_PREVIEW,
 
-    @SerialName("ea")
-    EXPENSE_ADD,
-    // TODO: Settle onboard
+    @SerialName("su")
+    SETTLE_UP,
 }
 
 fun User.participant(): Participant =

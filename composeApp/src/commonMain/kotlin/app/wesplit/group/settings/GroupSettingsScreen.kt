@@ -52,6 +52,7 @@ import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.HelpOverlayPosition
+import app.wesplit.ui.LocalTutorialControl
 import app.wesplit.ui.TutorialControl
 import app.wesplit.ui.TutorialItem
 import app.wesplit.ui.TutorialStep
@@ -87,10 +88,10 @@ private sealed interface GroupSettingTollbarAction {
 fun GroupSettingsScreen(
     modifier: Modifier = Modifier,
     viewModel: GroupSettingsViewModel,
-    tutorialControl: TutorialControl,
     onAction: (GroupSettingsAction) -> Unit,
 ) {
     val state = viewModel.state.collectAsState()
+    val tutorialControl = LocalTutorialControl.current
     val saveGroupTutorialStep =
         remember {
             TutorialStep(
@@ -109,7 +110,6 @@ fun GroupSettingsScreen(
             TopAppBareByState(
                 dataState = state.value.dataState,
                 onAction = onAction,
-                tutorialControl = tutorialControl,
                 saveTutorialStep = saveGroupTutorialStep,
                 onToolbarAction = { action ->
                     when (action) {
@@ -409,10 +409,10 @@ private fun GroupSettingsView(
 private fun TopAppBareByState(
     dataState: GroupSettingsViewModel.DataState,
     onAction: (GroupSettingsAction) -> Unit,
-    tutorialControl: TutorialControl,
     saveTutorialStep: TutorialStep,
     onToolbarAction: (GroupSettingTollbarAction) -> Unit,
 ) {
+    val tutorialControl = LocalTutorialControl.current
     AdaptiveTopAppBar(
         title = {
             Text(

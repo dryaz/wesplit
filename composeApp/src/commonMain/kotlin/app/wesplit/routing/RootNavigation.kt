@@ -8,6 +8,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -63,6 +64,7 @@ import app.wesplit.group.settings.GroupSettingsViewModel
 import app.wesplit.paywall.PaywallAction
 import app.wesplit.paywall.PaywallRoute
 import app.wesplit.paywall.PaywallViewModel
+import app.wesplit.ui.LocalTutorialControl
 import app.wesplit.ui.TutorialControl
 import app.wesplit.ui.TutorialOverlay
 import app.wesplit.ui.TutorialStep
@@ -263,15 +265,19 @@ fun RootNavigation(
             )
         }
 
-    Navigation(
-        secondNavControllerEmpty,
-        selectedMenuItem,
-        onSelectMenuItem,
-        firstPaneNavController,
-        secondPaneNavController,
-        analyticsManager,
-        tutorialControl,
-    )
+    CompositionLocalProvider(
+        LocalTutorialControl provides tutorialControl,
+    ) {
+        Navigation(
+            secondNavControllerEmpty,
+            selectedMenuItem,
+            onSelectMenuItem,
+            firstPaneNavController,
+            secondPaneNavController,
+            analyticsManager,
+            tutorialControl,
+        )
+    }
 
     AnimatedVisibility(
         visible = showTutorial && currentStepIndex < steps.size,
@@ -472,7 +478,6 @@ private fun Navigation(
                     GroupListRoute(
                         viewModel = viewModel,
                         onAction = callback,
-                        tutorialControl = tutorialControl,
                     )
                 }
             }
@@ -643,7 +648,6 @@ private fun Navigation(
 
                     GroupSettingsScreen(
                         viewModel = viewModel,
-                        tutorialControl = tutorialControl,
                     ) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
@@ -696,7 +700,6 @@ private fun Navigation(
 
                     GroupSettingsScreen(
                         viewModel = viewModel,
-                        tutorialControl = tutorialControl,
                     ) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()

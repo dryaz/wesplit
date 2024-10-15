@@ -47,7 +47,7 @@ import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.HelpOverlayPosition
-import app.wesplit.ui.TutorialControl
+import app.wesplit.ui.LocalTutorialControl
 import app.wesplit.ui.TutorialItem
 import app.wesplit.ui.TutorialStep
 import com.seiko.imageloader.model.ImageAction
@@ -82,7 +82,6 @@ fun GroupListRoute(
     modifier: Modifier = Modifier,
     viewModel: GroupListViewModel,
     onAction: (GroupListAction) -> Unit,
-    tutorialControl: TutorialControl,
 ) {
     val dataState = viewModel.dataState.collectAsState()
     val accountState = viewModel.accountState.collectAsState()
@@ -92,7 +91,6 @@ fun GroupListRoute(
         dataState = dataState.value,
         accountState = accountState.value,
         onAction = onAction,
-        tutorialControl = tutorialControl,
     )
 }
 
@@ -104,9 +102,9 @@ fun GroupListScreen(
     dataState: GroupListViewModel.State,
     accountState: Account,
     onAction: (GroupListAction) -> Unit,
-    tutorialControl: TutorialControl,
 ) {
     val windowSizeClass = calculateWindowSizeClass()
+    val tutorialControl = LocalTutorialControl.current
     val tutorialStep =
         remember {
             TutorialStep(

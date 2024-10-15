@@ -47,12 +47,15 @@ import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
+import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.group.detailed.balance.BalanceList
 import app.wesplit.group.detailed.expense.ExpenseAction
 import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.HelpOverlayPosition
+import app.wesplit.ui.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
@@ -81,6 +84,42 @@ sealed interface GroupInfoAction {
 
     data class OpenExpenseDetails(val expense: Expense) : GroupInfoAction
 }
+
+private val addExpenseTutorialStep =
+    TutorialStep(
+        title = "Add expense to group",
+        description = "Let create first expense in group to see how it works",
+        onboardingStep = OnboardingStep.EXPENSE_ADD,
+        isModal = false,
+        helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
+    )
+
+private val checkBalanceTutorialStepFlow =
+    listOf(
+        TutorialStep(
+            title = "Balances tab",
+            description = "This section contains info about who ows whom.",
+            onboardingStep = OnboardingStep.BALANCE_CHOOSER,
+            isModal = false,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+        TutorialStep(
+            title = "Add expense to group",
+            description =
+                "Here you could see who owes what. -X means that person ows money. " +
+                    "+Y means that person is need to pay back.",
+            onboardingStep = OnboardingStep.BALANCE_PREVIEW,
+            isModal = false,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+        TutorialStep(
+            title = "Settle up when you're ready",
+            description = "When it's time to settleup, press this button ;)",
+            onboardingStep = OnboardingStep.SETTLE_UP,
+            isModal = true,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+    )
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
