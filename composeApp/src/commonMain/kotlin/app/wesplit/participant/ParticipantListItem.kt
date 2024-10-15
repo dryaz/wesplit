@@ -39,9 +39,10 @@ fun ParticipantListItem(
 
     Row(
         modifier =
-            internalModifier
+            Modifier
                 .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .then(internalModifier),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (showImage) {

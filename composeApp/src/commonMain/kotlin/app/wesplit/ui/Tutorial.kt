@@ -1,6 +1,5 @@
 package app.wesplit.ui
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,19 +12,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,21 +36,25 @@ import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.theme.extraColorScheme
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
-import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
 import kotlin.math.roundToInt
 
-// TODO: Title + descr
 data class TutorialStep(
+    val title: String,
     val description: String,
     val onboardingStep: OnboardingStep,
     val isModal: Boolean = true,
+    val helpOverlayPosition: HelpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
 )
 
 class TutorialControl(
@@ -65,86 +64,16 @@ class TutorialControl(
 )
 
 @Composable
-fun TestTutorial() {
-    var showTutorial by remember { mutableStateOf(true) }
-    val steps =
-        listOf(
-            TutorialStep("First tutorial", OnboardingStep.GROUP_ADD, isModal = false),
-            TutorialStep("SecondTutorial", OnboardingStep.GROUP_ADD, isModal = false),
-            TutorialStep("ThirdTutorial", OnboardingStep.GROUP_ADD),
-        )
-    var currentStepIndex by remember { mutableStateOf(0) }
-    val targetPositions = remember { mutableStateMapOf<TutorialStep, Rect>() }
-
-    Column(
-        modifier = Modifier.fillMaxSize(1f),
-        verticalArrangement = Arrangement.SpaceEvenly,
-    ) {
-        TutorialItem(
-            modifier = Modifier.padding(start = 60.dp),
-            onPositioned = { rect ->
-                targetPositions[steps[1]] = rect
-            },
-        ) { modifier ->
-            FloatingActionButton(
-                modifier = modifier,
-                onClick = { currentStepIndex++ },
-            ) {
-                Icon(
-                    AdaptiveIcons.Outlined.Done,
-                    contentDescription = "",
-                )
-            }
-        }
-
-        TutorialItem(
-            modifier = Modifier.padding(start = 30.dp),
-            onPositioned = { rect ->
-                targetPositions[steps[0]] = rect
-            },
-        ) { modifier ->
-            FilledTonalButton(
-                modifier = modifier,
-                onClick = { currentStepIndex++ },
-            ) {
-                Text("Button")
-            }
-        }
-
-        TutorialItem(
-            modifier = Modifier.padding(start = 99.dp),
-            onPositioned = { rect ->
-                targetPositions[steps[2]] = rect
-            },
-        ) { modifier ->
-            Box(modifier = modifier.size(90.dp).background(Color.Magenta))
-        }
-    }
-
-    AnimatedVisibility(visible = showTutorial && currentStepIndex < steps.size) {
-        val step = steps[minOf(currentStepIndex, steps.size - 1)]
-        val targetRect = targetPositions[step]
-
-        targetRect?.let { rect ->
-            TutorialOverlay(
-                targetBounds = rect,
-                step = step,
-                onClose = { currentStepIndex++ },
-            )
-        }
-    }
-}
-
-@Composable
 fun TutorialItem(
     modifier: Modifier = Modifier,
     onPositioned: (Rect) -> Unit,
+    isGlobalLayout: Boolean = true,
     content: @Composable (Modifier) -> Unit,
 ) {
     content(
         modifier.then(
             Modifier.onGloballyPositioned { layoutCoordinates ->
-                val position = layoutCoordinates.positionInRoot()
+                val position = if (isGlobalLayout) layoutCoordinates.positionInRoot() else layoutCoordinates.positionInParent()
                 val size = layoutCoordinates.size
                 val rect =
                     Rect(
@@ -163,6 +92,7 @@ fun TutorialItem(
 fun TutorialOverlay(
     targetBounds: Rect?,
     step: TutorialStep,
+    helpOverlayPosition: HelpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
     onClose: () -> Unit,
 ) {
     val highlightColor = MaterialTheme.extraColorScheme.infoContainer
@@ -225,21 +155,51 @@ fun TutorialOverlay(
                     } else {
                         Modifier
                     },
-                ),
+                ).zIndex(100f),
     ) {
         targetBounds?.let { bounds ->
+            // State to hold the measured width of the Box
+            var boxSize by remember { mutableStateOf(IntSize(0, 0)) }
+
+            val x =
+                remember(boxSize, helpOverlayPosition) {
+                    when (helpOverlayPosition) {
+                        HelpOverlayPosition.TOP_LEFT,
+                        HelpOverlayPosition.BOTTOM_LEFT,
+                        -> (bounds.right - boxSize.width).roundToInt()
+                        HelpOverlayPosition.TOP_RIGHT,
+                        HelpOverlayPosition.BOTTOM_RIGHT,
+                        -> bounds.left.roundToInt()
+                    }
+                }
+
+            val y =
+                remember(boxSize, helpOverlayPosition) {
+                    when (helpOverlayPosition) {
+                        HelpOverlayPosition.TOP_LEFT,
+                        HelpOverlayPosition.TOP_RIGHT,
+                        -> (bounds.top - boxSize.height - 16).roundToInt()
+                        HelpOverlayPosition.BOTTOM_LEFT,
+                        HelpOverlayPosition.BOTTOM_RIGHT,
+                        -> (bounds.bottom + 16).roundToInt()
+                    }
+                }
+
             Box(
                 modifier =
                     Modifier
                         .offset {
                             IntOffset(
-                                x = bounds.left.roundToInt(),
-                                y = (bounds.bottom + 16).roundToInt(),
+                                x = x,
+                                y = y,
                             )
                         }
                         .background(MaterialTheme.extraColorScheme.infoContainer, RoundedCornerShape(8.dp))
+                        .onSizeChanged { coordinates ->
+                            boxSize = coordinates
+                        }
                         .padding(16.dp)
-                        .widthIn(max = 200.dp),
+                        .widthIn(max = 220.dp),
             ) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -250,10 +210,17 @@ fun TutorialOverlay(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = step.description,
+                            text = step.title,
                             color = MaterialTheme.extraColorScheme.onInfoContainer,
+                            style = MaterialTheme.typography.titleMedium,
                         )
                     }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = step.description,
+                        color = MaterialTheme.extraColorScheme.onInfoContainer,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                     if (step.isModal) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(
@@ -263,7 +230,7 @@ fun TutorialOverlay(
                             TextButton(onClick = onClose) {
                                 Text(
                                     text = "Got it",
-                                    color = MaterialTheme.extraColorScheme.onInfoContainer,
+                                    color = MaterialTheme.colorScheme.primary,
                                 )
                             }
                         }
@@ -272,4 +239,11 @@ fun TutorialOverlay(
             }
         }
     }
+}
+
+enum class HelpOverlayPosition {
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT,
 }

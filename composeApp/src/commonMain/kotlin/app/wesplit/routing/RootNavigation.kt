@@ -250,14 +250,11 @@ fun RootNavigation(
         remember {
             TutorialControl(
                 stepRequest = { requestedSteps ->
-                    println("Step request received: $requestedSteps")
                     currentStepIndex = 0
                     steps = requestedSteps
                     showTutorial = true
-                    targetPositions.clear()
                 },
                 onPositionRecieved = { step, rect ->
-                    println("PositionedReceived for $step")
                     targetPositions[step] = rect
                 },
                 onNext = {
@@ -287,6 +284,7 @@ fun RootNavigation(
         TutorialOverlay(
             targetBounds = targetRect,
             step = step,
+            helpOverlayPosition = step.helpOverlayPosition,
             onClose = { currentStepIndex++ },
         )
     }

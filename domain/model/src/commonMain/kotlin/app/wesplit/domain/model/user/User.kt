@@ -79,7 +79,16 @@ enum class OnboardingStep {
     GROUP_ADD,
 
     @SerialName("anu")
-    ADD_NEW_USER,
+    ADD_NEW_USER_BUTTON,
+
+    @SerialName("tpn")
+    TYPE_PARTICIPANT_NAME,
+
+    @SerialName("cnu")
+    CREATE_NEW_USER_IN_GROUP,
+
+    @SerialName("ach")
+    APPLY_CHANGES,
 
     @SerialName("bp")
     BALANCE_PREVIEW,

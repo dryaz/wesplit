@@ -46,6 +46,7 @@ import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.HelpOverlayPosition
 import app.wesplit.ui.TutorialControl
 import app.wesplit.ui.TutorialItem
 import app.wesplit.ui.TutorialStep
@@ -106,7 +107,16 @@ fun GroupListScreen(
     tutorialControl: TutorialControl,
 ) {
     val windowSizeClass = calculateWindowSizeClass()
-    val tutorialStep = remember { TutorialStep("Create new group", OnboardingStep.GROUP_ADD, isModal = false) }
+    val tutorialStep =
+        remember {
+            TutorialStep(
+                title = "Create new group",
+                description = "All expenses combined into groups. Who owes what is calculated automatically.",
+                onboardingStep = OnboardingStep.GROUP_ADD,
+                helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+                isModal = false,
+            )
+        }
 
     val navigationIconClick =
         remember(windowSizeClass) {

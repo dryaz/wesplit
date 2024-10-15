@@ -51,6 +51,7 @@ import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.HelpOverlayPosition
 import app.wesplit.ui.TutorialControl
 import app.wesplit.ui.TutorialItem
 import app.wesplit.ui.TutorialStep
@@ -155,7 +156,16 @@ private fun GroupSettingsView(
 ) {
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
-    val tutorialStep = remember { TutorialStep("Add participant", OnboardingStep.ADD_NEW_USER, isModal = false) }
+    val tutorialStep =
+        remember {
+            TutorialStep(
+                title = "Add participant",
+                description = "You could add new participant just by typing name. Your friend don't need even to know about Wesplit.",
+                onboardingStep = OnboardingStep.ADD_NEW_USER_BUTTON,
+                isModal = false,
+                helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
+            )
+        }
 
     Column(
         modifier =
