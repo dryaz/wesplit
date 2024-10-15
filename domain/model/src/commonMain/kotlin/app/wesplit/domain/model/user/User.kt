@@ -87,6 +87,9 @@ enum class OnboardingStep {
     @SerialName("cnu")
     CREATE_NEW_USER_IN_GROUP,
 
+    @SerialName("sg")
+    SAVE_GROUP,
+
     @SerialName("ach")
     APPLY_CHANGES,
 

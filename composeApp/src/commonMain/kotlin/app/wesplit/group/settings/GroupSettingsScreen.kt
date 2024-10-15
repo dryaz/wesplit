@@ -55,7 +55,6 @@ import app.wesplit.ui.HelpOverlayPosition
 import app.wesplit.ui.TutorialControl
 import app.wesplit.ui.TutorialItem
 import app.wesplit.ui.TutorialStep
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.ExitToApp
@@ -92,6 +91,16 @@ fun GroupSettingsScreen(
     onAction: (GroupSettingsAction) -> Unit,
 ) {
     val state = viewModel.state.collectAsState()
+    val saveGroupTutorialStep =
+        remember {
+            TutorialStep(
+                title = "Save the group",
+                description = "Now let's save what we have. You could leave group or edit anytime afterwards.",
+                onboardingStep = OnboardingStep.SAVE_GROUP,
+                isModal = false,
+                helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+            )
+        }
 
     Scaffold(
         modifier = modifier,
@@ -100,9 +109,12 @@ fun GroupSettingsScreen(
             TopAppBareByState(
                 dataState = state.value.dataState,
                 onAction = onAction,
+                tutorialControl = tutorialControl,
+                saveTutorialStep = saveGroupTutorialStep,
                 onToolbarAction = { action ->
                     when (action) {
                         GroupSettingTollbarAction.Commit -> {
+                            tutorialControl.onNext()
                             viewModel.commit()
                             onAction(GroupSettingsAction.Back)
                         }
@@ -131,6 +143,7 @@ fun GroupSettingsScreen(
                     onJoin = { participant ->
                         viewModel.join(participant)
                     },
+                    saveGroupTutorialStep = saveGroupTutorialStep,
                     tutorialControl = tutorialControl,
                 ) { group ->
                     viewModel.update(group)
@@ -142,13 +155,13 @@ fun GroupSettingsScreen(
 }
 
 // TODO: Move to actions
-@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun GroupSettingsView(
     modifier: Modifier = Modifier,
     group: GroupSettingsViewModel.DataState.Group,
     account: Account,
     tutorialControl: TutorialControl,
+    saveGroupTutorialStep: TutorialStep,
     onDone: () -> Unit,
     onJoin: (Participant?) -> Unit,
     onLeave: () -> Unit,
@@ -156,7 +169,7 @@ private fun GroupSettingsView(
 ) {
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
-    val tutorialStep =
+    val addParticipantTutorialStep =
         remember {
             TutorialStep(
                 title = "Add participant",
@@ -225,7 +238,7 @@ private fun GroupSettingsView(
                     .padding(16.dp),
         ) {
             TutorialItem(
-                onPositioned = { tutorialControl.onPositionRecieved(tutorialStep, it) },
+                onPositioned = { tutorialControl.onPositionRecieved(addParticipantTutorialStep, it) },
             ) { modifier ->
                 Row(
                     modifier =
@@ -339,7 +352,10 @@ private fun GroupSettingsView(
         ParticipantPicker(
             currentParticipants = group.participants,
             isFullScreen = true,
-            onPickerClose = { userSelectorVisibility = false },
+            onPickerClose = {
+                tutorialControl.stepRequest(listOf(saveGroupTutorialStep))
+                userSelectorVisibility = false
+            },
             onParticipantClick = callback,
         )
     }
@@ -385,7 +401,7 @@ private fun GroupSettingsView(
     }
 
     LaunchedEffect(Unit) {
-        tutorialControl.stepRequest(listOf(tutorialStep))
+        tutorialControl.stepRequest(listOf(addParticipantTutorialStep))
     }
 }
 
@@ -393,6 +409,8 @@ private fun GroupSettingsView(
 private fun TopAppBareByState(
     dataState: GroupSettingsViewModel.DataState,
     onAction: (GroupSettingsAction) -> Unit,
+    tutorialControl: TutorialControl,
+    saveTutorialStep: TutorialStep,
     onToolbarAction: (GroupSettingTollbarAction) -> Unit,
 ) {
     AdaptiveTopAppBar(
@@ -414,47 +432,51 @@ private fun TopAppBareByState(
         },
         onNavigationIconClick = { onAction(GroupSettingsAction.Back) },
         actions = {
-            Box(
-                modifier =
-                    Modifier.fillMaxHeight(1f).clickable {
-                        when (dataState) {
-                            is GroupSettingsViewModel.DataState.Error ->
-                                onToolbarAction(
-                                    GroupSettingTollbarAction.Reload,
-                                )
+            TutorialItem(
+                onPositioned = { tutorialControl.onPositionRecieved(saveTutorialStep, it) },
+            ) { modifier ->
+                Box(
+                    modifier =
+                        modifier.fillMaxHeight(1f).clickable {
+                            when (dataState) {
+                                is GroupSettingsViewModel.DataState.Error ->
+                                    onToolbarAction(
+                                        GroupSettingTollbarAction.Reload,
+                                    )
 
-                            is GroupSettingsViewModel.DataState.Group ->
-                                onToolbarAction(
-                                    GroupSettingTollbarAction.Commit,
-                                )
+                                is GroupSettingsViewModel.DataState.Group ->
+                                    onToolbarAction(
+                                        GroupSettingTollbarAction.Commit,
+                                    )
 
-                            GroupSettingsViewModel.DataState.Loading -> {}
-                        }
-                    }.padding(horizontal = 16.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                when (dataState) {
-                    is GroupSettingsViewModel.DataState.Error ->
-                        Text(
-                            // TODO: Add leading icon retry icon
-                            text = stringResource(Res.string.retry),
-                        )
-
-                    is GroupSettingsViewModel.DataState.Group ->
-                        if (dataState.id == null) {
-                            // TODO: Add leading icon OK
+                                GroupSettingsViewModel.DataState.Loading -> {}
+                            }
+                        }.padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    when (dataState) {
+                        is GroupSettingsViewModel.DataState.Error ->
                             Text(
-                                text = stringResource(Res.string.create),
-                                style = MaterialTheme.typography.labelSmall,
+                                // TODO: Add leading icon retry icon
+                                text = stringResource(Res.string.retry),
                             )
-                        } else {
-                            Text(
-                                text = stringResource(Res.string.save),
-                                style = MaterialTheme.typography.labelSmall,
-                            )
-                        }
 
-                    GroupSettingsViewModel.DataState.Loading -> CircularProgressIndicator()
+                        is GroupSettingsViewModel.DataState.Group ->
+                            if (dataState.id == null) {
+                                // TODO: Add leading icon OK
+                                Text(
+                                    text = stringResource(Res.string.create),
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            } else {
+                                Text(
+                                    text = stringResource(Res.string.save),
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+
+                        GroupSettingsViewModel.DataState.Loading -> CircularProgressIndicator()
+                    }
                 }
             }
         },
