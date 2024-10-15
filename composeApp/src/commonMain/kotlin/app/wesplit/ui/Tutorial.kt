@@ -228,18 +228,16 @@ fun TutorialOverlay(
                         color = MaterialTheme.extraColorScheme.onInfoContainer,
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    if (step.isModal) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            TextButton(onClick = onClose) {
-                                Text(
-                                    text = "Got it",
-                                    color = MaterialTheme.extraColorScheme.warning,
-                                )
-                            }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        TextButton(onClick = onClose) {
+                            Text(
+                                text = "Got it",
+                                color = MaterialTheme.extraColorScheme.warning,
+                            )
                         }
                     }
                 }
