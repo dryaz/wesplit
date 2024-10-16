@@ -84,6 +84,24 @@ private sealed interface GroupSettingTollbarAction {
     data object Commit : GroupSettingTollbarAction
 }
 
+private val saveGroupTutorialStep =
+    TutorialStep(
+        title = "Save the group",
+        description = "Now let's save what we have. You could leave group or edit anytime afterwards.",
+        onboardingStep = OnboardingStep.SAVE_GROUP,
+        isModal = false,
+        helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+    )
+
+private val addParticipantTutorialStep =
+    TutorialStep(
+        title = "Add participant",
+        description = "You could add new participant just by typing name. Your friend don't need even to know about Wesplit.",
+        onboardingStep = OnboardingStep.ADD_NEW_USER_BUTTON,
+        isModal = false,
+        helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+    )
+
 @Composable
 fun GroupSettingsScreen(
     modifier: Modifier = Modifier,
@@ -92,16 +110,6 @@ fun GroupSettingsScreen(
 ) {
     val state = viewModel.state.collectAsState()
     val tutorialControl = LocalTutorialControl.current
-    val saveGroupTutorialStep =
-        remember {
-            TutorialStep(
-                title = "Save the group",
-                description = "Now let's save what we have. You could leave group or edit anytime afterwards.",
-                onboardingStep = OnboardingStep.SAVE_GROUP,
-                isModal = false,
-                helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
-            )
-        }
 
     Scaffold(
         modifier = modifier,
@@ -169,16 +177,6 @@ private fun GroupSettingsView(
 ) {
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
-    val addParticipantTutorialStep =
-        remember {
-            TutorialStep(
-                title = "Add participant",
-                description = "You could add new participant just by typing name. Your friend don't need even to know about Wesplit.",
-                onboardingStep = OnboardingStep.ADD_NEW_USER_BUTTON,
-                isModal = false,
-                helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
-            )
-        }
 
     Column(
         modifier =

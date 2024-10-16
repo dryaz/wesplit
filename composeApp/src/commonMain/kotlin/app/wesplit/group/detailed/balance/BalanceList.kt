@@ -63,22 +63,22 @@ fun BalanceList(
     val tutorialControl = LocalTutorialControl.current
 
     if (balance != null) {
-        TutorialItem(
-            onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[1], it) },
-        ) { modifier ->
-            Column(
-                modifier = modifier.verticalScroll(rememberScrollState()),
-            ) {
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+        ) {
+            TutorialItem(
+                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[1], it) },
+                suffixModifier = Modifier.padding(bottom = 64.dp),
+            ) { modifier ->
                 Card(
+                    modifier =
+                        modifier
+                            .fillMaxWidth(1f)
+                            .padding(16.dp),
                     colors =
                         CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                         ),
-                    modifier =
-                        Modifier
-                            .fillMaxWidth(1f)
-                            .padding(16.dp)
-                            .padding(bottom = 64.dp),
                 ) {
                     balance.participantsBalance.forEach { balanceItem ->
                         val action: @Composable (() -> Unit)? =

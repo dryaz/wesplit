@@ -104,6 +104,27 @@ enum class OnboardingStep {
 
     @SerialName("su")
     SETTLE_UP,
+
+    @SerialName("shg")
+    SHARE_GROUP,
+
+    @SerialName("et")
+    EXPENSE_TITLE,
+
+    @SerialName("eam")
+    EXPENSE_AMOUNT,
+
+    @SerialName("edt")
+    EXPENSE_DATE_CURRENCY,
+
+    @SerialName("ep")
+    EXPENSE_PAYER,
+
+    @SerialName("esp")
+    EXPENSE_SPLIT,
+
+    @SerialName("esa")
+    EXPENSE_SAVE,
 }
 
 fun User.participant(): Participant =

@@ -156,10 +156,13 @@ fun TutorialItem(
     modifier: Modifier = Modifier,
     onPositioned: (Rect) -> Unit,
     isGlobalLayout: Boolean = true,
+    suffixModifier: Modifier = Modifier,
     content: @Composable (Modifier) -> Unit,
 ) {
     content(
         modifier.then(
+            suffixModifier,
+        ).then(
             Modifier.onGloballyPositioned { layoutCoordinates ->
                 val position = if (isGlobalLayout) layoutCoordinates.positionInRoot() else layoutCoordinates.positionInParent()
                 val size = layoutCoordinates.size
@@ -258,6 +261,7 @@ fun TutorialOverlay(
                         HelpOverlayPosition.TOP_LEFT,
                         HelpOverlayPosition.BOTTOM_LEFT,
                         -> (bounds.right - boxSize.width).roundToInt()
+
                         HelpOverlayPosition.TOP_RIGHT,
                         HelpOverlayPosition.BOTTOM_RIGHT,
                         -> bounds.left.roundToInt()
@@ -270,6 +274,7 @@ fun TutorialOverlay(
                         HelpOverlayPosition.TOP_LEFT,
                         HelpOverlayPosition.TOP_RIGHT,
                         -> (bounds.top - boxSize.height - 16).roundToInt()
+
                         HelpOverlayPosition.BOTTOM_LEFT,
                         HelpOverlayPosition.BOTTOM_RIGHT,
                         -> (bounds.bottom + 16).roundToInt()
@@ -310,7 +315,7 @@ fun TutorialOverlay(
                     Text(
                         text = step.description,
                         color = MaterialTheme.extraColorScheme.onInfoContainer,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -320,7 +325,7 @@ fun TutorialOverlay(
                         TextButton(onClick = onClose) {
                             Text(
                                 text = "Got it",
-                                color = MaterialTheme.extraColorScheme.warning,
+                                color = MaterialTheme.extraColorScheme.onInfoContainerAction,
                             )
                         }
                     }

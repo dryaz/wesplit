@@ -121,6 +121,13 @@ internal val checkBalanceTutorialStepFlow =
             isModal = true,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
+        TutorialStep(
+            title = "Invite your friends by link",
+            description = "Share the link to your friends so they could safely see group details and add expenses.",
+            onboardingStep = OnboardingStep.SHARE_GROUP,
+            isModal = false,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
     )
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -213,18 +220,26 @@ fun GroupInfoScreen(
                         )
                     }
 
-                    IconButton(onClick = {
-                        // TODO: Proper state handling, not just 1 groupinfo handler
-                        (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                            onAction.invoke(
-                                GroupInfoAction.Share(group),
+                    TutorialItem(
+                        onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[3], it) },
+                    ) { modifier ->
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
+                                // TODO: Proper state handling, not just 1 groupinfo handler
+                                tutorialControl.onNext()
+                                (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
+                                    onAction.invoke(
+                                        GroupInfoAction.Share(group),
+                                    )
+                                }
+                            },
+                        ) {
+                            Icon(
+                                AdaptiveIcons.Outlined.Share,
+                                contentDescription = stringResource(Res.string.share_group),
                             )
                         }
-                    }) {
-                        Icon(
-                            AdaptiveIcons.Outlined.Share,
-                            contentDescription = stringResource(Res.string.share_group),
-                        )
                     }
                 })
             }
@@ -433,6 +448,7 @@ private fun GroupHeader(
     group: Group,
     onAction: (GroupInfoAction) -> Unit,
 ) {
+    val tutorialControl = LocalTutorialControl.current
     Row(
         modifier = Modifier.padding(16.dp).fillMaxWidth(1f),
     ) {
@@ -461,11 +477,21 @@ private fun GroupHeader(
             )
         }
 
-        IconButton(onClick = { onAction.invoke(GroupInfoAction.Share(group)) }) {
-            Icon(
-                AdaptiveIcons.Outlined.Share,
-                contentDescription = stringResource(Res.string.share_group),
-            )
+        TutorialItem(
+            onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[3], it) },
+        ) { modifier ->
+            IconButton(
+                modifier = modifier,
+                onClick = {
+                    tutorialControl.onNext()
+                    onAction.invoke(GroupInfoAction.Share(group))
+                },
+            ) {
+                Icon(
+                    AdaptiveIcons.Outlined.Share,
+                    contentDescription = stringResource(Res.string.share_group),
+                )
+            }
         }
     }
 }

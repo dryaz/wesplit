@@ -36,6 +36,7 @@ data class ExtraColorsPalette(
     val warning: Color = Color.Unspecified,
     val infoContainer: Color = Color.Unspecified,
     val onInfoContainer: Color = Color.Unspecified,
+    val onInfoContainerAction: Color = Color.Unspecified,
 )
 
 val LightCustomColorsPalette =
@@ -43,6 +44,7 @@ val LightCustomColorsPalette =
         warning = warningLight,
         infoContainer = infoContainerLight,
         onInfoContainer = onInfoContainerLight,
+        onInfoContainerAction = warningDark,
     )
 
 val DarkCustomColorsPalette =
@@ -50,6 +52,7 @@ val DarkCustomColorsPalette =
         warning = warningDark,
         infoContainer = infoContainerDark,
         onInfoContainer = onInfoContainerDark,
+        onInfoContainerAction = warningDark,
     )
 
 val unspecified_scheme =
