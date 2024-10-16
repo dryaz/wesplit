@@ -80,6 +80,14 @@ class UserFirebaseRepository(
                                 )
                             }
                         }
+
+                        is Setting.TransactionId -> {
+                            Firebase.firestore.collection(USER_COLLECTION).document(authUser.id).update(
+                                authUser.copy(
+                                    transactionId = setting.transactionId,
+                                ),
+                            )
+                        }
                     }
                 }
             }

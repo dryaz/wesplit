@@ -36,6 +36,8 @@ data class User(
     @SerialName("onboard")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val completedOnboardingSteps: List<OnboardingStep> = emptyList(),
+    @SerialName("trxId")
+    val transactionId: String? = null,
 )
 
 @Serializable

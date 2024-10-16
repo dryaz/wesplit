@@ -14,4 +14,6 @@ sealed interface Setting {
     data class Currency(val code: String) : Setting
 
     data class CompletedOnboardedSteps(val steps: List<OnboardingStep>) : Setting
+
+    data class TransactionId(val transactionId: String) : Setting
 }

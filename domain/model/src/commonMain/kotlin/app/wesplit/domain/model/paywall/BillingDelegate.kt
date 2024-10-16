@@ -11,7 +11,7 @@ interface BillingDelegate {
     fun isBillingSupported(): Boolean
 
     interface StateRepository {
-        fun update(pricingResult: Result<List<Subscription>>)
+        fun update(pricingResult: List<Subscription>)
 
         fun getStream(): Flow<BillingState>
 
@@ -33,9 +33,10 @@ sealed class BillingState {
     data class Data(val data: List<Subscription>) : BillingState()
 }
 
-enum class PurchaseState {
-    COMPLETED,
-    CANCELED,
+sealed interface PurchaseState {
+    data object Canceled : PurchaseState
+
+    data class Completed(val transactionId: String? = null) : PurchaseState
 }
 
 class UnsupportedBiilingDelegate(val repository: BillingDelegate.StateRepository) : BillingDelegate {
@@ -64,7 +65,7 @@ class UnsupportedBiilingDelegate(val repository: BillingDelegate.StateRepository
                     period = Subscription.Period.YEAR,
                 ),
             )
-        repository.update(Result.success(products))
+        repository.update(products)
     }
 
     override fun subscribe(period: Subscription.Period) {

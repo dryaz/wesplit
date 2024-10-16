@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             App(
+                koinApp = null,
                 AndroidAppModule().module,
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
                 module {

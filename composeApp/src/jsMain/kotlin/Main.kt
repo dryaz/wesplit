@@ -52,7 +52,9 @@ fun main() {
         CanvasBasedWindow("Wesplit") {
             // TODO: Support initial destination
             // TODO: Provide parsed UTM into Common app to have SSOT for utm tracking
+
             App(
+                koinApp = null,
                 module {
                     single<CoroutineDispatcher> { Dispatchers.Main }
                     single<LoginDelegate> { LoginJsDelegate() }

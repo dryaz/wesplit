@@ -377,3 +377,192 @@ exports.handleSubscriptionUpdates = onMessagePublished('in-app-android', async (
     logger.error('Pub/Sub message data is empty');
   }
 });
+
+// Apple supscriptions
+
+const { onRequest } = require('firebase-functions/v2/https');
+const jwt = require('jsonwebtoken');
+const jwkToPem = require('jwk-to-pem');
+
+exports.handleAppleServerNotification = onRequest(async (req, res) => {
+  try {
+    // Only accept POST requests
+    if (req.method !== 'POST') {
+      res.status(405).send('Method Not Allowed');
+      return;
+    }
+
+    // Get the signedPayload from the request body
+    const signedPayload = req.body.signedPayload;
+
+    if (!signedPayload) {
+      res.status(400).send('Bad Request: Missing signedPayload');
+      return;
+    }
+
+    // Verify the signedPayload using Apple's public key
+    const payload = await verifyAppleSignedPayload(signedPayload);
+
+    if (!payload) {
+      res.status(400).send('Invalid signature');
+      return;
+    }
+
+    // Handle the notification
+    await handleNotification(payload);
+
+    res.status(200).send('Success');
+  } catch (error) {
+    console.error('Error handling Apple server notification:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+async function verifyAppleSignedPayload(signedPayload) {
+  try {
+    // Decode the header to get the key ID (kid)
+    const decodedHeader = jwt.decode(signedPayload, { complete: true }).header;
+    const kid = decodedHeader.kid;
+
+    // Get Apple's public keys
+    const applePublicKeys = await getApplePublicKeys();
+
+    const publicKey = applePublicKeys[kid];
+
+    if (!publicKey) {
+      throw new Error('Public key not found for kid: ' + kid);
+    }
+
+    // Verify the JWT
+    const decodedPayload = jwt.verify(signedPayload, publicKey, {
+      algorithms: ['ES256'],
+    });
+
+    return decodedPayload;
+  } catch (error) {
+    console.error('Error verifying Apple signed payload:', error);
+    return null;
+  }
+}
+
+let cachedApplePublicKeys = null;
+let lastFetchedTime = 0;
+
+// Apple's JWKS URL for App Store Server Notifications V2
+// PROD
+const APPLE_JWKS_URL = 'https://api.storekit.itunes.apple.com/inApps/v1/notifications/jwsKeys';
+
+// DEV
+//const APPLE_JWKS_URL = 'https://api.storekit-sandbox.itunes.apple.com/inApps/v1/notifications/jwsKeys';
+
+async function getApplePublicKeys() {
+  const now = Date.now();
+  // Cache the keys for 24 hours
+  if (cachedApplePublicKeys && now - lastFetchedTime < 24 * 60 * 60 * 1000) {
+    return cachedApplePublicKeys;
+  }
+
+  try {
+    const response = await axios.get(APPLE_JWKS_URL);
+    const keys = response.data.keys;
+
+    // Transform keys into a map from kid to public key
+    const publicKeys = {};
+    for (const key of keys) {
+      const keyObject = jwkToPem(key);
+      publicKeys[key.kid] = keyObject;
+    }
+
+    cachedApplePublicKeys = publicKeys;
+    lastFetchedTime = now;
+
+    return publicKeys;
+  } catch (error) {
+    console.error('Error fetching Apple public keys:', error);
+    throw error;
+  }
+}
+
+async function handleNotification(notificationData) {
+  // Extract relevant information
+  const notificationType = notificationData.notificationType;
+  const data = notificationData.data;
+
+  // Verify and decode signedTransactionInfo
+  const signedTransactionInfo = data.signedTransactionInfo;
+  const transactionInfo = await verifySignedData(signedTransactionInfo);
+
+  if (!transactionInfo) {
+    console.error('Invalid transaction info');
+    return;
+  }
+
+  // Extract necessary fields from transactionInfo
+  const originalTransactionId = transactionInfo.originalTransactionId;
+  const productId = transactionInfo.productId;
+
+  // Map the transaction to a user in your database
+  const userSnapshot = await admin.firestore()
+    .collection('users')
+    .where('trxId', '==', originalTransactionId)
+    .limit(1)
+    .get();
+
+  if (userSnapshot.empty) {
+    console.error('No user found for originalTransactionId:', originalTransactionId);
+    return;
+  }
+
+  const userDoc = userSnapshot.docs[0];
+  const userRef = userDoc.ref;
+
+  // Determine the 'subs' value based on notificationType and productId
+  let subsValue = 'basic'; // default to 'basic'
+
+  if (['SUBSCRIBED', 'RENEWED'].includes(notificationType)) {
+    // User has an active subscription
+    // Determine if 'plus' or 'basic' based on productId
+    const plusProductIds = ['year', 'month', 'week'];
+
+    if (plusProductIds.includes(productId)) {
+      subsValue = 'plus';
+    } else {
+      subsValue = 'basic';
+    }
+  } else if (['EXPIRED', 'DID_FAIL_TO_RENEW', 'CANCEL'].includes(notificationType)) {
+    // Subscription expired or failed to renew
+    subsValue = 'basic';
+  }
+
+  // Update the user's 'subs' field
+  await userRef.update({
+    subs: subsValue,
+  });
+}
+
+async function verifySignedData(signedData) {
+  try {
+    // Decode the header to get the key ID (kid)
+    const decodedHeader = jwt.decode(signedData, { complete: true }).header;
+    const kid = decodedHeader.kid;
+
+    // Get Apple's public keys
+    const applePublicKeys = await getApplePublicKeys();
+
+    const publicKey = applePublicKeys[kid];
+
+    if (!publicKey) {
+      throw new Error('Public key not found for kid: ' + kid);
+    }
+
+    // Verify the JWT
+    const decodedPayload = jwt.verify(signedData, publicKey, {
+      algorithms: ['ES256'],
+    });
+
+    return decodedPayload;
+  } catch (error) {
+    console.error('Error verifying signed data:', error);
+    return null;
+  }
+}

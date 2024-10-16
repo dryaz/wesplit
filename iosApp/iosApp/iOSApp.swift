@@ -6,7 +6,7 @@ import ComposeApp
 class AppDelegate: UIResponder, UIApplicationDelegate {
   
   var window: UIWindow?
-  lazy var deeplinkHandler = DeepLinkHandler()
+  lazy var deeplinkHandler = Dependencies.shared.deepLinkHandler
   
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
@@ -68,7 +68,7 @@ struct iOSApp: App {
   
   var body: some Scene {
     WindowGroup {
-      ContentView(deeplinkHandler: delegate.deeplinkHandler).ignoresSafeArea().onOpenURL { url in
+      ContentView().ignoresSafeArea().onOpenURL { url in
         delegate.deeplinkHandler.handleDeeplink(url: url.absoluteString)
       }
     }
