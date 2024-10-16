@@ -2,6 +2,8 @@ import androidx.compose.ui.window.ComposeUIViewController
 import app.wesplit.App
 import app.wesplit.DeepLinkHandler
 import app.wesplit.ShareDelegate
+import app.wesplit.ShortcutDelegate
+import app.wesplit.ShortcutDelegateNotSupport
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.LoginDelegate
@@ -25,6 +27,7 @@ fun mainViewController(iosDiHelper: IosDiHelper): UIViewController {
                 single<BillingIosRepositoryController> { BillingIosRepositoryController(get()) }
                 single<IosDiHelper> { iosDiHelper }
                 single<ShareDelegate> { iosDiHelper.shareDelegate }
+                single<ShortcutDelegate> { ShortcutDelegateNotSupport }
                 single<DeepLinkHandler> { iosDiHelper.deepLinkHandler }
                 single<BillingIosNativeDelegate> { iosDiHelper.billingDelegate }
                 single<BillingDelegate> { BillingIosDelegate(get()) }

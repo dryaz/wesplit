@@ -16,6 +16,7 @@ class Dependencies {
   lazy var loginDelegate: LoginIosNativeDelegate = { sharedDi.loginDelegate }()
   lazy var deepLinkHandler: DeepLinkHandler = { sharedDi.deepLinkHandler }()
   lazy var shareDelegate: ShareDelegate = { sharedDi.shareDelegate }()
+  lazy var billingDelegate: PlatformBillingDelegate = { sharedDi.billingDelegate as! PlatformBillingDelegate }() 
   lazy var billingRepositoryController: BillingIosRepositoryController = { sharedDi.diHolder().billingRepository }()
 
   let sharedDi: IosDiHelper = IosDiHelper(

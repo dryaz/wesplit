@@ -13,6 +13,7 @@
   },
   "main": "index.js",
   "dependencies": {
+    "@apple/app-store-server-library": "^1.4.0",
     "@google-cloud/secret-manager": "^5.6.0",
     "axios": "^1.7.7",
     "firebase-admin": "^12.6.0",

@@ -70,6 +70,8 @@ struct iOSApp: App {
     WindowGroup {
       ContentView().ignoresSafeArea().onOpenURL { url in
         delegate.deeplinkHandler.handleDeeplink(url: url.absoluteString)
+      }.onAppear {
+        Dependencies.shared.billingDelegate.listenForTransactionUpdates()
       }
     }
   }
