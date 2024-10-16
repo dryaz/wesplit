@@ -51,11 +51,11 @@ import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
-import app.wesplit.ui.HelpOverlayPosition
-import app.wesplit.ui.LocalTutorialControl
-import app.wesplit.ui.TutorialControl
-import app.wesplit.ui.TutorialItem
-import app.wesplit.ui.TutorialStep
+import app.wesplit.ui.tutorial.HelpOverlayPosition
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialControl
+import app.wesplit.ui.tutorial.TutorialItem
+import app.wesplit.ui.tutorial.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.ExitToApp

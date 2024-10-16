@@ -46,10 +46,10 @@ import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.ui.AdaptiveTopAppBar
-import app.wesplit.ui.HelpOverlayPosition
-import app.wesplit.ui.LocalTutorialControl
-import app.wesplit.ui.TutorialItem
-import app.wesplit.ui.TutorialStep
+import app.wesplit.ui.tutorial.HelpOverlayPosition
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialItem
+import app.wesplit.ui.tutorial.TutorialStep
 import com.seiko.imageloader.model.ImageAction
 import com.seiko.imageloader.rememberImageSuccessPainter
 import com.seiko.imageloader.ui.AutoSizeBox

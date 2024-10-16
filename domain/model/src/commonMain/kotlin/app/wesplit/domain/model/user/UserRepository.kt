@@ -12,4 +12,6 @@ interface UserRepository {
 
 sealed interface Setting {
     data class Currency(val code: String) : Setting
+
+    data class CompletedOnboardedSteps(val steps: List<OnboardingStep>) : Setting
 }

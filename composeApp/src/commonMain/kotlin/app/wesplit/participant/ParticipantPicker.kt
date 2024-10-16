@@ -38,7 +38,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,17 +50,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.domain.model.user.OnboardingStep
-import app.wesplit.ui.HelpOverlayPosition
-import app.wesplit.ui.TutorialControl
-import app.wesplit.ui.TutorialItem
-import app.wesplit.ui.TutorialOverlay
-import app.wesplit.ui.TutorialStep
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.ui.tutorial.HelpOverlayPosition
+import app.wesplit.ui.tutorial.TutorialControl
+import app.wesplit.ui.tutorial.TutorialItem
+import app.wesplit.ui.tutorial.TutorialOverlay
+import app.wesplit.ui.tutorial.TutorialStep
+import app.wesplit.ui.tutorial.TutorialViewModel
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AccountBox
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
@@ -82,7 +83,7 @@ import split.composeapp.generated.resources.search_contact
 import split.composeapp.generated.resources.start_type_creat_contact
 import split.composeapp.generated.resources.user_already_in_group
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAdaptiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ParticipantPicker(
     currentParticipants: Set<Participant>,
@@ -126,26 +127,30 @@ internal fun ParticipantPicker(
         }
 
     var needToHandleInputForTutorial by remember { mutableStateOf(true) }
-    var showTutorial by remember { mutableStateOf(false) }
-    var steps by remember { mutableStateOf<List<TutorialStep>>(emptyList()) }
-    var currentStepIndex by remember { mutableStateOf(0) }
-    val targetPositions = remember { mutableStateMapOf<TutorialStep, Rect>() }
 
-    // TODO: remember?
+    val accountRepository: AccountRepository = koinInject()
+    val userRepository: UserRepository = koinInject()
+    val tutorialViewModel =
+        viewModel {
+            TutorialViewModel(
+                accountRepository = accountRepository,
+                userRepository = userRepository,
+            )
+        }
+
+    val tutorialState = tutorialViewModel.state.collectAsState()
+
     val tutorialControl =
-        remember {
+        remember(tutorialViewModel) {
             TutorialControl(
                 stepRequest = { requestedSteps ->
-                    currentStepIndex = 0
-                    println("Requested steps!!! : $requestedSteps")
-                    steps = requestedSteps
-                    showTutorial = true
+                    tutorialViewModel.requestSteps(requestedSteps)
                 },
                 onPositionRecieved = { step, rect ->
-                    targetPositions[step] = rect
+                    tutorialViewModel.onPositionReceived(step, rect)
                 },
                 onNext = {
-                    currentStepIndex++
+                    tutorialViewModel.nextStep()
                 },
             )
         }
@@ -299,23 +304,14 @@ internal fun ParticipantPicker(
                 } // TODO: Loading?
             }
 
-            println("Is visible overlay?: ${showTutorial && currentStepIndex < steps.size}")
             androidx.compose.animation.AnimatedVisibility(
-                visible = showTutorial && currentStepIndex < steps.size,
+                visible = tutorialState.value is TutorialViewModel.TutorialState.Step,
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                val step = steps[minOf(currentStepIndex, steps.size - 1)]
-                val targetRect = targetPositions[step]
-
-                println("Step: $step")
-                println("targetRect: $targetRect")
-
                 TutorialOverlay(
-                    targetBounds = targetRect,
-                    step = step,
-                    helpOverlayPosition = step.helpOverlayPosition,
-                    onClose = { currentStepIndex++ },
+                    tutorialState = tutorialState.value,
+                    onClose = { tutorialViewModel.nextStep() },
                 )
             }
         }
@@ -335,12 +331,6 @@ internal fun ParticipantPicker(
         if (searchText.value.length > 3 && needToHandleInputForTutorial) {
             needToHandleInputForTutorial = false
             tutorialControl.stepRequest(selectAndConfirmUser)
-        }
-    }
-
-    LaunchedEffect(currentStepIndex) {
-        if (currentStepIndex >= steps.size - 1) {
-            println("User completed $steps")
         }
     }
 }

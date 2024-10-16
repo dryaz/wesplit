@@ -1,4 +1,4 @@
-package app.wesplit.ui
+package app.wesplit.ui.tutorial
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,7 +44,6 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.theme.extraColorScheme
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -181,12 +180,12 @@ fun TutorialItem(
 
 @Composable
 fun TutorialOverlay(
-    targetBounds: Rect?,
-    step: TutorialStep,
-    helpOverlayPosition: HelpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
+    tutorialState: TutorialViewModel.TutorialState,
     onClose: () -> Unit,
 ) {
     val highlightColor = MaterialTheme.extraColorScheme.infoContainer
+    val targetBounds = (tutorialState as? TutorialViewModel.TutorialState.Step)?.position
+    val step = (tutorialState as? TutorialViewModel.TutorialState.Step)?.step
 
     Box(
         modifier =
@@ -239,7 +238,7 @@ fun TutorialOverlay(
                         )
                     }
                 }.then(
-                    if (step.isModal) {
+                    if (step == null || step.isModal) {
                         Modifier.clickable(
                             indication = null,
                             interactionSource = remember { MutableInteractionSource() },
@@ -249,35 +248,35 @@ fun TutorialOverlay(
                     } else {
                         Modifier
                     },
-                ).zIndex(100f),
+                ),
     ) {
-        targetBounds?.let { bounds ->
+        if (targetBounds != null && step != null) {
             // State to hold the measured width of the Box
             var boxSize by remember { mutableStateOf(IntSize(0, 0)) }
 
             val x =
-                remember(boxSize, bounds) {
-                    when (helpOverlayPosition) {
+                remember(boxSize, targetBounds) {
+                    when (step.helpOverlayPosition) {
                         HelpOverlayPosition.TOP_LEFT,
                         HelpOverlayPosition.BOTTOM_LEFT,
-                        -> (bounds.right - boxSize.width).roundToInt()
+                        -> (targetBounds.right - boxSize.width).roundToInt()
 
                         HelpOverlayPosition.TOP_RIGHT,
                         HelpOverlayPosition.BOTTOM_RIGHT,
-                        -> bounds.left.roundToInt()
+                        -> targetBounds.left.roundToInt()
                     }
                 }
 
             val y =
-                remember(boxSize, bounds) {
-                    when (helpOverlayPosition) {
+                remember(boxSize, targetBounds) {
+                    when (step.helpOverlayPosition) {
                         HelpOverlayPosition.TOP_LEFT,
                         HelpOverlayPosition.TOP_RIGHT,
-                        -> (bounds.top - boxSize.height - 16).roundToInt()
+                        -> (targetBounds.top - boxSize.height - 16).roundToInt()
 
                         HelpOverlayPosition.BOTTOM_LEFT,
                         HelpOverlayPosition.BOTTOM_RIGHT,
-                        -> (bounds.bottom + 16).roundToInt()
+                        -> (targetBounds.bottom + 16).roundToInt()
                     }
                 }
 

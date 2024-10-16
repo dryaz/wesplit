@@ -43,8 +43,8 @@ import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isConnected
 import app.wesplit.group.detailed.checkBalanceTutorialStepFlow
 import app.wesplit.participant.ParticipantListItem
-import app.wesplit.ui.LocalTutorialControl
-import app.wesplit.ui.TutorialItem
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialItem
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Email

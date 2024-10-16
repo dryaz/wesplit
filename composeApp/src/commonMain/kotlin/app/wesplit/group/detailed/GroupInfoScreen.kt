@@ -54,10 +54,10 @@ import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
-import app.wesplit.ui.HelpOverlayPosition
-import app.wesplit.ui.LocalTutorialControl
-import app.wesplit.ui.TutorialItem
-import app.wesplit.ui.TutorialStep
+import app.wesplit.ui.tutorial.HelpOverlayPosition
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialItem
+import app.wesplit.ui.tutorial.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit

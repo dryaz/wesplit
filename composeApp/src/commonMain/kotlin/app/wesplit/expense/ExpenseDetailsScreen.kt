@@ -88,11 +88,11 @@ import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
 import app.wesplit.filterDoubleInput
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
-import app.wesplit.ui.HelpOverlayPosition
-import app.wesplit.ui.LocalTutorialControl
 import app.wesplit.ui.PlusProtected
-import app.wesplit.ui.TutorialItem
-import app.wesplit.ui.TutorialStep
+import app.wesplit.ui.tutorial.HelpOverlayPosition
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialItem
+import app.wesplit.ui.tutorial.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveSwitch
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons

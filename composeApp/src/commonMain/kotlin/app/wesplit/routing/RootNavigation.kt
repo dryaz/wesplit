@@ -10,14 +10,13 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.buildAnnotatedString
@@ -64,10 +63,10 @@ import app.wesplit.group.settings.GroupSettingsViewModel
 import app.wesplit.paywall.PaywallAction
 import app.wesplit.paywall.PaywallRoute
 import app.wesplit.paywall.PaywallViewModel
-import app.wesplit.ui.LocalTutorialControl
-import app.wesplit.ui.TutorialControl
-import app.wesplit.ui.TutorialOverlay
-import app.wesplit.ui.TutorialStep
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialControl
+import app.wesplit.ui.tutorial.TutorialOverlay
+import app.wesplit.ui.tutorial.TutorialViewModel
 import com.motorro.keeplink.deeplink.deepLink
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.CoroutineDispatcher
@@ -242,25 +241,29 @@ fun RootNavigation(
         )
     }
 
-    var showTutorial by remember { mutableStateOf(false) }
-    var steps by remember { mutableStateOf<List<TutorialStep>>(emptyList()) }
-    var currentStepIndex by remember { mutableStateOf(0) }
-    val targetPositions = remember { mutableStateMapOf<TutorialStep, Rect>() }
+    val accountRepository: AccountRepository = koinInject()
+    val userRepository: UserRepository = koinInject()
+    val tutorialViewModel =
+        viewModel {
+            TutorialViewModel(
+                accountRepository = accountRepository,
+                userRepository = userRepository,
+            )
+        }
 
-    // TODO: remember?
+    val tutorialState = tutorialViewModel.state.collectAsState()
+
     val tutorialControl =
-        remember {
+        remember(tutorialViewModel) {
             TutorialControl(
                 stepRequest = { requestedSteps ->
-                    currentStepIndex = 0
-                    steps = requestedSteps
-                    showTutorial = true
+                    tutorialViewModel.requestSteps(requestedSteps)
                 },
                 onPositionRecieved = { step, rect ->
-                    targetPositions[step] = rect
+                    tutorialViewModel.onPositionReceived(step, rect)
                 },
                 onNext = {
-                    currentStepIndex++
+                    tutorialViewModel.nextStep()
                 },
             )
         }
@@ -275,30 +278,18 @@ fun RootNavigation(
             firstPaneNavController,
             secondPaneNavController,
             analyticsManager,
-            tutorialControl,
         )
     }
 
     AnimatedVisibility(
-        visible = showTutorial && currentStepIndex < steps.size,
+        visible = tutorialState.value is TutorialViewModel.TutorialState.Step,
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        val step = steps[minOf(currentStepIndex, steps.size - 1)]
-        val targetRect = targetPositions[step]
-
         TutorialOverlay(
-            targetBounds = targetRect,
-            step = step,
-            helpOverlayPosition = step.helpOverlayPosition,
-            onClose = { currentStepIndex++ },
+            tutorialState = tutorialState.value,
+            onClose = { tutorialViewModel.nextStep() },
         )
-    }
-
-    LaunchedEffect(currentStepIndex) {
-        if (currentStepIndex >= steps.size - 1) {
-            println("User completed $steps")
-        }
     }
 }
 
@@ -310,7 +301,6 @@ private fun Navigation(
     firstPaneNavController: NavHostController,
     secondPaneNavController: NavHostController,
     analyticsManager: AnalyticsManager,
-    tutorialControl: TutorialControl,
 ) {
     val menuItems =
         remember {

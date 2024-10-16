@@ -28,6 +28,9 @@ import org.koin.core.annotation.Single
 
 private const val USER_COLLECTION = "users"
 
+private const val ONBOARDING_STEP_COMPLETED_EVENT = "onboarding_steps_complete"
+private const val ONBOARDING_STEP_COMPLETED_EVENT_STEPS_PARAM = "steps"
+
 @Single
 class UserFirebaseRepository(
     private val analytics: AnalyticsManager,
@@ -60,6 +63,23 @@ class UserFirebaseRepository(
                                     lastUsedCurrency = setting.code,
                                 ),
                             )
+
+                        is Setting.CompletedOnboardedSteps -> {
+                            if (setting.steps.any { it !in authUser.completedOnboardingSteps }) {
+                                analytics.track(
+                                    event = ONBOARDING_STEP_COMPLETED_EVENT,
+                                    params =
+                                        mapOf(
+                                            ONBOARDING_STEP_COMPLETED_EVENT_STEPS_PARAM to setting.steps.joinToString(),
+                                        ),
+                                )
+                                Firebase.firestore.collection(USER_COLLECTION).document(authUser.id).update(
+                                    authUser.copy(
+                                        completedOnboardingSteps = authUser.completedOnboardingSteps + setting.steps,
+                                    ),
+                                )
+                            }
+                        }
                     }
                 }
             }
