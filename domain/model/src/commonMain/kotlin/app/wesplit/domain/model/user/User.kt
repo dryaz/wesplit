@@ -32,7 +32,7 @@ data class User(
     @SerialName("lastCur")
     val lastUsedCurrency: String? = null,
     @SerialName("subs")
-    val plan: Plan = Plan.BASIC,
+    val plan: Plan? = Plan.BASIC,
     @SerialName("onboard")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val completedOnboardingSteps: List<OnboardingStep> = emptyList(),
@@ -138,3 +138,5 @@ fun User.participant(): Participant =
 fun User.isPlus() = plan == Plan.PLUS
 
 fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email
+
+fun User.planNotNull() = plan ?: Plan.BASIC

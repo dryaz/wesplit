@@ -50,6 +50,7 @@ import app.wesplit.domain.model.user.Plan
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.email
 import app.wesplit.domain.model.user.participant
+import app.wesplit.domain.model.user.planNotNull
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.PlusProtected
@@ -184,24 +185,23 @@ private fun AccountInfo(
         modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        participant?.let {
-            ParticipantListItem(
-                modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 8.dp),
-                participant = it,
-                showImage = windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact,
-                showMeBadge = false,
-                subComposable =
-                    user.email()?.let { email ->
-                        {
-                            Text(
-                                text = email,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline,
-                            )
-                        }
-                    },
-            )
-        }
+        ParticipantListItem(
+            modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 8.dp),
+            participant = participant,
+            showImage = windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact,
+            showMeBadge = false,
+            subComposable =
+            user.email()?.let { email ->
+                {
+                    Text(
+                        text = email,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+            },
+        )
+
 
         Plan(user) { onAction(ProfileAction.Paywall) }
         Spacer(modifier = Modifier.weight(1f))
@@ -353,25 +353,25 @@ private fun ColumnScope.Plan(
         modifier = Modifier.fillMaxWidth(1f).padding(16.dp),
     ) {
         val title =
-            when (user.plan) {
+            when (user.planNotNull()) {
                 Plan.BASIC -> "Try Plus"
                 Plan.PLUS -> "Your have Plus+"
             }
 
         val desc =
-            when (user.plan) {
+            when (user.planNotNull()) {
                 Plan.BASIC -> "Unlock all features"
                 Plan.PLUS -> "All features unlocked"
             }
 
         val modifier =
-            when (user.plan) {
+            when (user.planNotNull()) {
                 Plan.BASIC -> Modifier.fillMaxWidth().clickable { onSubscribe() }
                 Plan.PLUS -> Modifier
             }
 
         val trailing: @Composable (() -> Unit)? =
-            when (user.plan) {
+            when (user.planNotNull()) {
                 Plan.BASIC -> {
                     {
                         Icon(
@@ -411,7 +411,7 @@ private fun ColumnScope.Plan(
         HorizontalDivider()
 
         FeaturesList(
-            subscription = user.plan,
+            subscription = user.planNotNull(),
             onSubscribe = onSubscribe,
         )
 

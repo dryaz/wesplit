@@ -522,7 +522,7 @@ exports.handleAppleServerNotification = onRequest(async (req, res) => {
       .get();
 
     if (userSnapshot.empty) {
-      console.error('No user found with trxId (originalTransactionId):', originalTransactionId);
+      console.error('(notificationType) | No user found with trxId (originalTransactionId):', notificationType, originalTransactionId);
       res.status(400).send('User not found');
       return;
     }
@@ -540,7 +540,7 @@ exports.handleAppleServerNotification = onRequest(async (req, res) => {
 
     // Check if this transaction has already been processed
     if (subscriptionData.lastTransactionId === transactionId) {
-       console.log(`Notification for transactionId ${transactionId} has already been processed.`);
+       console.log(`(${notificationType}) Notification for transactionId ${transactionId} has already been processed.`);
      }
    }
 
