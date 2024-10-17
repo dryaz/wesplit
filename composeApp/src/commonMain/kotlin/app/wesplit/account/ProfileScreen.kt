@@ -191,17 +191,16 @@ private fun AccountInfo(
             showImage = windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact,
             showMeBadge = false,
             subComposable =
-            user.email()?.let { email ->
-                {
-                    Text(
-                        text = email,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline,
-                    )
-                }
-            },
+                user.email()?.let { email ->
+                    {
+                        Text(
+                            text = email,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                },
         )
-
 
         Plan(user) { onAction(ProfileAction.Paywall) }
         Spacer(modifier = Modifier.weight(1f))

@@ -1,7 +1,6 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import app.wesplit.App
-import app.wesplit.DebugAnalyticsManager
 import app.wesplit.DeepLinkHandler
 import app.wesplit.DefaultShareDelegate
 import app.wesplit.ShareDelegate
@@ -61,8 +60,8 @@ fun main() {
                     single<AppReviewManager> { NotSupportedAppReviewManager }
                     single<BillingDelegate> { UnsupportedBiilingDelegate(get()) }
                     single<ShareDelegate> { DefaultShareDelegate }
-//                    single<AnalyticsManager> { JsAnalyticsManager() }
-                    single<AnalyticsManager> { DebugAnalyticsManager() }
+                    single<AnalyticsManager> { JsAnalyticsManager() }
+//                    single<AnalyticsManager> { DebugAnalyticsManager() }
                     single<ShortcutDelegate> { ShortcutDelegateNotSupport }
                     single<DeepLinkHandler> { deepLinkHandler }
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -42,12 +44,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.format
+import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.Subscription
 import app.wesplit.theme.AppTheme
 import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.OrDivider
 import org.jetbrains.compose.resources.painterResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.ic_badge_white
 import split.composeapp.generated.resources.img_best_offer
 
 /**
@@ -101,6 +105,7 @@ private fun PricingSelection(
                                 .border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(15.dp)),
                         isSelected = selected == subscription,
                         subscription = subscription,
+                        offer = offers[subscription.period]!!,
                     ) {
                         selected = it
                     }
@@ -121,6 +126,7 @@ private fun PricingSelection(
                             .clip(RoundedCornerShape(15.dp)),
                     isSelected = selected == subscription,
                     subscription = subscription,
+                    offer = offers[subscription.period]!!,
                 ) {
                     selected = it
                 }
@@ -128,29 +134,7 @@ private fun PricingSelection(
             Spacer(modifier = Modifier.height(5.dp))
         }
         Spacer(modifier = Modifier.height(8.dp))
-        FilledTonalButton(
-            colors =
-                ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.extraColorScheme.infoContainer,
-                    contentColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                ),
-            modifier =
-                Modifier
-                    .height(52.dp)
-                    .padding(4.dp)
-                    .fillMaxWidth(1f),
-            onClick = { onSelected(selected) },
-            shape = RoundedCornerShape(10.dp),
-        ) {
-            Text(
-                text = "Subscribe for ${selected.formattedPrice}",
-                style =
-                    MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 0.7.sp,
-                    ),
-            )
-        }
+        SubscriptionButton(selected = selected, offer = offers[selected.period]!!, onSelected = {})
         Spacer(modifier = Modifier.height(8.dp))
     }
 }
@@ -170,7 +154,10 @@ private fun PricingList(
                 ),
         ) {
             subscriptions.sortedBy { (it as? Subscription)?.monthlyPrice?.value ?: 0.0 }.mapIndexed { index, subscription ->
-                SubscriptionItem(subscription = subscription) {
+                SubscriptionItem(
+                    subscription = subscription,
+                    offer = offers[subscription.period]!!,
+                ) {
                     onSelected(subscription)
                 }
                 if (index != subscriptions.size - 1) {
@@ -190,10 +177,45 @@ private fun PricingList(
 }
 
 @Composable
+private fun SubscriptionButton(
+    selected: Subscription,
+    offer: Offer,
+    onSelected: (Subscription) -> Unit,
+) {
+    Spacer(modifier = Modifier.height(8.dp))
+    FilledTonalButton(
+        colors =
+            ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                contentColor = MaterialTheme.extraColorScheme.onInfoContainer,
+            ),
+        modifier =
+            Modifier
+                .height(52.dp)
+                .padding(4.dp)
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth(1f),
+        onClick = { onSelected(selected) },
+        shape = RoundedCornerShape(10.dp),
+    ) {
+        Text(
+            text = "Subscribe for ${selected.formattedPrice}",
+            style =
+                MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 0.7.sp,
+                ),
+        )
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+}
+
+@Composable
 private fun SubscriptionItem(
     modifier: Modifier = Modifier,
     isSelected: Boolean = true,
     subscription: Subscription,
+    offer: Offer,
     onClick: (Subscription) -> Unit,
 ) {
     ListItem(
@@ -201,7 +223,7 @@ private fun SubscriptionItem(
             modifier
                 .fillMaxWidth(1f)
                 .height(IntrinsicSize.Max)
-                .alpha(if (isSelected) 1f else 0.50f)
+                .alpha(if (isSelected) 1f else 0.65f)
                 .clickable {
                     onClick(subscription)
                 },
@@ -211,20 +233,40 @@ private fun SubscriptionItem(
             ),
         overlineContent = {
             Text(
-                text = "Try for free",
+                text = "Try for ${offer.daysFree} days",
                 style = MaterialTheme.typography.labelSmall,
             )
         },
         headlineContent = {
-            Text(
-                text =
-                    when (subscription.period) {
-                        Subscription.Period.WEEK -> "Week Plus"
-                        Subscription.Period.MONTH -> "Month Plus"
-                        Subscription.Period.YEAR -> "Year Plus"
-                    },
-                style = MaterialTheme.typography.titleMedium,
-            )
+            Row {
+                Text(
+                    text =
+                        when (subscription.period) {
+                            Subscription.Period.WEEK -> "Week Plus"
+                            Subscription.Period.MONTH -> "Month Plus"
+                            Subscription.Period.YEAR -> "Year Plus"
+                        },
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                androidx.compose.animation.AnimatedVisibility(visible = offer.discountPercent != 0) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            modifier = Modifier.height(24.dp),
+                            painter = painterResource(Res.drawable.ic_badge_white),
+                            contentDescription = "Offer badge",
+                            tint = MaterialTheme.colorScheme.errorContainer,
+                        )
+                        Text(
+                            modifier = Modifier.padding(start = 8.dp),
+                            text = "- ${offer.discountPercent}%",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
+                        )
+                    }
+                }
+            }
         },
         supportingContent = {
             Text(
@@ -265,6 +307,25 @@ private fun SubscriptionItem(
         },
     )
 }
+
+val offers =
+    mapOf(
+        Subscription.Period.WEEK to
+            Offer(
+                daysFree = 3,
+                discountPercent = 0,
+            ),
+        Subscription.Period.MONTH to
+            Offer(
+                daysFree = 7,
+                discountPercent = 23,
+            ),
+        Subscription.Period.YEAR to
+            Offer(
+                daysFree = 14,
+                discountPercent = 58,
+            ),
+    )
 
 val products =
     listOf<Subscription>(

@@ -30,7 +30,7 @@ sealed class BillingState {
 
     data object PurchaseCanceled : BillingState()
 
-    data class Data(val data: List<Subscription>) : BillingState()
+    data class Data(val data: List<Subscription>, val offer: Map<Subscription.Period, Offer>) : BillingState()
 }
 
 sealed interface PurchaseState {

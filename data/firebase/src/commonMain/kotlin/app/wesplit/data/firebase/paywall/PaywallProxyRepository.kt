@@ -3,6 +3,7 @@ package app.wesplit.data.firebase.paywall
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.paywall.BillingState
+import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.PaywallRepository
 import app.wesplit.domain.model.paywall.PaywallRestrictionException
 import app.wesplit.domain.model.paywall.Subscription
@@ -23,7 +24,7 @@ class PaywallProxyRepository(
     private val billingStateRepository: BillingDelegate.StateRepository,
     private val analytics: AnalyticsManager,
 ) : PaywallRepository {
-    override suspend fun getProducts(): Result<List<Subscription>> {
+    override suspend fun getProducts(): Result<List<Pair<Subscription, Offer>>> {
         // TODO: If it's already purchased - return exception?
         billingDelegate.requestPricingUpdate()
 
@@ -33,7 +34,8 @@ class PaywallProxyRepository(
             }.first()
 
         return when (result) {
-            is BillingState.Data -> Result.success(result.data)
+            // TODO: Offer should be part of the subscription also coming from Stores.
+            is BillingState.Data -> Result.success(result.data.map { it to result.offer[it.period]!! })
             BillingState.Error -> Result.failure(PaywallRestrictionException("Can't get PRO prices"))
             else -> throw IllegalStateException("Data or Error states only should be pro pricing call")
         }

@@ -2,6 +2,7 @@ package app.wesplit.paywall
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.PaywallRepository
 import app.wesplit.domain.model.paywall.Subscription
 import app.wesplit.domain.model.user.Plan
@@ -76,7 +77,7 @@ class PaywallViewModel(
 
         data object AlreadySubscribed : State
 
-        data class Data(val products: List<Subscription>) : State
+        data class Data(val products: List<Pair<Subscription, Offer>>) : State
     }
 
     sealed interface Event {

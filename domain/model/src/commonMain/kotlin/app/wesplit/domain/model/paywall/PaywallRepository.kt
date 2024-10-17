@@ -3,7 +3,7 @@ package app.wesplit.domain.model.paywall
 import app.wesplit.domain.model.currency.Amount
 
 interface PaywallRepository {
-    suspend fun getProducts(): Result<List<Subscription>>
+    suspend fun getProducts(): Result<List<Pair<Subscription, Offer>>>
 
     suspend fun subscribe(period: Subscription.Period): Result<Boolean>
 
@@ -23,3 +23,8 @@ data class Subscription(
         YEAR,
     }
 }
+
+data class Offer(
+    val daysFree: Int,
+    val discountPercent: Int,
+)
