@@ -51,7 +51,7 @@ fun AdaptiveTopAppBar(
         )
     },
     collapsedContainerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
-    expandedContainerColor: Color = MaterialTheme.colorScheme.surfaceContainer,
+    expandedContainerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     onNavigationIconClick: (() -> Unit)? = null,
 ) {
     val windowSizeClass = calculateWindowSizeClass()

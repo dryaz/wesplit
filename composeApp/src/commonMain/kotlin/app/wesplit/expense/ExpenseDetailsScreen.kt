@@ -920,7 +920,7 @@ private fun ExpenseDetails(
 
         if (showCurrencyPicker) {
             CurrencyPicker(
-                data = data,
+                currencies = data.availableCurrencies,
                 onDismiss = { showCurrencyPicker = false },
                 onConfirm = { currency ->
                     onUpdated(UpdateAction.TotalAmount(data.expense.totalAmount.value, currency))

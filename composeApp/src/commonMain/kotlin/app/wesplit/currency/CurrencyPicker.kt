@@ -18,12 +18,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.currencySymbol
-import app.wesplit.expense.ExpenseDetailsViewModel
 
 @Composable
 fun CurrencyPicker(
-    data: ExpenseDetailsViewModel.State.Data,
+    currencies: CurrencyCodesCollection,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
 ) {
@@ -47,7 +47,7 @@ fun CurrencyPicker(
             LazyColumn(
                 modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh),
             ) {
-                items(data.availableCurrencies.lru, key = { "LRU-$it" }) { currency ->
+                items(currencies.lru, key = { "LRU-$it" }) { currency ->
                     ListItem(
                         modifier =
                             Modifier.clickable {
@@ -66,7 +66,7 @@ fun CurrencyPicker(
                 item {
                     HorizontalDivider()
                 }
-                items(data.availableCurrencies.all, key = { it }) { currency ->
+                items(currencies.all, key = { it }) { currency ->
                     ListItem(
                         modifier =
                             Modifier.clickable {

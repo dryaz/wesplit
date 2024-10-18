@@ -3,6 +3,7 @@ package app.wesplit.paywall
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.img_feature_fx
 import split.composeapp.generated.resources.img_feature_no_ads
 import split.composeapp.generated.resources.img_feature_protect
 import split.composeapp.generated.resources.plus_feature_currencies_descr_full
@@ -27,7 +28,7 @@ internal val features: List<Feature> =
             title = Res.string.plus_feature_currencies_title,
             shortDescr = Res.string.plus_feature_currencies_descr_short,
             fullDescr = Res.string.plus_feature_currencies_descr_full,
-            image = Res.drawable.img_feature_protect,
+            image = Res.drawable.img_feature_fx,
         ),
         Feature(
             title = Res.string.plus_feature_noads_title,
