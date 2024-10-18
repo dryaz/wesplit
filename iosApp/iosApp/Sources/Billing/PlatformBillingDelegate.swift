@@ -208,6 +208,7 @@ extension PlatformBillingDelegate {
         case .verified(let transaction):
           await self?.handleTransaction(transaction)
         case .unverified(_, let error):
+          print("Unverified transaction: \(error.localizedDescription)")
           // Optionally handle unverified transactions
         }
       }
