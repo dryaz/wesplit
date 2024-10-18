@@ -53,6 +53,7 @@ fun main() {
         ) {
             window.minimumSize = Dimension(300, 500)
             App(
+                koinApp = null,
                 module {
                     single<LoginDelegate> { LoginDesktopDelegate() }
                     single<AnalyticsManager> { DesktopAnalyticsManager() }

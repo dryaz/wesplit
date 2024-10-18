@@ -49,7 +49,6 @@ kotlin {
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "DomainModel"
-            isStatic = true
         }
     }
 

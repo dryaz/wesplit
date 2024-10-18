@@ -1,7 +1,6 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import app.wesplit.App
-import app.wesplit.DebugAnalyticsManager
 import app.wesplit.DeepLinkHandler
 import app.wesplit.DefaultShareDelegate
 import app.wesplit.ShareDelegate
@@ -52,15 +51,17 @@ fun main() {
         CanvasBasedWindow("Wesplit") {
             // TODO: Support initial destination
             // TODO: Provide parsed UTM into Common app to have SSOT for utm tracking
+
             App(
+                koinApp = null,
                 module {
                     single<CoroutineDispatcher> { Dispatchers.Main }
                     single<LoginDelegate> { LoginJsDelegate() }
                     single<AppReviewManager> { NotSupportedAppReviewManager }
                     single<BillingDelegate> { UnsupportedBiilingDelegate(get()) }
                     single<ShareDelegate> { DefaultShareDelegate }
-//                    single<AnalyticsManager> { JsAnalyticsManager() }
-                    single<AnalyticsManager> { DebugAnalyticsManager() }
+                    single<AnalyticsManager> { JsAnalyticsManager() }
+//                    single<AnalyticsManager> { DebugAnalyticsManager() }
                     single<ShortcutDelegate> { ShortcutDelegateNotSupport }
                     single<DeepLinkHandler> { deepLinkHandler }
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }

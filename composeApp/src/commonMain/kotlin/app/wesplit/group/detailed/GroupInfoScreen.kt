@@ -42,7 +42,6 @@ import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
-import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
@@ -85,6 +84,8 @@ sealed interface GroupInfoAction {
     data class Edit(val group: Group) : GroupInfoAction
 
     data class OpenExpenseDetails(val expense: Expense) : GroupInfoAction
+
+    data class Settle(val group: Group) : GroupInfoAction
 }
 
 private val addExpenseTutorialStep =
@@ -317,9 +318,9 @@ private fun GroupInfoContent(
         if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
             windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
         ) {
-            SplitView(expenseViewModel, group.balances, actionInterceptor)
+            SplitView(expenseViewModel, group, actionInterceptor)
         } else {
-            PaginationView(expenseViewModel, group.balances, actionInterceptor)
+            PaginationView(expenseViewModel, group, actionInterceptor)
         }
     }
 
@@ -333,7 +334,7 @@ private fun GroupInfoContent(
 @Composable
 private fun SplitView(
     expenseViewModel: ExpenseSectionViewModel,
-    balance: Balance?,
+    group: Group,
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val tutorialControl = LocalTutorialControl.current
@@ -369,10 +370,10 @@ private fun SplitView(
             contentAlignment = Alignment.TopCenter,
         ) {
             BalanceList(
-                balance = balance,
+                balance = group.balances,
                 onInvite = { onAction(GroupInfoAction.Invite(it)) },
             ) {
-                expenseViewModel.settleAll()
+                onAction(GroupInfoAction.Settle(group))
             }
         }
     }
@@ -381,7 +382,7 @@ private fun SplitView(
 @Composable
 private fun PaginationView(
     expenseViewModel: ExpenseSectionViewModel,
-    balance: Balance?,
+    group: Group,
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -422,10 +423,10 @@ private fun PaginationView(
 
                     1 ->
                         BalanceList(
-                            balance = balance,
+                            balance = group.balances,
                             onInvite = { onAction(GroupInfoAction.Invite(it)) },
                         ) {
-                            expenseViewModel.settleAll()
+                            onAction(GroupInfoAction.Settle(group))
                         }
                 }
             }

@@ -44,6 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -93,7 +94,6 @@ import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
 import app.wesplit.ui.tutorial.TutorialStep
-import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveSwitch
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Create
@@ -387,7 +387,7 @@ private fun ProtectionBlock(
             ),
         trailingContent = {
             if (data.expense.allowedToChange() && data.account is Account.Authorized) {
-                AdaptiveSwitch(
+                Switch(
                     checked = data.expense.isProtected(),
                     enabled = data.expense.allowedToChange(),
                     onCheckedChange = { protectCallback(it) },
@@ -920,7 +920,7 @@ private fun ExpenseDetails(
 
         if (showCurrencyPicker) {
             CurrencyPicker(
-                data = data,
+                currencies = data.availableCurrencies,
                 onDismiss = { showCurrencyPicker = false },
                 onConfirm = { currency ->
                     onUpdated(UpdateAction.TotalAmount(data.expense.totalAmount.value, currency))

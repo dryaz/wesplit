@@ -46,7 +46,9 @@ class GooglePlayBillingDelegate(
         PurchasesUpdatedListener { billingResult, purchases ->
             analytics.log("$billingResult", LogLevel.DEBUG)
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                billingStateRepository.onPurchaseEvent(PurchaseState.COMPLETED)
+                billingStateRepository.onPurchaseEvent(PurchaseState.Completed())
+            } else {
+                billingStateRepository.onPurchaseEvent(PurchaseState.Canceled)
             }
         }
 
@@ -96,7 +98,7 @@ class GooglePlayBillingDelegate(
             with(result.productDetailsList!![0]) {
                 productDetails = this
                 val proSubscriptions = pricingMapper.map(this)
-                billingStateRepository.update(Result.success(proSubscriptions))
+                billingStateRepository.update(proSubscriptions)
             }
         }
     }

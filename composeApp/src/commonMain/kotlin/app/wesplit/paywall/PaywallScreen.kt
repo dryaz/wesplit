@@ -52,13 +52,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.wesplit.domain.model.currency.format
+import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.Subscription
 import app.wesplit.domain.model.user.Plan
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.AdaptiveTopAppBar
-import app.wesplit.ui.OrDivider
 import app.wesplit.ui.PlusProtected
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
@@ -72,6 +72,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
+import split.composeapp.generated.resources.ic_badge_white
 import split.composeapp.generated.resources.ic_mobile_app
 import split.composeapp.generated.resources.ic_plus
 import split.composeapp.generated.resources.img_best_offer
@@ -170,7 +171,7 @@ fun PaywallScreen(
     }
 
     LaunchedEffect(productState) {
-        selected = (productState as? PaywallViewModel.State.Data)?.products?.sortedBy { it.monthlyPrice.value }?.get(0)
+        selected = (productState as? PaywallViewModel.State.Data)?.products?.sortedBy { it.first.monthlyPrice.value }?.get(0)?.first
     }
 
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
@@ -360,7 +361,7 @@ fun PaywallScreen(
 @Composable
 private fun PricingSelection(
     modifier: Modifier = Modifier,
-    subscriptions: List<Subscription>,
+    subscriptions: List<Pair<Subscription, Offer>>,
     selected: Subscription,
     onSelected: (Subscription) -> Unit,
 ) {
@@ -374,13 +375,14 @@ private fun PricingSelection(
             .border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(15.dp))
 
     Column(modifier = modifier) {
-        subscriptions.sortedBy { it.monthlyPrice.value }.mapIndexed { index, subscription ->
+        subscriptions.sortedBy { it.first.monthlyPrice.value }.mapIndexed { index, subscription ->
             if (index == 0) {
                 Box {
                     SubscriptionItem(
-                        modifier = if (selected == subscription) selectedModifier else unSelectedModifier,
-                        isSelected = selected == subscription,
-                        subscription = subscription,
+                        modifier = if (selected == subscription.first) selectedModifier else unSelectedModifier,
+                        isSelected = selected == subscription.first,
+                        subscription = subscription.first,
+                        offer = subscription.second,
                     ) {
                         onSelected(it)
                     }
@@ -395,9 +397,10 @@ private fun PricingSelection(
                 }
             } else {
                 SubscriptionItem(
-                    modifier = if (selected == subscription) selectedModifier else unSelectedModifier,
-                    isSelected = selected == subscription,
-                    subscription = subscription,
+                    modifier = if (selected == subscription.first) selectedModifier else unSelectedModifier,
+                    isSelected = selected == subscription.first,
+                    subscription = subscription.first,
+                    offer = subscription.second,
                 ) {
                     onSelected(it)
                 }
@@ -441,45 +444,11 @@ private fun SubscriptionButton(
 }
 
 @Composable
-@Deprecated("PricingSelection is used, this one could be usde for AB test")
-private fun PricingList(
-    modifier: Modifier = Modifier,
-    subscriptions: List<Subscription>,
-    onSelected: (Subscription) -> Unit,
-) {
-    Box(modifier = modifier) {
-        Card(
-            modifier = Modifier.padding(3.dp),
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                ),
-        ) {
-            subscriptions.sortedBy { (it as? Subscription)?.monthlyPrice?.value ?: 0.0 }.mapIndexed { index, subscription ->
-                SubscriptionItem(subscription = subscription) {
-                    onSelected(subscription)
-                }
-                if (index != subscriptions.size - 1) {
-                    OrDivider()
-                }
-            }
-        }
-        Image(
-            modifier =
-                Modifier
-                    .width(64.dp)
-                    .align(Alignment.TopEnd),
-            painter = painterResource(Res.drawable.img_best_offer),
-            contentDescription = "Best offer badge",
-        )
-    }
-}
-
-@Composable
 private fun SubscriptionItem(
     modifier: Modifier = Modifier,
     isSelected: Boolean = true,
     subscription: Subscription,
+    offer: Offer,
     onClick: (Subscription) -> Unit,
 ) {
     ListItem(
@@ -497,20 +466,40 @@ private fun SubscriptionItem(
             ),
         overlineContent = {
             Text(
-                text = "Try for free",
+                text = "Try for ${offer.daysFree} days",
                 style = MaterialTheme.typography.labelSmall,
             )
         },
         headlineContent = {
-            Text(
-                text =
-                    when (subscription.period) {
-                        Subscription.Period.WEEK -> "Week Plus"
-                        Subscription.Period.MONTH -> "Month Plus"
-                        Subscription.Period.YEAR -> "Year Plus"
-                    },
-                style = MaterialTheme.typography.titleMedium,
-            )
+            Row {
+                Text(
+                    text =
+                        when (subscription.period) {
+                            Subscription.Period.WEEK -> "Week Plus"
+                            Subscription.Period.MONTH -> "Month Plus"
+                            Subscription.Period.YEAR -> "Year Plus"
+                        },
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                androidx.compose.animation.AnimatedVisibility(visible = offer.discountPercent != 0) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            modifier = Modifier.height(24.dp),
+                            painter = painterResource(Res.drawable.ic_badge_white),
+                            contentDescription = "Offer badge",
+                            tint = MaterialTheme.colorScheme.errorContainer,
+                        )
+                        Text(
+                            modifier = Modifier.padding(start = 8.dp),
+                            text = "- ${offer.discountPercent}%",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
+                        )
+                    }
+                }
+            }
         },
         supportingContent = {
             Text(

@@ -39,6 +39,7 @@ import app.wesplit.ShortcutDelegate
 import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
+import app.wesplit.domain.balance.BalanceCalculationUseCase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.AccountRepository
@@ -63,6 +64,9 @@ import app.wesplit.group.settings.GroupSettingsViewModel
 import app.wesplit.paywall.PaywallAction
 import app.wesplit.paywall.PaywallRoute
 import app.wesplit.paywall.PaywallViewModel
+import app.wesplit.settle.SettleAction
+import app.wesplit.settle.SettleScreen
+import app.wesplit.settle.SettleViewModel
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialControl
 import app.wesplit.ui.tutorial.TutorialOverlay
@@ -81,6 +85,7 @@ import split.composeapp.generated.resources.ic_profile
 import split.composeapp.generated.resources.profile
 
 private const val SHARE_EVENT = "share"
+private const val SHARE_SETTLE_EVENT = "share_settle"
 
 private const val SCREEN_VIEW = "screen_view"
 private const val SCREEN_NAME = "screen_name"
@@ -125,6 +130,29 @@ sealed class RightPane(
             token: String? = null,
         ): String {
             val base = "group/$groupId"
+            return if (token != null) {
+                base + "?${Param.TOKEN.paramName}=$token"
+            } else {
+                base
+            }
+        }
+
+        override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId) instead")
+    }
+
+    data object Settle : RightPane("settle/{${Param.GROUP_ID.paramName}}?${Param.TOKEN.paramName}={${Param.TOKEN.paramName}}") {
+        enum class Param(
+            val paramName: String,
+        ) {
+            GROUP_ID("group_id"),
+            TOKEN("token"),
+        }
+
+        fun destination(
+            groupId: String,
+            token: String? = null,
+        ): String {
+            val base = "settle/$groupId"
             return if (token != null) {
                 base + "?${Param.TOKEN.paramName}=$token"
             } else {
@@ -311,6 +339,10 @@ private fun Navigation(
         }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val accountRepository: AccountRepository = koinInject()
+    val userRepository: UserRepository = koinInject()
+    val expenseRepository: ExpenseRepository = koinInject()
+    val currencyRepository: CurrencyRepository = koinInject()
+    val balanceCalculationUseCase: BalanceCalculationUseCase = koinInject()
     val coroutineScope = rememberCoroutineScope()
     val shareDelegate: ShareDelegate = koinInject()
     val clipboardManager = LocalClipboardManager.current
@@ -616,7 +648,86 @@ private fun Navigation(
                                 )
                             }
 
+                            is GroupInfoAction.Settle ->
+                                secondPaneNavController.navigate(
+                                    RightPane.Settle.destination(action.group.id),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                        },
+                                )
+
                             is GroupInfoAction.Invite -> TODO("We support only sharing of the group yet")
+                        }
+                    }
+                }
+
+                composable(
+                    route = RightPane.Settle.route,
+                    arguments =
+                        listOf(
+                            navArgument(RightPane.Settle.Param.GROUP_ID.paramName) {
+                                type = NavType.StringType
+                            },
+                            navArgument(RightPane.Settle.Param.TOKEN.paramName) {
+                                type = NavType.StringType
+                                nullable = true
+                            },
+                        ),
+                ) {
+                    val groupRepository: GroupRepository = koinInject()
+                    val groupId =
+                        checkNotNull(
+                            it.arguments?.getString(
+                                RightPane
+                                    .Group
+                                    .Param
+                                    .GROUP_ID
+                                    .paramName,
+                            ),
+                        )
+                    val viewModel: SettleViewModel =
+                        viewModel(
+                            key = "SettleViewModel $groupId",
+                        ) {
+                            SettleViewModel(
+                                SavedStateHandle.createHandle(null, it.arguments),
+                                groupRepository,
+                                accountRepository,
+                                userRepository,
+                                expenseRepository,
+                                currencyRepository,
+                                analyticsManager,
+                                balanceCalculationUseCase,
+                                onSubscriptionRequest,
+                            )
+                        }
+                    SettleScreen(
+                        viewModel = viewModel,
+                        shareDelegate = shareDelegate,
+                    ) { action ->
+                        when (action) {
+                            SettleAction.Back -> secondPaneNavController.navigateUp()
+                            is SettleAction.Share -> {
+                                analyticsManager.track(SHARE_SETTLE_EVENT)
+                                val detailsAction =
+                                    DeeplinkAction.Group.Details(
+                                        groupId = action.group.id,
+                                        token = action.group.publicToken,
+                                    )
+                                val link = deepLink(detailsAction)
+                                val groupDetailsUrl = DeeplinkBuilders.PROD.build(link)
+                                if (shareDelegate.supportPlatformSharing()) {
+                                    shareDelegate.share(ShareData.Link(groupDetailsUrl))
+                                } else {
+                                    clipboardManager.setText(
+                                        annotatedString =
+                                            buildAnnotatedString {
+                                                append(text = groupDetailsUrl)
+                                            },
+                                    )
+                                }
+                            }
                         }
                     }
                 }
