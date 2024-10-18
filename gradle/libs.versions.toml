@@ -2,7 +2,7 @@
 inAppReview = "3.1.21"
 multiplatformSettings = "1.2.0"
 versionName = "2.0.0"
-android-versionCode = "37"
+android-versionCode = "38"
 
 agp = "8.5.2"
 coreGoogleShortcuts = "1.1.0"

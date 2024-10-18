@@ -58,7 +58,6 @@ extension PlatformBillingDelegate {
         )
         subscriptions.append(subscription)
       }
-      print("!@# get subs: \(subscriptions)")
       Dependencies.shared.billingRepositoryController.update(pricingResult: subscriptions)
     } catch {
       Dependencies.shared.billingRepositoryController.onPurchaseError()
@@ -128,20 +127,16 @@ extension PlatformBillingDelegate {
 @available(iOS 15.0, *)
 extension PlatformBillingDelegate {
   func purchaseSubscription(period: ModelSubscription.Period) async {
-    print("!@# purchase subs for period: \(period)")
     guard let productID = productID(for: period),
           let product = products[productID] else {
       await MainActor.run {
-        print("!@# purchase errror")
         Dependencies.shared.billingRepositoryController.onPurchaseError()
       }
       return
     }
-    print("!@# product ID: \(productID)")
     
     do {
       let result = try await product.purchase()
-      print("!@# purchase result: \(result)")
       
       switch result {
       case .success(let verification):
@@ -177,7 +172,6 @@ extension PlatformBillingDelegate {
   func handleTransaction(_ transaction: Transaction) async {
     // Store originalTransactionId
     let originalTransactionId = String(transaction.originalID ?? transaction.id)
-    print("!@# trx id : \(originalTransactionId)")
     // Notify KMM about purchase completion
     await MainActor.run {
       Dependencies.shared.billingRepositoryController.onPurchaseSuccess(purchaseId: originalTransactionId)
@@ -208,20 +202,15 @@ extension PlatformBillingDelegate {
 @available(iOS 15.0, *)
 extension PlatformBillingDelegate {
   func listenForTransactionUpdates() {
-    print("!@# listen for updates")
     Task.detached(priority: .background) { [weak self] in
-      print("!@# listen task begin")
       for await verificationResult in Transaction.updates {
-        print("!@# verification result \(verificationResult)!")
         switch verificationResult {
         case .verified(let transaction):
           await self?.handleTransaction(transaction)
         case .unverified(_, let error):
-          print("Unverified transaction: \(error.localizedDescription)")
           // Optionally handle unverified transactions
         }
       }
-      print("!@# listen task ends")
     }
   }
 }
