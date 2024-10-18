@@ -438,7 +438,7 @@ async function initializeVerifier() {
     // Configuration parameters
     const bundleId = 'app.wesplit.ios'; // Replace with your app's bundle ID
     const enableOnlineChecks = true; // Enable CRL and OCSP checks
-    const environment = Environment.SANDBOX; // Use Environment.SANDBOX for sandbox or PRODUCTION for prod
+    const environment = Environment.PRODUCTION; // Use Environment.SANDBOX for sandbox or PRODUCTION for prod
     const appAppleId = '6714482007'; // Replace with your app's Apple ID if in production
 
     // Initialize SignedDataVerifier with the required parameters
