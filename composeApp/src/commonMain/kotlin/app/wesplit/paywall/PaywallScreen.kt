@@ -100,7 +100,7 @@ fun PaywallRoute(
             SnackbarHost(hostState = snackbarHostState)
         },
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             AdaptiveTopAppBar(
                 navigationIcon = {
@@ -175,6 +175,7 @@ fun PaywallScreen(
     }
 
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+        Spacer(modifier = Modifier.height(4.dp))
         Row {
             when (productState) {
                 is PaywallViewModel.State.Data -> {
