@@ -45,6 +45,7 @@ import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.group.detailed.balance.BalanceList
@@ -63,11 +64,13 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.edit_group
+import split.composeapp.generated.resources.ic_user_add
 import split.composeapp.generated.resources.share_group
 import split.composeapp.generated.resources.share_link_copied
 
@@ -148,6 +151,10 @@ fun GroupInfoScreen(
 
     val tutorialControl = LocalTutorialControl.current
 
+    val isMeParticipating = remember(data.value) {
+        (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.participants?.any { it.isMe() } ?: false
+    }
+
     // TODO: Doesnt work for some reason
     val shareMsg = stringResource(Res.string.share_link_copied)
 
@@ -215,10 +222,17 @@ fun GroupInfoScreen(
                             }
                         }
                     }) {
-                        Icon(
-                            AdaptiveIcons.Outlined.Edit,
-                            contentDescription = stringResource(Res.string.edit_group),
-                        )
+                        if (isMeParticipating) {
+                            Icon(
+                                AdaptiveIcons.Outlined.Edit,
+                                contentDescription = stringResource(Res.string.edit_group),
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_user_add),
+                                contentDescription = "Join group",
+                            )
+                        }
                     }
 
                     TutorialItem(
@@ -472,10 +486,17 @@ private fun GroupHeader(
             }
         }
         IconButton(onClick = { onAction.invoke(GroupInfoAction.Edit(group)) }) {
-            Icon(
-                AdaptiveIcons.Outlined.Edit,
-                contentDescription = stringResource(Res.string.edit_group),
-            )
+            if (group.participants.any { it.isMe() }) {
+                Icon(
+                    AdaptiveIcons.Outlined.Edit,
+                    contentDescription = stringResource(Res.string.edit_group),
+                )
+            } else {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_user_add),
+                    contentDescription = "Join group",
+                )
+            }
         }
 
         TutorialItem(
