@@ -1,5 +1,7 @@
 [versions]
+filekitCompose = "0.8.7"
 inAppReview = "3.1.21"
+korgeCore = "5.1.0"
 multiplatformSettings = "1.2.0"
 versionName = "2.0.0"
 android-versionCode = "38"
@@ -59,6 +61,8 @@ materialKolor = "1.7.0"
 androidx-core-google-shortcuts = { module = "androidx.core:core-google-shortcuts", version.ref = "coreGoogleShortcuts" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 deeplink = { module = "com.motorro.keeplink:deeplink", version.ref = "deeplink" }
+filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekitCompose" }
+korge-core = { module = "com.soywiz.korge:korge-core", version.ref = "korgeCore" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
 review = { module = "io.github.sergeimikhailovskii:in-app-review-kmp", version.ref = "inAppReview" }
 review-gplay = { module = "io.github.sergeimikhailovskii:in-app-review-kmp-google-play", version.ref = "inAppReview" }
@@ -120,6 +124,7 @@ firebase-common-auth = { module = "dev.gitlive:firebase-auth", version.ref = "fi
 firebase-common-perf = { module = "dev.gitlive:firebase-perf", version.ref = "firebase" }
 firebase-common-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "firebase" }
 firebase-common-installations = { module = "dev.gitlive:firebase-installations", version.ref = "firebase" }
+firebase-common-storage = { module = "dev.gitlive:firebase-storage", version.ref = "firebase" }
 
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 

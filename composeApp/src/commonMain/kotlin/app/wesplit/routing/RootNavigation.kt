@@ -738,6 +738,7 @@ private fun Navigation(
                     route = RightPane.NewGroup.route,
                 ) {
                     val groupRepository: GroupRepository = koinInject()
+                    val ioDispatcher: CoroutineDispatcher = koinInject()
 
                     val viewModel: GroupSettingsViewModel =
                         viewModel {
@@ -746,6 +747,7 @@ private fun Navigation(
                                 groupRepository,
                                 accountRepository,
                                 analyticsManager,
+                                ioDispatcher,
                             )
                         }
 
@@ -781,6 +783,7 @@ private fun Navigation(
                         ),
                 ) {
                     val groupRepository: GroupRepository = koinInject()
+                    val ioDispatcher: CoroutineDispatcher = koinInject()
 
                     val groupId =
                         it.arguments?.getString(
@@ -798,6 +801,7 @@ private fun Navigation(
                                 groupRepository,
                                 accountRepository,
                                 analyticsManager,
+                                ioDispatcher,
                             )
                         }
 

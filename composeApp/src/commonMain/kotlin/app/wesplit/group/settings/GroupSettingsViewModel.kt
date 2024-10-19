@@ -12,6 +12,18 @@ import app.wesplit.domain.model.exception.UnauthorizeAcceessException
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.routing.RightPane
+import app.wesplit.utils.resizeImage
+import app.wesplit.utils.toPlatformData
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.storage.storage
+import io.github.vinceglb.filekit.core.FileKit
+import io.github.vinceglb.filekit.core.PickerMode
+import io.github.vinceglb.filekit.core.PickerType
+import io.github.vinceglb.filekit.core.extension
+import korlibs.image.format.JPEGInfo
+import korlibs.image.format.PNG
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,9 +31,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
 class GroupSettingsViewModel(
@@ -29,6 +43,7 @@ class GroupSettingsViewModel(
     private val groupRepository: GroupRepository,
     private val accountRepository: AccountRepository,
     private val analyticsManager: AnalyticsManager,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support same settings screen for existing group.
     val groupId: String? =
@@ -67,7 +82,7 @@ class GroupSettingsViewModel(
     fun commit() =
         with(dataState.value as DataState.Group) {
             viewModelScope.launch {
-                groupRepository.commit(id, title, participants)
+                groupRepository.commit(id, title, participants, imageUrl)
             }
         }
 
@@ -100,7 +115,7 @@ class GroupSettingsViewModel(
                         }
                     }
 
-                groupRepository.commit(id, title, newParticipants.toSet())
+                groupRepository.commit(id, title, newParticipants.toSet(), imageUrl)
             }
         }
     }
@@ -136,6 +151,7 @@ class GroupSettingsViewModel(
                                                 id = this.id,
                                                 title = this.title,
                                                 participants = this.participants,
+                                                imageUrl = this.imageUrl,
                                             )
                                         }
                                     }
@@ -153,7 +169,33 @@ class GroupSettingsViewModel(
                 linkedSetOf(
                     (accountRepository.get().value as? Account.Authorized)?.participant(),
                 ).filterNotNull().toSet(),
+            imageUrl = null,
         )
+
+    fun updateImage() {
+        viewModelScope.launch {
+            val file =
+                FileKit.pickFile(
+                    type = PickerType.File((PNG.extensions + JPEGInfo.extensions).toList()),
+                    mode = PickerMode.Single,
+                    title = "Pick an image for group",
+                )
+            file?.let { pickedFile ->
+                with(ioDispatcher) {
+                    val fileName = groupId ?: "${Clock.System.now().epochSeconds}"
+                    val ref = Firebase.storage.reference.child("$fileName.${pickedFile.extension}")
+                    val fileContent = pickedFile.readBytes().resizeImage(pickedFile.name, 300, 300).toPlatformData()
+                    ref.putData(fileContent)
+                    val groupUrl = ref.getDownloadUrl()
+                    with(Dispatchers.Main) {
+                        dataState.getAndUpdate {
+                            if (it is DataState.Group) it.copy(imageUrl = groupUrl) else it
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     data class UiState(
         val dataState: DataState,
@@ -175,6 +217,7 @@ class GroupSettingsViewModel(
             // TODO: Support image
             val id: String?,
             val title: String,
+            val imageUrl: String?,
             val participants: Set<Participant>,
         ) : DataState
     }

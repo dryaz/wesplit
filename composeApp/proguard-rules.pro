@@ -152,3 +152,6 @@
 # =========================
 # End of ProGuard Rules
 # =========================
+
+-keep class com.sun.jna.** { *; }
+-keep class * implements com.sun.jna.** { *; }

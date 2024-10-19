@@ -2,21 +2,16 @@ package app.wesplit.group.list
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -34,8 +29,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -45,14 +38,12 @@ import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
+import app.wesplit.group.GroupImage
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
 import app.wesplit.ui.tutorial.TutorialStep
-import com.seiko.imageloader.model.ImageAction
-import com.seiko.imageloader.rememberImageSuccessPainter
-import com.seiko.imageloader.ui.AutoSizeBox
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AddCircle
@@ -64,7 +55,6 @@ import split.composeapp.generated.resources.add_group_cd
 import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.group_list_empty_description_authorized
 import split.composeapp.generated.resources.group_list_title
-import split.composeapp.generated.resources.ic_group
 import split.composeapp.generated.resources.img_add_data
 
 sealed interface GroupListAction {
@@ -268,40 +258,10 @@ private fun GroupList(
                     },
                     supportingContent = { Text("Users: ${group.participants.size}") },
                     leadingContent = {
-                        AutoSizeBox(
-                            url = group.imageUrl ?: "",
-                        ) { action ->
-                            when (action) {
-                                is ImageAction.Success -> {
-                                    Image(
-                                        rememberImageSuccessPainter(action),
-                                        modifier = Modifier.size(56.dp).clip(CircleShape),
-                                        contentDescription = group.title,
-                                    )
-                                }
-
-                                is ImageAction.Loading -> {
-                                    CircularProgressIndicator()
-                                }
-
-                                is ImageAction.Failure -> {
-                                    Box(
-                                        modifier =
-                                            Modifier.size(48.dp).clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        Image(
-                                            modifier = Modifier.size(24.dp),
-                                            painter = painterResource(Res.drawable.ic_group),
-                                            // TODO: String CD
-                                            contentDescription = "No image for user ${group.title}",
-                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        GroupImage(
+                            imageUrl = group.imageUrl,
+                            groupTitle = group.uiTitle(),
+                        )
                     },
                 )
                 HorizontalDivider(modifier = Modifier.padding(start = 64.dp))

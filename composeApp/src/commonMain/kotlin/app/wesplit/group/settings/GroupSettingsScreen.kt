@@ -49,6 +49,7 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.OnboardingStep
+import app.wesplit.group.GroupImage
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
@@ -154,6 +155,9 @@ fun GroupSettingsScreen(
                     },
                     saveGroupTutorialStep = saveGroupTutorialStep,
                     tutorialControl = tutorialControl,
+                    onImageChange = {
+                        viewModel.updateImage()
+                    },
                 ) { group ->
                     viewModel.update(group)
                 }
@@ -174,6 +178,7 @@ private fun GroupSettingsView(
     onDone: () -> Unit,
     onJoin: (Participant?) -> Unit,
     onLeave: () -> Unit,
+    onImageChange: () -> Unit,
     onUpdated: (GroupSettingsViewModel.DataState.Group) -> Unit,
 ) {
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
@@ -202,9 +207,16 @@ private fun GroupSettingsView(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // TODO: Support adding image, place pic selector in here
+                GroupImage(
+                    modifier = Modifier.padding(top = 8.dp),
+                    imageUrl = group.imageUrl,
+                    groupTitle = group.title,
+                ) {
+                    onImageChange()
+                }
+                Spacer(modifier = Modifier.width(16.dp))
                 OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(1f),
+                    modifier = Modifier.weight(1f),
                     // TODO: Prefil later when select paritipatns if empty
                     value = group.title,
                     onValueChange = { onUpdated(group.copy(title = it)) },

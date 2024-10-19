@@ -124,6 +124,7 @@ kotlin {
                 implementation(libs.firebase.common.analytics)
                 implementation(libs.firebase.common.firestore)
                 implementation(libs.firebase.common.functions)
+                implementation(libs.firebase.common.storage)
 
                 implementation(libs.bundles.cupertino)
                 implementation(libs.materialKolor)
@@ -132,6 +133,9 @@ kotlin {
                 implementation(libs.kotlinx.datetime)
 
                 implementation(libs.multiplatform.settings)
+
+                implementation(libs.filekit.compose)
+                implementation(libs.korge.core)
             }
 
             desktopMain.dependencies {

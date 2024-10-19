@@ -119,6 +119,7 @@ class GroupFirebaseRepository(
         id: String?,
         title: String,
         participants: Set<Participant>,
+        imageUrl: String?,
     ): Unit =
         withContext(coroutineDispatcher + NonCancellable) {
             val eventName = if (id != null) GROUP_UPDATE_EVENT else GROUP_CREATE_EVENT
@@ -156,6 +157,7 @@ class GroupFirebaseRepository(
                         createdAt = Timestamp.ServerTimestamp,
                         tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + publicToken,
                         publicToken = publicToken,
+                        imageUrl = imageUrl,
                     )
                 Firebase.firestore.collection(GROUP_COLLECTION).add(
                     strategy = Group.serializer(),
@@ -186,6 +188,7 @@ class GroupFirebaseRepository(
                                 createdAt = existingGroup.createdAt,
                                 tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + existingGroup.publicToken,
                                 publicToken = existingGroup.publicToken,
+                                imageUrl = imageUrl,
                             ),
                     )
                 } else {
