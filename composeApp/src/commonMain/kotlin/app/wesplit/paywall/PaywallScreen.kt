@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -60,6 +61,8 @@ import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.PlusProtected
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveCircularProgressIndicator
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
@@ -94,6 +97,7 @@ fun PaywallRoute(
     val productsState = viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var isPendingPurchase by remember { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = {
@@ -130,8 +134,10 @@ fun PaywallRoute(
             modifier = Modifier.padding(paddings),
             user = userState.value,
             productState = productsState.value,
+            isPendingPurchase = isPendingPurchase,
             onAction = onAction,
         ) {
+            isPendingPurchase = true
             viewModel.subscribe(it)
         }
     }
@@ -141,6 +147,7 @@ fun PaywallRoute(
             when (event) {
                 is PaywallViewModel.Event.Error -> {
                     scope.launch {
+                        isPendingPurchase = false
                         snackbarHostState.showSnackbar(event.msg)
                     }
                 }
@@ -156,6 +163,7 @@ fun PaywallScreen(
     modifier: Modifier = Modifier,
     user: User?,
     productState: PaywallViewModel.State,
+    isPendingPurchase: Boolean,
     onAction: (PaywallAction) -> Unit,
     onSubscribe: (Subscription) -> Unit,
 ) {
@@ -275,7 +283,10 @@ fun PaywallScreen(
         }
 
         selected?.let {
-            SubscriptionButton(it) {
+            SubscriptionButton(
+                selected = it,
+                isPendingPurchase = isPendingPurchase,
+            ) {
                 onSubscribe(it)
             }
         }
@@ -351,7 +362,10 @@ fun PaywallScreen(
         }
 
         selected?.let {
-            SubscriptionButton(it) {
+            SubscriptionButton(
+                selected = it,
+                isPendingPurchase = isPendingPurchase,
+            ) {
                 onSubscribe(it)
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -411,9 +425,11 @@ private fun PricingSelection(
     }
 }
 
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun SubscriptionButton(
     selected: Subscription,
+    isPendingPurchase: Boolean,
     onSelected: (Subscription) -> Unit,
 ) {
     Spacer(modifier = Modifier.height(8.dp))
@@ -429,17 +445,27 @@ private fun SubscriptionButton(
                 .padding(4.dp)
                 .padding(horizontal = 16.dp)
                 .fillMaxWidth(1f),
-        onClick = { onSelected(selected) },
+        onClick = { if (!isPendingPurchase) onSelected(selected) },
         shape = RoundedCornerShape(10.dp),
     ) {
-        Text(
-            text = "Subscribe for ${selected.formattedPrice}",
-            style =
-                MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 0.7.sp,
-                ),
-        )
+        if (isPendingPurchase) {
+            AdaptiveCircularProgressIndicator(
+                modifier = Modifier.size(30.dp),
+                adaptationScope = {
+                    cupertino { color = MaterialTheme.extraColorScheme.onInfoContainer }
+                    material { color = MaterialTheme.extraColorScheme.onInfoContainer }
+                },
+            )
+        } else {
+            Text(
+                text = "Subscribe for ${selected.formattedPrice}",
+                style =
+                    MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.7.sp,
+                    ),
+            )
+        }
     }
     Spacer(modifier = Modifier.height(8.dp))
 }

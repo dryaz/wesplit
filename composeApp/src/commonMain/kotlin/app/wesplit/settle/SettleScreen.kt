@@ -198,10 +198,11 @@ private fun SettleContent(
                     .padding(4.dp)
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth(1f),
-            colors = ButtonDefaults.filledTonalButtonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ),
+            colors =
+                ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
             onClick = { settleDialogShown = true },
             shape = RoundedCornerShape(10.dp),
         ) {
