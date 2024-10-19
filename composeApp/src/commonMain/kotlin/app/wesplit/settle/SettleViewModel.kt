@@ -44,6 +44,7 @@ private const val SETTLE_ALL_EVENT = "settle_all"
 private const val RECALCULATION_EVENT = "recalculation"
 
 private const val RECALCULATION_PAYWALL_SOURCE = "recalculation"
+private const val CURRENCY_PAYWALL_SOURCE = "currency_recalc"
 
 class SettleViewModel(
     savedStateHandle: SavedStateHandle,
@@ -147,7 +148,7 @@ class SettleViewModel(
 
     // TODO: To Actions?
     fun selectCurrency(currencyCode: String) {
-        plusProtectedCall {
+        plusProtectedCall(CURRENCY_PAYWALL_SOURCE) {
             uiSetting.getAndUpdate {
                 it.copy(selectedCurrency = currencyCode)
             }
@@ -155,7 +156,7 @@ class SettleViewModel(
     }
 
     fun toggleRecalculation(isEnabled: Boolean) {
-        plusProtectedCall {
+        plusProtectedCall(RECALCULATION_PAYWALL_SOURCE) {
             uiSetting.getAndUpdate {
                 it.copy(isRecalculateEnabled = isEnabled)
             }
@@ -171,12 +172,15 @@ class SettleViewModel(
         }
     }
 
-    private fun plusProtectedCall(call: () -> Unit) {
+    private fun plusProtectedCall(
+        eventSource: String,
+        call: () -> Unit,
+    ) {
         if (accountRepository.get().value.isPlus()) {
             analyticsManager.track(RECALCULATION_EVENT)
             call.invoke()
         } else {
-            onSubscriptionRequest(RECALCULATION_PAYWALL_SOURCE)
+            onSubscriptionRequest(eventSource)
         }
     }
 

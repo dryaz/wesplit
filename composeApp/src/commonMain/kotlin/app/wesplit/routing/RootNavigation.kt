@@ -93,6 +93,7 @@ private const val SCREEN_CLASS = "screen_class"
 
 private const val SUBS_EVENT = "paywall"
 private const val SUBS_SOURCE = "source"
+private const val DOWNLOAD_APP_FOR_SUBS = "download_for_subs"
 
 private const val PROFILE_PAYWALL_SOURCE = "profile"
 
@@ -546,6 +547,7 @@ private fun Navigation(
                         when (action) {
                             PaywallAction.Back -> secondPaneNavController.popBackStack()
                             PaywallAction.DownloadMobile -> {
+                                analyticsManager.track(DOWNLOAD_APP_FOR_SUBS)
                                 if (shareDelegate.supportPlatformSharing()) {
                                     shareDelegate.open(ShareData.Link("https://wesplit.app"))
                                 } else {

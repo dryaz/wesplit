@@ -236,8 +236,8 @@ fun PaywallScreen(
                                 leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
                                 supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
                             ),
-                        headlineContent = { Text("Billing not yet done :(") },
-                        supportingContent = { Text("Use our mobile apps instead now") },
+                        headlineContent = { Text("Web Billing yet in progress") },
+                        supportingContent = { Text("You could subscribe via iOS or Android app!") },
                         leadingContent = {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_mobile_app),
@@ -261,11 +261,11 @@ fun PaywallScreen(
                                 supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
                             ),
                         headlineContent = { Text("Your plus is active") },
-                        supportingContent = { Text("Enjoy all features in Wesplit") },
+                        supportingContent = { Text("Also available in Wesplit mobile ") },
                         leadingContent = {
                             Icon(
-                                imageVector = AdaptiveIcons.Outlined.Done,
-                                contentDescription = "Plus plan activated",
+                                painter = painterResource(Res.drawable.ic_mobile_app),
+                                contentDescription = "Download mobile app",
                             )
                         },
                     )
