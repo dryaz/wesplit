@@ -1,7 +1,10 @@
 package app.wesplit.currency
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -10,17 +13,30 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.currencySymbol
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Search
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CurrencyPicker(
     currencies: CurrencyCodesCollection,
@@ -30,24 +46,59 @@ fun CurrencyPicker(
     Dialog(
         onDismissRequest = onDismiss,
     ) {
+        var query by remember { mutableStateOf("") }
+        val filteredValues =
+            remember {
+                derivedStateOf {
+                    if (query.isNullOrBlank()) {
+                        currencies
+                    } else {
+                        currencies.copy(
+                            lru = emptyList(),
+                            all = currencies.all.filter { it.contains(other = query, ignoreCase = true) },
+                        )
+                    }
+                }
+            }
+
         Card(
-            modifier = Modifier.padding(16.dp).widthIn(max = 240.dp).heightIn(max = 360.dp),
+            modifier = Modifier.padding(16.dp).widthIn(max = 300.dp).heightIn(max = 400.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
-            ListItem(
-                headlineContent = { Text("Select currnecy") },
-                supportingContent = { Text("For this very expense") },
+            TextField(
+                modifier = Modifier.fillMaxWidth(1f),
                 colors =
-                    ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     ),
+                placeholder = { Text("Select currency") },
+                value = query,
+                onValueChange = { newValue ->
+                    if (newValue.length < 4) query = newValue
+                },
+                suffix = {
+                    Icon(
+                        imageVector = AdaptiveIcons.Outlined.Search,
+                        contentDescription = "Search for currency",
+                    )
+                },
             )
             HorizontalDivider()
-            // TODO: Search for currency
+            AnimatedVisibility(
+                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                visible = filteredValues.value.all.size == 0 && filteredValues.value.lru.size == 0,
+            ) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(1f).minimumInteractiveComponentSize(),
+                    text = "'$query' not found",
+                    textAlign = TextAlign.Center,
+                )
+            }
             LazyColumn(
                 modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh),
             ) {
-                items(currencies.lru, key = { "LRU-$it" }) { currency ->
+                items(filteredValues.value.lru, key = { "LRU-$it" }) { currency ->
                     ListItem(
                         modifier =
                             Modifier.clickable {
@@ -63,10 +114,12 @@ fun CurrencyPicker(
                             ),
                     )
                 }
-                item {
-                    HorizontalDivider()
+                if (filteredValues.value.lru.isNotEmpty()) {
+                    item {
+                        HorizontalDivider()
+                    }
                 }
-                items(currencies.all, key = { it }) { currency ->
+                items(filteredValues.value.all, key = { it }) { currency ->
                     ListItem(
                         modifier =
                             Modifier.clickable {
