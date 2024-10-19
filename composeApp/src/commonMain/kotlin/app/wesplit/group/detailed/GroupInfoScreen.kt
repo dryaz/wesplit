@@ -151,9 +151,10 @@ fun GroupInfoScreen(
 
     val tutorialControl = LocalTutorialControl.current
 
-    val isMeParticipating = remember(data.value) {
-        (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.participants?.any { it.isMe() } ?: false
-    }
+    val isMeParticipating =
+        remember(data.value) {
+            (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.participants?.any { it.isMe() } ?: false
+        }
 
     // TODO: Doesnt work for some reason
     val shareMsg = stringResource(Res.string.share_link_copied)

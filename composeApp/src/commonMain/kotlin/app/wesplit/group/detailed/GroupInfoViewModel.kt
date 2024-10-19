@@ -100,8 +100,11 @@ class GroupInfoViewModel(
                                         } else {
                                             val group = groupResult.getOrThrow()
                                             val balance = group.balances ?: Balance()
-                                            val currentBalanceParticipants = balance.participantsBalance.map { it.participant }
-                                            val notReflectedParticipants = group.participants.filterNot { it in currentBalanceParticipants }
+                                            val currentBalanceParticipants = balance.participantsBalance.map { it.participant.id }
+                                            val notReflectedParticipants =
+                                                group.participants.filterNot {
+                                                    it.id in currentBalanceParticipants
+                                                }
                                             val processedGroup =
                                                 if (notReflectedParticipants.isEmpty()) {
                                                     group

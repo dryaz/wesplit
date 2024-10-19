@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Participant
@@ -177,6 +178,7 @@ private fun GroupSettingsView(
 ) {
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
+    var joinAsDialogShown by remember { mutableStateOf<Set<Participant>?>(null) }
 
     Column(
         modifier =
@@ -270,7 +272,7 @@ private fun GroupSettingsView(
                         if (!isMeParticipating && participant.user?.authIds.isNullOrEmpty() && account is Account.Authorized) {
                             {
                                 OutlinedButton(
-                                    onClick = { onJoin(participant) },
+                                    onClick = { joinAsDialogShown = setOf(participant) },
                                 ) {
                                     Text("It's me")
                                 }
@@ -300,7 +302,7 @@ private fun GroupSettingsView(
             Spacer(modifier = Modifier.height(16.dp))
             if (!isMeParticipating) {
                 OutlinedButton(
-                    onClick = { onJoin(null) },
+                    onClick = { joinAsDialogShown = emptySet() },
                     modifier =
                         Modifier.widthIn(max = 450.dp)
                             .fillMaxWidth(1f)
@@ -331,6 +333,56 @@ private fun GroupSettingsView(
                 )
             }
         }
+    }
+
+    if (joinAsDialogShown != null) {
+        AlertDialog(
+            modifier = Modifier.widthIn(max = 450.dp),
+            onDismissRequest = { joinAsDialogShown = null },
+            title = { Text("Join group?") },
+            text = {
+                Text(
+                    text =
+                        if (joinAsDialogShown.isNullOrEmpty()) {
+                            "Join ${group.title} as new participant?"
+                        } else {
+                            "Join ${group.title} as ${joinAsDialogShown?.first()?.name}"
+                        },
+                    textAlign = TextAlign.Center,
+                )
+            },
+            icon = {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_user_add),
+                    contentDescription = "Join group",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onJoin(joinAsDialogShown?.firstOrNull())
+                        joinAsDialogShown = null
+                    },
+                ) {
+                    Text(
+                        text = "Yes, Join",
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        joinAsDialogShown = null
+                    },
+                ) {
+                    Text(
+                        text = "No, Wait",
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            },
+        )
     }
 
     AnimatedVisibility(visible = userSelectorVisibility) {
