@@ -66,6 +66,8 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.plus_feature_currencies_descr_short
 import split.composeapp.generated.resources.plus_feature_currencies_title
+import split.composeapp.generated.resources.plus_feature_images_descr_short
+import split.composeapp.generated.resources.plus_feature_images_title
 import split.composeapp.generated.resources.plus_feature_more_descr
 import split.composeapp.generated.resources.plus_feature_more_title
 import split.composeapp.generated.resources.plus_feature_protect_descr_short
@@ -122,7 +124,7 @@ fun ProfileScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             AdaptiveTopAppBar(
                 navigationIcon = {
@@ -267,7 +269,7 @@ private fun AccountInfo(
                 modifier = Modifier.weight(1f).clickable { deleteDialogShown = true },
                 colors =
                     ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                         headlineColor = MaterialTheme.colorScheme.error,
                     ),
                 headlineContent = {
@@ -283,7 +285,7 @@ private fun AccountInfo(
                 modifier = Modifier.weight(1f).clickable { onAction(ProfileAction.Logout) },
                 colors =
                     ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                         headlineColor = MaterialTheme.colorScheme.error,
                     ),
                 headlineContent = {
@@ -455,6 +457,7 @@ private fun FeaturesList(
         mapOf(
             Res.string.plus_feature_protect_title to Res.string.plus_feature_protect_descr_short,
             Res.string.plus_feature_currencies_title to Res.string.plus_feature_currencies_descr_short,
+            Res.string.plus_feature_images_title to Res.string.plus_feature_images_descr_short,
             Res.string.plus_feature_more_title to Res.string.plus_feature_more_descr,
         )
     featuresMap.map { feature ->

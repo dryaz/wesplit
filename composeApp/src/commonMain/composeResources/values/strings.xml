@@ -66,6 +66,10 @@
     <string name="plus_feature_noads_descr_short">Nothing will interrupt you</string>
     <string name="plus_feature_noads_descr_full">Experience uninterrupted debt management everywhere with a distraction-free interface. Focus solely on tracking and settling your debts.</string>
 
+    <string name="plus_feature_images_title">Group images</string>
+    <string name="plus_feature_images_descr_short">Add mood to your groups</string>
+    <string name="plus_feature_images_descr_full">Mark each group with image of your choice. It both makes it more beautiful and helps your find everything at glance.</string>
+
     <string name="plus_feature_more_title">And more...</string>
     <string name="plus_feature_more_descr">Click to see benefits</string>
     <!--    -->

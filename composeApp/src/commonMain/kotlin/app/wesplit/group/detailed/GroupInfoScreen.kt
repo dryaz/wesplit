@@ -180,6 +180,8 @@ fun GroupInfoScreen(
                 ) { modifier ->
                     FloatingActionButton(
                         modifier = modifier,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         onClick = {
                             tutorialControl.onNext()
                             onAction(GroupInfoAction.AddExpense(group))

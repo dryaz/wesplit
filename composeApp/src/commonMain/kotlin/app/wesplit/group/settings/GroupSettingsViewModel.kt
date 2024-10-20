@@ -7,6 +7,7 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.account.isPlus
 import app.wesplit.domain.model.account.participant
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
 import app.wesplit.domain.model.group.GroupRepository
@@ -38,12 +39,15 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
+private const val IMAGE_CHANGE_PAYWALL_SOURCE = "image_change"
+
 class GroupSettingsViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
     private val accountRepository: AccountRepository,
     private val analyticsManager: AnalyticsManager,
     private val ioDispatcher: CoroutineDispatcher,
+    private val onSubscribeRequest: (String) -> Unit,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support same settings screen for existing group.
     val groupId: String? =
@@ -173,27 +177,31 @@ class GroupSettingsViewModel(
         )
 
     fun updateImage() {
-        viewModelScope.launch {
-            val file =
-                FileKit.pickFile(
-                    type = PickerType.File((PNG.extensions + JPEGInfo.extensions).toList()),
-                    mode = PickerMode.Single,
-                    title = "Pick an image for group",
-                )
-            file?.let { pickedFile ->
-                with(ioDispatcher) {
-                    val fileName = groupId ?: "${Clock.System.now().epochSeconds}"
-                    val ref = Firebase.storage.reference.child("$fileName.${pickedFile.extension}")
-                    val fileContent = pickedFile.readBytes().resizeImage(pickedFile.name, 300, 300).toPlatformData()
-                    ref.putData(fileContent)
-                    val groupUrl = ref.getDownloadUrl()
-                    with(Dispatchers.Main) {
-                        dataState.getAndUpdate {
-                            if (it is DataState.Group) it.copy(imageUrl = groupUrl) else it
+        if (accountRepository.get().value.isPlus()) {
+            viewModelScope.launch {
+                val file =
+                    FileKit.pickFile(
+                        type = PickerType.File((PNG.extensions + JPEGInfo.extensions).toList()),
+                        mode = PickerMode.Single,
+                        title = "Pick an image for group",
+                    )
+                file?.let { pickedFile ->
+                    with(ioDispatcher) {
+                        val fileName = groupId ?: "${Clock.System.now().epochSeconds}"
+                        val ref = Firebase.storage.reference.child("$fileName.${pickedFile.extension}")
+                        val fileContent = pickedFile.readBytes().resizeImage(pickedFile.name, 300, 300).toPlatformData()
+                        ref.putData(fileContent)
+                        val groupUrl = ref.getDownloadUrl()
+                        with(Dispatchers.Main) {
+                            dataState.getAndUpdate {
+                                if (it is DataState.Group) it.copy(imageUrl = groupUrl) else it
+                            }
                         }
                     }
                 }
             }
+        } else {
+            onSubscribeRequest(IMAGE_CHANGE_PAYWALL_SOURCE)
         }
     }
 

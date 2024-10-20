@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,11 +18,10 @@ import androidx.compose.ui.unit.dp
 import com.seiko.imageloader.model.ImageAction
 import com.seiko.imageloader.rememberImageSuccessPainter
 import com.seiko.imageloader.ui.AutoSizeBox
-import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
-import io.github.alexzhirkevich.cupertino.adaptive.icons.AddCircle
 import org.jetbrains.compose.resources.painterResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_group
+import split.composeapp.generated.resources.ic_plus_round
 
 @Composable
 fun GroupImage(
@@ -74,11 +72,10 @@ fun GroupImage(
                 modifier = Modifier.fillMaxSize(1f),
                 contentAlignment = Alignment.TopEnd,
             ) {
-                Icon(
+                Image(
                     modifier = Modifier.size(24.dp),
-                    imageVector = AdaptiveIcons.Outlined.AddCircle,
+                    painter = painterResource(Res.drawable.ic_plus_round),
                     contentDescription = "Add group image",
-                    tint = MaterialTheme.colorScheme.primary,
                 )
             }
         }

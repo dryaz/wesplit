@@ -530,7 +530,6 @@ private fun Navigation(
                     },
                 ) {
                     val paywallRepository: PaywallRepository = koinInject()
-                    val userRepository: UserRepository = koinInject()
                     val ioDispatcher: CoroutineDispatcher = koinInject()
 
                     val paywallViewModel: PaywallViewModel =
@@ -748,6 +747,7 @@ private fun Navigation(
                                 accountRepository,
                                 analyticsManager,
                                 ioDispatcher,
+                                onSubscriptionRequest,
                             )
                         }
 
@@ -802,6 +802,7 @@ private fun Navigation(
                                 accountRepository,
                                 analyticsManager,
                                 ioDispatcher,
+                                onSubscriptionRequest,
                             )
                         }
 
@@ -841,9 +842,7 @@ private fun Navigation(
                 ) {
                     // TODO: Accorgin ti github koin starts to support navigation args in savedstate in VM, POC
                     val groupRepository: GroupRepository = koinInject()
-                    val expenseRepository: ExpenseRepository = koinInject()
                     val shortcutDelegate: ShortcutDelegate = koinInject()
-                    val currencyRepository: CurrencyRepository = koinInject()
                     val settings: Settings = koinInject()
                     val appReview: AppReviewManager = koinInject()
 
