@@ -4,21 +4,24 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.currency.FxRates
+import app.wesplit.domain.model.currency.FxState
 import app.wesplit.domain.model.currency.currencySymbols
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.model.user.isPlus
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
 private const val FX_COLLECTION = "fxrates"
@@ -49,35 +52,35 @@ class CurrencyFirebaseRepository(
                 ),
         )
 
-    private val fxRates =
-        MutableStateFlow(
-            FxRates(
-                base = "USD",
-                rates = currencySymbols.keys.associateWith { 0.0 },
-                updatedAt = null,
-            ),
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val fxState =
+        userRepository.get().filterNotNull().flatMapLatest { user ->
+            if (user.isPlus()) {
+                Firebase.firestore.collection(FX_COLLECTION).document(FX_LATEST).snapshots.map {
+                    if (it.exists) {
+                        val rates = it.data(FxRates.serializer(), ServerTimestampBehavior.ESTIMATE)
+                        FxState.Data(rates)
+                    } else {
+                        val exception = NullPointerException("No fx rates found")
+                        analyticsManager.log(exception)
+                        FxState.Error(FxState.Error.Type.FETCH_ERROR)
+                    }
+                }.retryWhen { cause, attempt ->
+                    if (attempt > 3) return@retryWhen false
+                    cause.printStackTrace()
+                    analyticsManager.log(cause)
+                    return@retryWhen true
+                }
+            } else {
+                flow<FxState> { emit(FxState.Error(FxState.Error.Type.PLUS_NEEDED)) }
+            }
+        }.stateIn(
+            scope = coroutinScope,
+            started = SharingStarted.Lazily,
+            initialValue = FxState.Loading,
         )
 
-    init {
-        CoroutineScope(coroutineDispatcher).launch {
-            Firebase.firestore.collection(FX_COLLECTION).document(FX_LATEST).snapshots.map {
-                if (it.exists) {
-                    val rates = it.data(FxRates.serializer(), ServerTimestampBehavior.ESTIMATE)
-                    fxRates.update { rates }
-                } else {
-                    val exception = NullPointerException("No fx rates found")
-                    analyticsManager.log(exception)
-                }
-            }.retryWhen { cause, attempt ->
-                if (attempt > 3) return@retryWhen false
-                cause.printStackTrace()
-                analyticsManager.log(cause)
-                return@retryWhen true
-            }
-        }
-    }
-
-    override fun getFxRates(): StateFlow<FxRates> = fxRates
+    override fun getFxRates(): StateFlow<FxState> = fxState
 
     override fun getAvailableCurrencyCodes(): StateFlow<CurrencyCodesCollection> = currencyCollection
 }

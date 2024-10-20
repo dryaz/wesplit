@@ -1,8 +1,10 @@
 [versions]
+filekitCompose = "0.8.7"
 inAppReview = "3.1.21"
+korgeCore = "5.1.0"
 multiplatformSettings = "1.2.0"
-versionName = "1.6.1"
-android-versionCode = "36"
+versionName = "2.0.0"
+android-versionCode = "38"
 
 agp = "8.5.2"
 coreGoogleShortcuts = "1.1.0"
@@ -43,6 +45,7 @@ kermit = "2.0.4"
 crashlytics = "3.0.2"
 dokka = "1.9.20"
 kotest = "5.5.4"
+billing-android = "7.1.1"
 
 # wasmJs support
 koin = "4.0.0-RC1"
@@ -58,6 +61,8 @@ materialKolor = "1.7.0"
 androidx-core-google-shortcuts = { module = "androidx.core:core-google-shortcuts", version.ref = "coreGoogleShortcuts" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 deeplink = { module = "com.motorro.keeplink:deeplink", version.ref = "deeplink" }
+filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekitCompose" }
+korge-core = { module = "com.soywiz.korge:korge-core", version.ref = "korgeCore" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
 review = { module = "io.github.sergeimikhailovskii:in-app-review-kmp", version.ref = "inAppReview" }
 review-gplay = { module = "io.github.sergeimikhailovskii:in-app-review-kmp-google-play", version.ref = "inAppReview" }
@@ -119,6 +124,7 @@ firebase-common-auth = { module = "dev.gitlive:firebase-auth", version.ref = "fi
 firebase-common-perf = { module = "dev.gitlive:firebase-perf", version.ref = "firebase" }
 firebase-common-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "firebase" }
 firebase-common-installations = { module = "dev.gitlive:firebase-installations", version.ref = "firebase" }
+firebase-common-storage = { module = "dev.gitlive:firebase-storage", version.ref = "firebase" }
 
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
@@ -129,6 +135,8 @@ cupertino-adaptive = { module = "io.github.alexzhirkevich:cupertino-adaptive", v
 kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-framework-engine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 kotest-framework-datatest = { module = "io.kotest:kotest-framework-datatest", version.ref = "kotest" }
+
+billing-android = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing-android" }
 
 [bundles]
 ktor-common = ["ktor-client-core", "ktor-client-json", "ktor-client-logging", "ktor-client-serialization", "ktor-client-content-negotiation", "ktor-serialization-kotlinx-json"]

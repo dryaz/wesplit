@@ -313,7 +313,7 @@ private fun LentString(
             )
         } else {
             Text(
-                text = "Settled",
+                text = "Personal expense",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outlineVariant,
             )

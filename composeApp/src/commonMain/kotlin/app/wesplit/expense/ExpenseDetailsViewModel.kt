@@ -13,6 +13,9 @@ import app.wesplit.domain.model.REVIEW_RESULT
 import app.wesplit.domain.model.REVIEW_SOURCE
 import app.wesplit.domain.model.REVIEW_TYPE
 import app.wesplit.domain.model.ReviewType
+import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.account.isPlus
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
@@ -28,6 +31,8 @@ import app.wesplit.domain.model.group.isMe
 import app.wesplit.routing.RightPane
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.fromMilliseconds
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,12 +47,15 @@ import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
 private const val EXPENSE_COMMIT_COUNTER_KEY = "ex_com"
+private const val EXP_PROTECT_PAYWALL_SOURCE = "exp_protection"
 
 private const val UPDATE_TITLE_EVENT = "exp_update_title"
 private const val UPDATE_DATE_EVENT = "exp_update_date"
 private const val UPDATE_AMOUNT_EVENT = "exp_update_amount"
 private const val UPDATE_PAYER_EVENT = "exp_update_payer"
 private const val UPDATE_SHARES_EVENT = "exp_update_shares"
+
+private const val UPDATE_PROTECTION = "exp_update_protection"
 
 sealed interface UpdateAction {
     // TODO: Update currency, FX feature and paywall - only for payed
@@ -62,6 +70,8 @@ sealed interface UpdateAction {
     data object Delete : UpdateAction
 
     data class NewPayer(val participant: Participant) : UpdateAction
+
+    data class Protect(val isProtected: Boolean) : UpdateAction
 
     sealed interface Split : UpdateAction {
         abstract val participant: Participant
@@ -84,6 +94,8 @@ class ExpenseDetailsViewModel(
     private val shortcutDelegate: ShortcutDelegate,
     private val settings: Settings,
     private val appReviewManager: AppReviewManager,
+    private val accountRepository: AccountRepository,
+    private val onSubscriptionRequest: (String) -> Unit,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support add expense inside group
     private val groupId: String =
@@ -126,12 +138,14 @@ class ExpenseDetailsViewModel(
                 }
 
             val currencyFlow = currencyRepository.getAvailableCurrencyCodes()
+            val accountFlow = accountRepository.get()
 
             combine(
                 groupRepository.get(groupId),
                 expenseFlow,
                 currencyFlow,
-            ) { groupResult, expenseResult, currencies ->
+                accountFlow,
+            ) { groupResult, expenseResult, currencies, account ->
                 if (groupResult.isFailure || expenseResult.isFailure) {
                     groupResult.exceptionOrNull()?.let {
                         analyticsManager.log(it)
@@ -185,6 +199,7 @@ class ExpenseDetailsViewModel(
                         isComplete = isComplete(expense),
                         splitOptions = expense.getInitialSplitOptions(extraParticipants),
                         availableCurrencies = currencies,
+                        account = account,
                     )
                 }
             }
@@ -286,6 +301,23 @@ class ExpenseDetailsViewModel(
                     analyticsManager.track(UPDATE_PAYER_EVENT)
                     _state.update { data.copy(expense = expense.copy(payedBy = action.participant)) }
                 }
+
+                is UpdateAction.Protect -> {
+                    if (accountRepository.get().value.isPlus()) {
+                        analyticsManager.track(UPDATE_PROTECTION)
+                        val protectionList =
+                            if (action.isProtected) {
+                                expense.protectionList + Firebase.auth.currentUser?.uid
+                            } else {
+                                expense.protectionList - Firebase.auth.currentUser?.uid
+                            }
+
+                        _state.update { data.copy(expense = expense.copy(protectionList = protectionList.filterNotNull().toSet())) }
+                    } else {
+                        onSubscriptionRequest(EXP_PROTECT_PAYWALL_SOURCE)
+                        _state.update { data.copy(expense = expense.copy(protectionList = emptySet())) }
+                    }
+                }
             }
         } ?: {
             // TODO: Show error on UI
@@ -320,6 +352,7 @@ class ExpenseDetailsViewModel(
         data class Data(
             val group: Group,
             val expense: Expense,
+            val account: Account,
             val isComplete: Boolean,
             val splitOptions: SplitOptions,
             val availableCurrencies: CurrencyCodesCollection,

@@ -10,11 +10,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import app.wesplit.billing.GooglePlayBillingDelegate
 import app.wesplit.di.AndroidAppModule
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
+import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
+import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.koin.dsl.module
@@ -25,6 +28,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FileKit.init(this)
         handleDeepLinkIntent(intent)
         enableEdgeToEdge(
             statusBarStyle =
@@ -38,9 +42,21 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             App(
+                koinApp = null,
                 AndroidAppModule().module,
                 module(createdAtStart = true) { single { (application as MainApplication).activityProvider } },
                 module {
+                    single<BillingDelegate> {
+                        GooglePlayBillingDelegate(
+                            activityProvider = get(),
+                            context = application,
+                            billingStateRepository = get(),
+                            pricingMapper = get(),
+                            periodMapper = get(),
+                            userRepository = get(),
+                            analytics = get(),
+                        )
+                    }
                     single<ShortcutDelegate> { ShortcutAndroidDelegate(application) }
                     single<CoroutineDispatcher> { Dispatchers.IO }
                     single<AppReviewManager> { AndroidAppReviewManager(get()) }

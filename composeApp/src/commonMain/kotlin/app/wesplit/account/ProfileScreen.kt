@@ -1,8 +1,7 @@
 package app.wesplit.account
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -13,8 +12,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -22,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -37,28 +42,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.wesplit.KotlinPlatform
 import app.wesplit.ShareData
 import app.wesplit.ShareDelegate
-import app.wesplit.currentPlatform
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.Login
+import app.wesplit.domain.model.user.Plan
+import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.email
 import app.wesplit.domain.model.user.participant
-import app.wesplit.participant.ParticipantAvatar
+import app.wesplit.domain.model.user.planNotNull
+import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.PlusProtected
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowRight
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Lock
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Menu
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
-import split.composeapp.generated.resources.img_construct
+import split.composeapp.generated.resources.plus_feature_currencies_descr_short
+import split.composeapp.generated.resources.plus_feature_currencies_title
+import split.composeapp.generated.resources.plus_feature_images_descr_short
+import split.composeapp.generated.resources.plus_feature_images_title
+import split.composeapp.generated.resources.plus_feature_more_descr
+import split.composeapp.generated.resources.plus_feature_more_title
+import split.composeapp.generated.resources.plus_feature_protect_descr_short
+import split.composeapp.generated.resources.plus_feature_protect_title
 import split.composeapp.generated.resources.profile
-import split.composeapp.generated.resources.profile_under_construction
 
 sealed interface ProfileAction {
     data class LoginWith(val login: Login) : ProfileAction
@@ -66,6 +80,8 @@ sealed interface ProfileAction {
     data object Logout : ProfileAction
 
     data object OpenMenu : ProfileAction
+
+    data object Paywall : ProfileAction
 }
 
 @Composable
@@ -108,7 +124,7 @@ fun ProfileScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             AdaptiveTopAppBar(
                 navigationIcon = {
@@ -125,13 +141,17 @@ fun ProfileScreen(
         },
     ) { padding ->
         when (accountState) {
-            is Account.Authorized ->
-                AccountInfo(
-                    modifier = Modifier.padding(padding),
-                    account = accountState,
-                    onAction = onAction,
-                    onAccountDelete = onAccountDelete,
-                )
+            is Account.Authorized -> {
+                val user = accountState.user.collectAsState()
+                user.value?.let {
+                    AccountInfo(
+                        modifier = Modifier.padding(padding),
+                        user = it,
+                        onAction = onAction,
+                        onAccountDelete = onAccountDelete,
+                    )
+                }
+            }
 
             Account.Unknown -> {
                 Box(modifier = Modifier.fillMaxSize(1f)) {
@@ -154,45 +174,39 @@ fun ProfileScreen(
 @Composable
 private fun AccountInfo(
     modifier: Modifier = Modifier,
-    account: Account.Authorized,
+    user: User,
     onAction: (ProfileAction) -> Unit,
     onAccountDelete: () -> Unit,
 ) {
     var deleteDialogShown by remember { mutableStateOf(false) }
-    val participant = account.user.participant()
+    val participant = user.participant()
     val windowSizeClass = calculateWindowSizeClass()
     val shareDelegate: ShareDelegate = koinInject()
 
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        participant?.let {
-            ParticipantAvatar(participant = it)
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        account.user.name.let { name ->
-            Text(
-                text = name,
-                style = MaterialTheme.typography.labelMedium,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-        }
-        account.user.email()?.let { email ->
-            Text(
-                text = email,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.outline,
-            )
-        }
-        if (windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact &&
-            currentPlatform != KotlinPlatform.Ios
-        ) {
-            UnderConstruction()
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
-        }
+        ParticipantListItem(
+            modifier = Modifier.fillMaxWidth(1f).padding(horizontal = 8.dp),
+            participant = participant,
+            showImage = windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact,
+            showMeBadge = false,
+            subComposable =
+                user.email()?.let { email ->
+                    {
+                        Text(
+                            text = email,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                },
+        )
+
+        Plan(user) { onAction(ProfileAction.Paywall) }
+        Spacer(modifier = Modifier.weight(1f))
+
         val uriHandler = LocalUriHandler.current
         ListItem(
             modifier =
@@ -255,7 +269,7 @@ private fun AccountInfo(
                 modifier = Modifier.weight(1f).clickable { deleteDialogShown = true },
                 colors =
                     ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                         headlineColor = MaterialTheme.colorScheme.error,
                     ),
                 headlineContent = {
@@ -271,7 +285,7 @@ private fun AccountInfo(
                 modifier = Modifier.weight(1f).clickable { onAction(ProfileAction.Logout) },
                 colors =
                     ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                         headlineColor = MaterialTheme.colorScheme.error,
                     ),
                 headlineContent = {
@@ -328,22 +342,153 @@ private fun AccountInfo(
 }
 
 @Composable
-private fun ColumnScope.UnderConstruction() {
-    Column(
-        modifier = Modifier.weight(1f).padding(horizontal = 32.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+private fun ColumnScope.Plan(
+    user: User,
+    onSubscribe: () -> Unit,
+) {
+    Card(
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        modifier = Modifier.fillMaxWidth(1f).padding(16.dp),
     ) {
-        Image(
-            modifier = Modifier,
-            painter = painterResource(Res.drawable.img_construct),
-            contentDescription = stringResource(Res.string.profile_under_construction),
+        val title =
+            when (user.planNotNull()) {
+                Plan.BASIC -> "Try Plus"
+                Plan.PLUS -> "Your have Plus+"
+            }
+
+        val desc =
+            when (user.planNotNull()) {
+                Plan.BASIC -> "Unlock all features"
+                Plan.PLUS -> "All features unlocked"
+            }
+
+        val modifier =
+            when (user.planNotNull()) {
+                Plan.BASIC -> Modifier.fillMaxWidth().clickable { onSubscribe() }
+                Plan.PLUS -> Modifier
+            }
+
+        val trailing: @Composable (() -> Unit)? =
+            when (user.planNotNull()) {
+                Plan.BASIC -> {
+                    {
+                        Icon(
+                            modifier = Modifier.minimumInteractiveComponentSize(),
+                            imageVector = AdaptiveIcons.Outlined.KeyboardArrowRight,
+                            contentDescription = "Subscribe to Plus",
+                        )
+                    }
+                }
+
+                Plan.PLUS -> null
+            }
+
+        ListItem(
+            modifier = modifier,
+            colors =
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
+            headlineContent = {
+                PlusProtected {
+                    Text(
+                        text = title,
+                    )
+                }
+            },
+            supportingContent = {
+                Text(
+                    text = desc,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            },
+            trailingContent = trailing,
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(Res.string.profile_under_construction),
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
+
+        HorizontalDivider()
+
+        FeaturesList(
+            subscription = user.planNotNull(),
+            onSubscribe = onSubscribe,
+        )
+
+        AnimatedVisibility(
+            modifier = Modifier.fillMaxWidth(1f),
+            visible = user.plan == Plan.BASIC,
+        ) {
+            ListItem(
+                modifier =
+                    Modifier.fillMaxWidth().clickable {
+                        onSubscribe()
+                    },
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        headlineColor = MaterialTheme.colorScheme.onPrimary,
+                    ),
+                headlineContent = {
+                    Text(
+                        modifier = Modifier.minimumInteractiveComponentSize().fillMaxWidth(1f),
+                        text = "Subscribe to Plus",
+                        textAlign = TextAlign.Center,
+                    )
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun FeaturesList(
+    subscription: Plan,
+    onSubscribe: () -> Unit,
+) {
+    val icon =
+        when (subscription) {
+            Plan.BASIC -> AdaptiveIcons.Outlined.Lock
+            Plan.PLUS -> AdaptiveIcons.Outlined.Done
+        }
+
+    val featuresMap =
+        mapOf(
+            Res.string.plus_feature_protect_title to Res.string.plus_feature_protect_descr_short,
+            Res.string.plus_feature_currencies_title to Res.string.plus_feature_currencies_descr_short,
+            Res.string.plus_feature_images_title to Res.string.plus_feature_images_descr_short,
+            Res.string.plus_feature_more_title to Res.string.plus_feature_more_descr,
+        )
+    featuresMap.map { feature ->
+        ListItem(
+            modifier =
+                Modifier.fillMaxWidth().clickable {
+                    onSubscribe()
+                },
+            colors =
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
+            leadingContent = {
+                Icon(
+                    modifier = Modifier.minimumInteractiveComponentSize(),
+                    imageVector = icon,
+                    contentDescription = stringResource(feature.value),
+                )
+            },
+            headlineContent = {
+                Text(
+                    text = stringResource(feature.key),
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = stringResource(feature.value),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            },
         )
     }
 }

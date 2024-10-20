@@ -21,21 +21,34 @@ import split.composeapp.generated.resources.you
 
 @Composable
 fun ParticipantListItem(
-    participant: Participant,
     modifier: Modifier = Modifier,
+    participant: Participant,
+    enabled: Boolean = true,
+    showImage: Boolean = true,
+    showMeBadge: Boolean = true,
     subComposable: @Composable (() -> Unit)? = null,
     action: @Composable (() -> Unit)? = null,
     onClick: ((Participant) -> Unit)? = null,
 ) {
-    val internalModifier = onClick?.let { modifier.clickable { onClick(participant) } } ?: modifier
+    val internalModifier =
+        if (onClick != null && enabled) {
+            modifier.clickable { onClick(participant) }
+        } else {
+            modifier
+        }
+
     Row(
         modifier =
-            internalModifier
+            Modifier
                 .fillMaxWidth(1f)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .then(internalModifier),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ParticipantAvatar(participant = participant)
+        if (showImage) {
+            ParticipantAvatar(participant = participant)
+        }
+
         val suffix =
             if (participant.isMe()) {
                 " (${stringResource(Res.string.you)})"
@@ -50,7 +63,7 @@ fun ParticipantListItem(
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = participant.name + suffix,
+                text = participant.name + if (showMeBadge) suffix else "",
             )
             subComposable?.let { it() }
         }

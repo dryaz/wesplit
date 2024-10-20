@@ -31,15 +31,14 @@ data class User(
     val authIds: List<String> = emptyList(),
     @SerialName("lastCur")
     val lastUsedCurrency: String? = null,
+    @SerialName("subs")
+    val plan: Plan? = Plan.BASIC,
+    @SerialName("onboard")
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val completedOnboardingSteps: List<OnboardingStep> = emptyList(),
+    @SerialName("trxId")
+    val transactionId: String? = null,
 )
-
-fun User.participant(): Participant? =
-    Participant(
-        name = name,
-        user = this,
-    )
-
-fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email
 
 @Serializable
 sealed interface Contact {
@@ -64,3 +63,80 @@ sealed interface Contact {
         val account: String,
     ) : Contact
 }
+
+@Serializable
+@SerialName("subs")
+enum class Plan {
+    @SerialName("basic")
+    BASIC,
+
+    @SerialName("plus")
+    PLUS,
+}
+
+@Serializable
+@SerialName("step")
+enum class OnboardingStep {
+    @SerialName("ga")
+    GROUP_ADD,
+
+    @SerialName("anu")
+    ADD_NEW_USER_BUTTON,
+
+    @SerialName("tpn")
+    TYPE_PARTICIPANT_NAME,
+
+    @SerialName("cnu")
+    CREATE_NEW_USER_IN_GROUP,
+
+    @SerialName("sg")
+    SAVE_GROUP,
+
+    @SerialName("ach")
+    APPLY_CHANGES,
+
+    @SerialName("ea")
+    EXPENSE_ADD,
+
+    @SerialName("bc")
+    BALANCE_CHOOSER,
+
+    @SerialName("bp")
+    BALANCE_PREVIEW,
+
+    @SerialName("su")
+    SETTLE_UP,
+
+    @SerialName("shg")
+    SHARE_GROUP,
+
+    @SerialName("et")
+    EXPENSE_TITLE,
+
+    @SerialName("eam")
+    EXPENSE_AMOUNT,
+
+    @SerialName("edt")
+    EXPENSE_DATE_CURRENCY,
+
+    @SerialName("ep")
+    EXPENSE_PAYER,
+
+    @SerialName("esp")
+    EXPENSE_SPLIT,
+
+    @SerialName("esa")
+    EXPENSE_SAVE,
+}
+
+fun User.participant(): Participant =
+    Participant(
+        name = name,
+        user = this,
+    )
+
+fun User.isPlus() = plan == Plan.PLUS
+
+fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email
+
+fun User.planNotNull() = plan ?: Plan.BASIC

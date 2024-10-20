@@ -3,12 +3,12 @@ package app.wesplit.data.firebase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
-import app.wesplit.domain.model.account.participant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.User
+import app.wesplit.domain.model.user.UserRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import dev.gitlive.firebase.firestore.FieldValue
@@ -47,6 +47,7 @@ private const val GROUP_COMMIT_PARAM_USERS = "users_num"
 @Single
 class GroupFirebaseRepository(
     private val accountRepository: AccountRepository,
+    private val userRepository: UserRepository,
     private val coroutineDispatcher: CoroutineDispatcher,
     private val analyticsManager: AnalyticsManager,
 ) : GroupRepository {
@@ -118,6 +119,7 @@ class GroupFirebaseRepository(
         id: String?,
         title: String,
         participants: Set<Participant>,
+        imageUrl: String?,
     ): Unit =
         withContext(coroutineDispatcher + NonCancellable) {
             val eventName = if (id != null) GROUP_UPDATE_EVENT else GROUP_CREATE_EVENT
@@ -155,6 +157,7 @@ class GroupFirebaseRepository(
                         createdAt = Timestamp.ServerTimestamp,
                         tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + publicToken,
                         publicToken = publicToken,
+                        imageUrl = imageUrl,
                     )
                 Firebase.firestore.collection(GROUP_COLLECTION).add(
                     strategy = Group.serializer(),
@@ -185,6 +188,7 @@ class GroupFirebaseRepository(
                                 createdAt = existingGroup.createdAt,
                                 tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + existingGroup.publicToken,
                                 publicToken = existingGroup.publicToken,
+                                imageUrl = imageUrl,
                             ),
                     )
                 } else {
@@ -204,7 +208,7 @@ class GroupFirebaseRepository(
                 (
                     existingGroup.participants.firstOrNull { it.isMe() }?.user?.authIds
                         ?: emptyList()
-                ) + (accountRepository.get().value.participant()?.user?.authIds ?: emptyList())
+                ) + (userRepository.get().value?.authIds ?: emptyList())
             if (myTokens.isEmpty()) return
 
             val newTokens = existingGroup.tokens.filterNot { it in myTokens }

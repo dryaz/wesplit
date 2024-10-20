@@ -9,6 +9,7 @@ import app.wesplit.domain.model.user.Setting
 import app.wesplit.domain.model.user.UserRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
+import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.WriteBatch
 import dev.gitlive.firebase.firestore.firestore
@@ -20,6 +21,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 
 private const val STATUS_FIELD = "status"
+private const val PROTECTION_FIELD = "protectedBy"
 
 private const val EXPENSE_COLLECTION = "expenses"
 private const val DATE_FIELD = "date"
@@ -93,13 +95,26 @@ class ExpenseFirebaseRepository(
                         GROUP_COLLECTION,
                     ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).get()
                 if (doc.exists) {
-                    Firebase.firestore.collection(
-                        GROUP_COLLECTION,
-                    ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).update(
+                    val batch = Firebase.firestore.batch()
+                    batch.update(
+                        documentRef =
+                            Firebase.firestore.collection(
+                                GROUP_COLLECTION,
+                            ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId),
                         strategy = Expense.serializer(),
                         // TODO: Point of improvement - send only changed values.
                         data = newExpense,
                     )
+
+                    if (expense.protectionList.isEmpty()) {
+                        batch.update(
+                            documentRef =
+                                Firebase.firestore.collection(GROUP_COLLECTION)
+                                    .document(groupId).collection(EXPENSE_COLLECTION).document(expenseId),
+                            data = mapOf(PROTECTION_FIELD to FieldValue.delete),
+                        )
+                    }
+                    batch.commit()
                 } else {
                     // TODO: Fire back and error to ui
                     analyticsManager.log(IllegalStateException("Try to edit expense document with id $expenseId which not exists"))

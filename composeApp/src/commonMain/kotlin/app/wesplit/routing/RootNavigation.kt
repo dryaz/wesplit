@@ -1,9 +1,16 @@
 package app.wesplit.routing
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -11,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.core.bundle.Bundle
 import androidx.lifecycle.SavedStateHandle
@@ -31,12 +39,15 @@ import app.wesplit.ShortcutDelegate
 import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
+import app.wesplit.domain.balance.BalanceCalculationUseCase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.domain.model.paywall.PaywallRepository
+import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.expense.AddExpenseAction
 import app.wesplit.expense.ExpenseDetailsScreen
 import app.wesplit.expense.ExpenseDetailsViewModel
@@ -50,6 +61,16 @@ import app.wesplit.group.list.GroupListViewModel
 import app.wesplit.group.settings.GroupSettingsAction
 import app.wesplit.group.settings.GroupSettingsScreen
 import app.wesplit.group.settings.GroupSettingsViewModel
+import app.wesplit.paywall.PaywallAction
+import app.wesplit.paywall.PaywallRoute
+import app.wesplit.paywall.PaywallViewModel
+import app.wesplit.settle.SettleAction
+import app.wesplit.settle.SettleScreen
+import app.wesplit.settle.SettleViewModel
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialControl
+import app.wesplit.ui.tutorial.TutorialOverlay
+import app.wesplit.ui.tutorial.TutorialViewModel
 import com.motorro.keeplink.deeplink.deepLink
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.CoroutineDispatcher
@@ -64,10 +85,17 @@ import split.composeapp.generated.resources.ic_profile
 import split.composeapp.generated.resources.profile
 
 private const val SHARE_EVENT = "share"
+private const val SHARE_SETTLE_EVENT = "share_settle"
 
 private const val SCREEN_VIEW = "screen_view"
 private const val SCREEN_NAME = "screen_name"
 private const val SCREEN_CLASS = "screen_class"
+
+private const val SUBS_EVENT = "paywall"
+private const val SUBS_SOURCE = "source"
+private const val DOWNLOAD_APP_FOR_SUBS = "download_for_subs"
+
+private const val PROFILE_PAYWALL_SOURCE = "profile"
 
 sealed class PaneNavigation(
     val route: String,
@@ -88,6 +116,8 @@ sealed class RightPane(
 ) : PaneNavigation(route) {
     data object Empty : RightPane("empty")
 
+    data object Paywall : RightPane("paywall")
+
     data object Group : RightPane("group/{${Param.GROUP_ID.paramName}}?${Param.TOKEN.paramName}={${Param.TOKEN.paramName}}") {
         enum class Param(
             val paramName: String,
@@ -101,6 +131,29 @@ sealed class RightPane(
             token: String? = null,
         ): String {
             val base = "group/$groupId"
+            return if (token != null) {
+                base + "?${Param.TOKEN.paramName}=$token"
+            } else {
+                base
+            }
+        }
+
+        override fun destination(): String = throw IllegalArgumentException("Must use destination(groupId) instead")
+    }
+
+    data object Settle : RightPane("settle/{${Param.GROUP_ID.paramName}}?${Param.TOKEN.paramName}={${Param.TOKEN.paramName}}") {
+        enum class Param(
+            val paramName: String,
+        ) {
+            GROUP_ID("group_id"),
+            TOKEN("token"),
+        }
+
+        fun destination(
+            groupId: String,
+            token: String? = null,
+        ): String {
+            val base = "settle/$groupId"
             return if (token != null) {
                 base + "?${Param.TOKEN.paramName}=$token"
             } else {
@@ -167,20 +220,6 @@ fun RootNavigation(
 ) {
     var secondNavControllerEmpty by remember { mutableStateOf(false) }
     val analyticsManager: AnalyticsManager = koinInject()
-    val accountRepository: AccountRepository = koinInject()
-    val coroutineScope = rememberCoroutineScope()
-    val shareDelegate: ShareDelegate = koinInject()
-    val clipboardManager = LocalClipboardManager.current
-
-    val menuItems =
-        remember {
-            mutableStateListOf(
-                MenuItem.Profile,
-                MenuItem.Group,
-            )
-        }
-
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
 
     fun trackScreen(
         destination: NavDestination,
@@ -230,6 +269,101 @@ fun RootNavigation(
             },
         )
     }
+
+    val accountRepository: AccountRepository = koinInject()
+    val userRepository: UserRepository = koinInject()
+    val tutorialViewModel =
+        viewModel {
+            TutorialViewModel(
+                accountRepository = accountRepository,
+                userRepository = userRepository,
+            )
+        }
+
+    val tutorialState = tutorialViewModel.state.collectAsState()
+
+    val tutorialControl =
+        remember(tutorialViewModel) {
+            TutorialControl(
+                stepRequest = { requestedSteps ->
+                    tutorialViewModel.requestSteps(requestedSteps)
+                },
+                onPositionRecieved = { step, rect ->
+                    tutorialViewModel.onPositionReceived(step, rect)
+                },
+                onNext = {
+                    tutorialViewModel.nextStep()
+                },
+            )
+        }
+
+    CompositionLocalProvider(
+        LocalTutorialControl provides tutorialControl,
+    ) {
+        Navigation(
+            secondNavControllerEmpty,
+            selectedMenuItem,
+            onSelectMenuItem,
+            firstPaneNavController,
+            secondPaneNavController,
+            analyticsManager,
+        )
+    }
+
+    AnimatedVisibility(
+        visible = tutorialState.value is TutorialViewModel.TutorialState.Step,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        TutorialOverlay(
+            tutorialState = tutorialState.value,
+            onClose = { tutorialViewModel.nextStep() },
+        )
+    }
+}
+
+@Composable
+private fun Navigation(
+    secondNavControllerEmpty: Boolean,
+    selectedMenuItem: NavigationMenuItem,
+    onSelectMenuItem: (NavigationMenuItem) -> Unit,
+    firstPaneNavController: NavHostController,
+    secondPaneNavController: NavHostController,
+    analyticsManager: AnalyticsManager,
+) {
+    val menuItems =
+        remember {
+            mutableStateListOf(
+                MenuItem.Profile,
+                MenuItem.Group,
+            )
+        }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val accountRepository: AccountRepository = koinInject()
+    val userRepository: UserRepository = koinInject()
+    val expenseRepository: ExpenseRepository = koinInject()
+    val currencyRepository: CurrencyRepository = koinInject()
+    val balanceCalculationUseCase: BalanceCalculationUseCase = koinInject()
+    val coroutineScope = rememberCoroutineScope()
+    val shareDelegate: ShareDelegate = koinInject()
+    val clipboardManager = LocalClipboardManager.current
+    val uriHandler = LocalUriHandler.current
+
+    val onSubscriptionRequest: (String) -> Unit =
+        remember {
+            {
+                analyticsManager.track(
+                    SUBS_EVENT,
+                    mapOf(
+                        SUBS_SOURCE to it,
+                    ),
+                )
+                secondPaneNavController.navigate(
+                    RightPane.Paywall.destination(),
+                    navOptions = navOptions { launchSingleTop = true },
+                )
+            }
+        }
 
     DoublePaneNavigation(
         secondNavhostEmpty = secondNavControllerEmpty,
@@ -302,6 +436,9 @@ fun RootNavigation(
                                 }
 
                                 ProfileAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
+                                ProfileAction.Paywall -> {
+                                    onSubscriptionRequest(PROFILE_PAYWALL_SOURCE)
+                                }
                             }
                         },
                     )
@@ -377,6 +514,47 @@ fun RootNavigation(
             ) {
                 composable(route = RightPane.Empty.route) {
                     NoGroupScreen()
+                }
+
+                composable(
+                    route = RightPane.Paywall.route,
+                    enterTransition = {
+                        slideInVertically(
+                            initialOffsetY = { it * 2 },
+                        )
+                    },
+                    exitTransition = {
+                        slideOutVertically(
+                            targetOffsetY = { it * 2 },
+                        )
+                    },
+                ) {
+                    val paywallRepository: PaywallRepository = koinInject()
+                    val ioDispatcher: CoroutineDispatcher = koinInject()
+
+                    val paywallViewModel: PaywallViewModel =
+                        viewModel {
+                            PaywallViewModel(
+                                paywallRepository = paywallRepository,
+                                coroutineDispatcher = ioDispatcher,
+                                userRepository = userRepository,
+                            )
+                        }
+                    PaywallRoute(
+                        viewModel = paywallViewModel,
+                    ) { action ->
+                        when (action) {
+                            PaywallAction.Back -> secondPaneNavController.popBackStack()
+                            PaywallAction.DownloadMobile -> {
+                                analyticsManager.track(DOWNLOAD_APP_FOR_SUBS)
+                                if (shareDelegate.supportPlatformSharing()) {
+                                    shareDelegate.open(ShareData.Link("https://wesplit.app"))
+                                } else {
+                                    uriHandler.openUri("https://wesplit.app")
+                                }
+                            }
+                        }
+                    }
                 }
 
                 composable(
@@ -471,7 +649,86 @@ fun RootNavigation(
                                 )
                             }
 
+                            is GroupInfoAction.Settle ->
+                                secondPaneNavController.navigate(
+                                    RightPane.Settle.destination(action.group.id),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                        },
+                                )
+
                             is GroupInfoAction.Invite -> TODO("We support only sharing of the group yet")
+                        }
+                    }
+                }
+
+                composable(
+                    route = RightPane.Settle.route,
+                    arguments =
+                        listOf(
+                            navArgument(RightPane.Settle.Param.GROUP_ID.paramName) {
+                                type = NavType.StringType
+                            },
+                            navArgument(RightPane.Settle.Param.TOKEN.paramName) {
+                                type = NavType.StringType
+                                nullable = true
+                            },
+                        ),
+                ) {
+                    val groupRepository: GroupRepository = koinInject()
+                    val groupId =
+                        checkNotNull(
+                            it.arguments?.getString(
+                                RightPane
+                                    .Group
+                                    .Param
+                                    .GROUP_ID
+                                    .paramName,
+                            ),
+                        )
+                    val viewModel: SettleViewModel =
+                        viewModel(
+                            key = "SettleViewModel $groupId",
+                        ) {
+                            SettleViewModel(
+                                SavedStateHandle.createHandle(null, it.arguments),
+                                groupRepository,
+                                accountRepository,
+                                userRepository,
+                                expenseRepository,
+                                currencyRepository,
+                                analyticsManager,
+                                balanceCalculationUseCase,
+                                onSubscriptionRequest,
+                            )
+                        }
+                    SettleScreen(
+                        viewModel = viewModel,
+                        shareDelegate = shareDelegate,
+                    ) { action ->
+                        when (action) {
+                            SettleAction.Back -> secondPaneNavController.navigateUp()
+                            is SettleAction.Share -> {
+                                analyticsManager.track(SHARE_SETTLE_EVENT)
+                                val detailsAction =
+                                    DeeplinkAction.Group.Details(
+                                        groupId = action.group.id,
+                                        token = action.group.publicToken,
+                                    )
+                                val link = deepLink(detailsAction)
+                                val groupDetailsUrl = DeeplinkBuilders.PROD.build(link)
+                                if (shareDelegate.supportPlatformSharing()) {
+                                    shareDelegate.share(ShareData.Link(groupDetailsUrl))
+                                } else {
+                                    clipboardManager.setText(
+                                        annotatedString =
+                                            buildAnnotatedString {
+                                                append(text = groupDetailsUrl)
+                                            },
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -480,6 +737,7 @@ fun RootNavigation(
                     route = RightPane.NewGroup.route,
                 ) {
                     val groupRepository: GroupRepository = koinInject()
+                    val ioDispatcher: CoroutineDispatcher = koinInject()
 
                     val viewModel: GroupSettingsViewModel =
                         viewModel {
@@ -488,10 +746,14 @@ fun RootNavigation(
                                 groupRepository,
                                 accountRepository,
                                 analyticsManager,
+                                ioDispatcher,
+                                onSubscriptionRequest,
                             )
                         }
 
-                    GroupSettingsScreen(viewModel = viewModel) { action ->
+                    GroupSettingsScreen(
+                        viewModel = viewModel,
+                    ) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
                             GroupSettingsAction.Home ->
@@ -521,6 +783,7 @@ fun RootNavigation(
                         ),
                 ) {
                     val groupRepository: GroupRepository = koinInject()
+                    val ioDispatcher: CoroutineDispatcher = koinInject()
 
                     val groupId =
                         it.arguments?.getString(
@@ -538,10 +801,14 @@ fun RootNavigation(
                                 groupRepository,
                                 accountRepository,
                                 analyticsManager,
+                                ioDispatcher,
+                                onSubscriptionRequest,
                             )
                         }
 
-                    GroupSettingsScreen(viewModel = viewModel) { action ->
+                    GroupSettingsScreen(
+                        viewModel = viewModel,
+                    ) { action ->
                         when (action) {
                             GroupSettingsAction.Back -> secondPaneNavController.navigateUp()
                             GroupSettingsAction.Home ->
@@ -575,9 +842,7 @@ fun RootNavigation(
                 ) {
                     // TODO: Accorgin ti github koin starts to support navigation args in savedstate in VM, POC
                     val groupRepository: GroupRepository = koinInject()
-                    val expenseRepository: ExpenseRepository = koinInject()
                     val shortcutDelegate: ShortcutDelegate = koinInject()
-                    val currencyRepository: CurrencyRepository = koinInject()
                     val settings: Settings = koinInject()
                     val appReview: AppReviewManager = koinInject()
 
@@ -615,6 +880,8 @@ fun RootNavigation(
                                 shortcutDelegate,
                                 settings,
                                 appReview,
+                                accountRepository,
+                                onSubscriptionRequest,
                             )
                         }
 

@@ -26,6 +26,7 @@ import com.motorro.keeplink.uri.data.toMap
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
+import org.koin.core.KoinApplication
 import org.koin.core.module.Module
 import org.koin.dsl.koinApplication
 
@@ -33,12 +34,17 @@ private const val CAMPAIGN_EVENT = "campaign_hit"
 
 @Composable
 @Preview
-fun App(vararg platformModule: Module) {
+fun App(
+    koinApp: KoinApplication? = null,
+    vararg platformModule: Module,
+) {
     KoinContext(
         context =
-            koinApplication {
-                modules(domainModule() + firebaseDataModule() + platformModule)
-            }.koin,
+            (
+                koinApp?.modules(domainModule() + firebaseDataModule() + platformModule) ?: koinApplication {
+                    modules(domainModule() + firebaseDataModule() + platformModule)
+                }
+            ).koin,
     ) {
         val deepLinkHandler: DeepLinkHandler = koinInject()
         val analyticsManager: AnalyticsManager = koinInject()

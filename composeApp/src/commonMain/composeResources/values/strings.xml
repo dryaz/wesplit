@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">WeSplit</string>
-    <string name="app_version">v1.6.1+36</string>
+    <string name="app_name">Wesplit</string>
+    <string name="app_version">v2.0.0+38</string>
     <string name="no_image_group_cd">No image for group %s</string>
     <string name="login">Login</string>
     <string name="logout">Logout</string>
@@ -52,5 +52,25 @@
     <string name="profile_under_construction">More features coming soon!</string>
     <string name="edit_group">Edit group</string>
     <string name="share_link_copied">Sharable link copied!</string>
+    <string name="plus_subs_title">Plus benefits</string>
+    <!-- Plus features descr -->
+    <string name="plus_feature_protect_title">Protected expense</string>
+    <string name="plus_feature_protect_descr_short">Ensure expense integrity</string>
+    <string name="plus_feature_protect_descr_full">Keep critical costs under your control.\nPrevent unauthorized changes and maintain financial integrity effortlessly.</string>
 
+    <string name="plus_feature_currencies_title">FX rates</string>
+    <string name="plus_feature_currencies_descr_short">Simplify multi currency debts</string>
+    <string name="plus_feature_currencies_descr_full">Effortlessly manage and convert multiple currencies. Use different currencies in one group. Convert to the base one when settling.</string>
+
+    <string name="plus_feature_noads_title">No ads</string>
+    <string name="plus_feature_noads_descr_short">Nothing will interrupt you</string>
+    <string name="plus_feature_noads_descr_full">Experience uninterrupted debt management everywhere with a distraction-free interface. Focus solely on tracking and settling your debts.</string>
+
+    <string name="plus_feature_images_title">Group images</string>
+    <string name="plus_feature_images_descr_short">Add mood to your groups</string>
+    <string name="plus_feature_images_descr_full">Mark each group with image of your choice. It both makes it more beautiful and helps your find everything at glance.</string>
+
+    <string name="plus_feature_more_title">And more...</string>
+    <string name="plus_feature_more_descr">Click to see benefits</string>
+    <!--    -->
 </resources>

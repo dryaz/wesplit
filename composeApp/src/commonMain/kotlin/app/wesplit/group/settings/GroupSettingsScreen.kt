@@ -29,9 +29,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,17 +45,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
+import app.wesplit.domain.model.user.OnboardingStep
+import app.wesplit.group.GroupImage
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import app.wesplit.ui.tutorial.HelpOverlayPosition
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialControl
+import app.wesplit.ui.tutorial.TutorialItem
+import app.wesplit.ui.tutorial.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.ExitToApp
+import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
@@ -78,6 +89,15 @@ private sealed interface GroupSettingTollbarAction {
     data object Commit : GroupSettingTollbarAction
 }
 
+private val addParticipantTutorialStep =
+    TutorialStep(
+        title = "Add participant",
+        description = "You could add new participant just by typing name. Your friend don't need even to know about Wesplit.",
+        onboardingStep = OnboardingStep.ADD_NEW_USER_BUTTON,
+        isModal = false,
+        helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+    )
+
 @Composable
 fun GroupSettingsScreen(
     modifier: Modifier = Modifier,
@@ -85,10 +105,15 @@ fun GroupSettingsScreen(
     onAction: (GroupSettingsAction) -> Unit,
 ) {
     val state = viewModel.state.collectAsState()
+    val tutorialControl = LocalTutorialControl.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             TopAppBareByState(
                 dataState = state.value.dataState,
@@ -96,6 +121,7 @@ fun GroupSettingsScreen(
                 onToolbarAction = { action ->
                     when (action) {
                         GroupSettingTollbarAction.Commit -> {
+                            tutorialControl.onNext()
                             viewModel.commit()
                             onAction(GroupSettingsAction.Back)
                         }
@@ -113,6 +139,7 @@ fun GroupSettingsScreen(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
                     account = state.value.account,
                     group = groupState,
+                    isImageProcessing = state.value.isImageProcessing,
                     onDone = {
                         viewModel.commit()
                         onAction(GroupSettingsAction.Back)
@@ -124,6 +151,10 @@ fun GroupSettingsScreen(
                     onJoin = { participant ->
                         viewModel.join(participant)
                     },
+                    tutorialControl = tutorialControl,
+                    onImageChange = {
+                        viewModel.updateImage()
+                    },
                 ) { group ->
                     viewModel.update(group)
                 }
@@ -131,22 +162,35 @@ fun GroupSettingsScreen(
             GroupSettingsViewModel.DataState.Loading -> Text("Loading")
         }
     }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collectLatest { event ->
+            when (event) {
+                is GroupSettingsViewModel.Event.Error -> {
+                    snackbarHostState.showSnackbar(event.msg)
+                }
+            }
+        }
+    }
 }
 
 // TODO: Move to actions
-@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun GroupSettingsView(
     modifier: Modifier = Modifier,
     group: GroupSettingsViewModel.DataState.Group,
     account: Account,
+    isImageProcessing: Boolean,
+    tutorialControl: TutorialControl,
     onDone: () -> Unit,
     onJoin: (Participant?) -> Unit,
     onLeave: () -> Unit,
+    onImageChange: () -> Unit,
     onUpdated: (GroupSettingsViewModel.DataState.Group) -> Unit,
 ) {
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
+    var joinAsDialogShown by remember { mutableStateOf<Set<Participant>?>(null) }
 
     Column(
         modifier =
@@ -170,9 +214,17 @@ private fun GroupSettingsView(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // TODO: Support adding image, place pic selector in here
+                GroupImage(
+                    modifier = Modifier.padding(top = 8.dp),
+                    imageUrl = group.imageUrl,
+                    isLoading = isImageProcessing,
+                    groupTitle = group.title,
+                ) {
+                    onImageChange()
+                }
+                Spacer(modifier = Modifier.width(16.dp))
                 OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(1f),
+                    modifier = Modifier.weight(1f),
                     // TODO: Prefil later when select paritipatns if empty
                     value = group.title,
                     onValueChange = { onUpdated(group.copy(title = it)) },
@@ -205,25 +257,29 @@ private fun GroupSettingsView(
                     .fillMaxWidth(1f)
                     .padding(16.dp),
         ) {
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(1f)
-                        .clickable {
-                            userSelectorVisibility = true
-                        }.padding(16.dp),
-            ) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_user_add),
-                    modifier = Modifier.width(48.dp),
-                    contentDescription = stringResource(Res.string.add_user_to_group),
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = stringResource(Res.string.add_user_to_group),
-                )
+            TutorialItem(
+                onPositioned = { tutorialControl.onPositionRecieved(addParticipantTutorialStep, it) },
+            ) { modifier ->
+                Row(
+                    modifier =
+                        modifier
+                            .fillMaxWidth(1f)
+                            .clickable {
+                                tutorialControl.onNext()
+                                userSelectorVisibility = true
+                            }.padding(16.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_user_add),
+                        modifier = Modifier.width(48.dp),
+                        contentDescription = stringResource(Res.string.add_user_to_group),
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = stringResource(Res.string.add_user_to_group),
+                    )
+                }
             }
-
             // TODO: Add/Remove with animation. Lazycolumn?
             val isMeParticipating = remember(group) { group.participants.any { it.isMe() } }
             group.participants.forEachIndexed { index, participant ->
@@ -236,7 +292,7 @@ private fun GroupSettingsView(
                         if (!isMeParticipating && participant.user?.authIds.isNullOrEmpty() && account is Account.Authorized) {
                             {
                                 OutlinedButton(
-                                    onClick = { onJoin(participant) },
+                                    onClick = { joinAsDialogShown = setOf(participant) },
                                 ) {
                                     Text("It's me")
                                 }
@@ -266,7 +322,7 @@ private fun GroupSettingsView(
             Spacer(modifier = Modifier.height(16.dp))
             if (!isMeParticipating) {
                 OutlinedButton(
-                    onClick = { onJoin(null) },
+                    onClick = { joinAsDialogShown = emptySet() },
                     modifier =
                         Modifier.widthIn(max = 450.dp)
                             .fillMaxWidth(1f)
@@ -299,6 +355,56 @@ private fun GroupSettingsView(
         }
     }
 
+    if (joinAsDialogShown != null) {
+        AlertDialog(
+            modifier = Modifier.widthIn(max = 450.dp),
+            onDismissRequest = { joinAsDialogShown = null },
+            title = { Text("Join group?") },
+            text = {
+                Text(
+                    text =
+                        if (joinAsDialogShown.isNullOrEmpty()) {
+                            "Join ${group.title} as new participant?"
+                        } else {
+                            "Join ${group.title} as ${joinAsDialogShown?.first()?.name}"
+                        },
+                    textAlign = TextAlign.Center,
+                )
+            },
+            icon = {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_user_add),
+                    contentDescription = "Join group",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onJoin(joinAsDialogShown?.firstOrNull())
+                        joinAsDialogShown = null
+                    },
+                ) {
+                    Text(
+                        text = "Yes, Join",
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        joinAsDialogShown = null
+                    },
+                ) {
+                    Text(
+                        text = "No, Wait",
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            },
+        )
+    }
+
     AnimatedVisibility(visible = userSelectorVisibility) {
         val callback: (Participant) -> Unit =
             remember(group.participants) {
@@ -316,7 +422,9 @@ private fun GroupSettingsView(
         ParticipantPicker(
             currentParticipants = group.participants,
             isFullScreen = true,
-            onPickerClose = { userSelectorVisibility = false },
+            onPickerClose = {
+                userSelectorVisibility = false
+            },
             onParticipantClick = callback,
         )
     }
@@ -360,6 +468,10 @@ private fun GroupSettingsView(
             },
         )
     }
+
+    LaunchedEffect(Unit) {
+        tutorialControl.stepRequest(listOf(addParticipantTutorialStep))
+    }
 }
 
 @Composable
@@ -368,6 +480,7 @@ private fun TopAppBareByState(
     onAction: (GroupSettingsAction) -> Unit,
     onToolbarAction: (GroupSettingTollbarAction) -> Unit,
 ) {
+    val tutorialControl = LocalTutorialControl.current
     AdaptiveTopAppBar(
         title = {
             Text(

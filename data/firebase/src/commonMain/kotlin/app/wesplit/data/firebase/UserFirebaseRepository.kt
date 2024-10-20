@@ -2,6 +2,7 @@ package app.wesplit.data.firebase
 
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.user.Contact
+import app.wesplit.domain.model.user.Plan
 import app.wesplit.domain.model.user.Setting
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.UserRepository
@@ -27,6 +28,11 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 
 private const val USER_COLLECTION = "users"
+
+private const val TRX_ID_RECEIVED_EVENT = "trx_id_received_to_plus"
+
+private const val ONBOARDING_STEP_COMPLETED_EVENT = "onboarding_steps_complete"
+private const val ONBOARDING_STEP_COMPLETED_EVENT_STEPS_PARAM = "steps"
 
 @Single
 class UserFirebaseRepository(
@@ -60,6 +66,33 @@ class UserFirebaseRepository(
                                     lastUsedCurrency = setting.code,
                                 ),
                             )
+
+                        is Setting.CompletedOnboardedSteps -> {
+                            if (setting.steps.any { it !in authUser.completedOnboardingSteps }) {
+                                analytics.track(
+                                    event = ONBOARDING_STEP_COMPLETED_EVENT,
+                                    params =
+                                        mapOf(
+                                            ONBOARDING_STEP_COMPLETED_EVENT_STEPS_PARAM to setting.steps.joinToString(),
+                                        ),
+                                )
+                                Firebase.firestore.collection(USER_COLLECTION).document(authUser.id).update(
+                                    authUser.copy(
+                                        completedOnboardingSteps = authUser.completedOnboardingSteps + setting.steps,
+                                    ),
+                                )
+                            }
+                        }
+
+                        is Setting.TransactionId -> {
+                            analytics.track(TRX_ID_RECEIVED_EVENT)
+                            Firebase.firestore.collection(USER_COLLECTION).document(authUser.id).update(
+                                authUser.copy(
+                                    transactionId = setting.transactionId,
+                                    plan = Plan.PLUS,
+                                ),
+                            )
+                        }
                     }
                 }
             }
@@ -108,6 +141,8 @@ class UserFirebaseRepository(
                     id = it.id,
                 )
             }
-        }.catch { }
+        }.catch { e ->
+            analytics.log(e)
+        }
     }
 }

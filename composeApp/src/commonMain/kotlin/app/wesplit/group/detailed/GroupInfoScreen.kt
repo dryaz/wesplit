@@ -42,28 +42,35 @@ import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
-import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.group.uiTitle
+import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.group.detailed.balance.BalanceList
 import app.wesplit.group.detailed.expense.ExpenseAction
 import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.tutorial.HelpOverlayPosition
+import app.wesplit.ui.tutorial.LocalTutorialControl
+import app.wesplit.ui.tutorial.TutorialItem
+import app.wesplit.ui.tutorial.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.edit_group
+import split.composeapp.generated.resources.ic_user_add
 import split.composeapp.generated.resources.share_group
 import split.composeapp.generated.resources.share_link_copied
 
@@ -80,7 +87,52 @@ sealed interface GroupInfoAction {
     data class Edit(val group: Group) : GroupInfoAction
 
     data class OpenExpenseDetails(val expense: Expense) : GroupInfoAction
+
+    data class Settle(val group: Group) : GroupInfoAction
 }
+
+private val addExpenseTutorialStep =
+    TutorialStep(
+        title = "Add expense to group",
+        description = "Let create first expense in group to see how it works",
+        onboardingStep = OnboardingStep.EXPENSE_ADD,
+        isModal = false,
+        helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
+    )
+
+internal val checkBalanceTutorialStepFlow =
+    listOf(
+        TutorialStep(
+            title = "Balances tab",
+            description = "This section contains info about who ows whom.",
+            onboardingStep = OnboardingStep.BALANCE_CHOOSER,
+            isModal = false,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+        TutorialStep(
+            title = "Check balances",
+            description =
+                "Here you could see who owes what. -X means that person ows money. " +
+                    "+Y means that person is need to pay back.",
+            onboardingStep = OnboardingStep.BALANCE_PREVIEW,
+            isModal = true,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+        TutorialStep(
+            title = "Settle up when you're ready",
+            description = "When it's time to settleup, press this button ;)",
+            onboardingStep = OnboardingStep.SETTLE_UP,
+            isModal = true,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+        TutorialStep(
+            title = "Invite your friends by link",
+            description = "Share the link to your friends so they could safely see group details and add expenses.",
+            onboardingStep = OnboardingStep.SHARE_GROUP,
+            isModal = false,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+        ),
+    )
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
@@ -97,6 +149,13 @@ fun GroupInfoScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val tutorialControl = LocalTutorialControl.current
+
+    val isMeParticipating =
+        remember(data.value) {
+            (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.participants?.any { it.isMe() } ?: false
+        }
+
     // TODO: Doesnt work for some reason
     val shareMsg = stringResource(Res.string.share_link_copied)
 
@@ -107,21 +166,32 @@ fun GroupInfoScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        tutorialControl.stepRequest(listOf(addExpenseTutorialStep))
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         floatingActionButton = {
             (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                FloatingActionButton(
-                    modifier = Modifier,
-                    onClick = {
-                        onAction(GroupInfoAction.AddExpense(group))
-                    },
-                ) {
-                    Icon(
-                        AdaptiveIcons.Outlined.Add,
-                        contentDescription = stringResource(Res.string.add_expense_to_group),
-                    )
+                TutorialItem(
+                    onPositioned = { tutorialControl.onPositionRecieved(addExpenseTutorialStep, it) },
+                ) { modifier ->
+                    FloatingActionButton(
+                        modifier = modifier,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        onClick = {
+                            tutorialControl.onNext()
+                            onAction(GroupInfoAction.AddExpense(group))
+                        },
+                    ) {
+                        Icon(
+                            AdaptiveIcons.Outlined.Add,
+                            contentDescription = stringResource(Res.string.add_expense_to_group),
+                        )
+                    }
                 }
             }
         },
@@ -155,24 +225,39 @@ fun GroupInfoScreen(
                             }
                         }
                     }) {
-                        Icon(
-                            AdaptiveIcons.Outlined.Edit,
-                            contentDescription = stringResource(Res.string.edit_group),
-                        )
-                    }
-
-                    IconButton(onClick = {
-                        // TODO: Proper state handling, not just 1 groupinfo handler
-                        (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                            onAction.invoke(
-                                GroupInfoAction.Share(group),
+                        if (isMeParticipating) {
+                            Icon(
+                                AdaptiveIcons.Outlined.Edit,
+                                contentDescription = stringResource(Res.string.edit_group),
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_user_add),
+                                contentDescription = "Join group",
                             )
                         }
-                    }) {
-                        Icon(
-                            AdaptiveIcons.Outlined.Share,
-                            contentDescription = stringResource(Res.string.share_group),
-                        )
+                    }
+
+                    TutorialItem(
+                        onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[3], it) },
+                    ) { modifier ->
+                        IconButton(
+                            modifier = modifier,
+                            onClick = {
+                                // TODO: Proper state handling, not just 1 groupinfo handler
+                                tutorialControl.onNext()
+                                (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
+                                    onAction.invoke(
+                                        GroupInfoAction.Share(group),
+                                    )
+                                }
+                            },
+                        ) {
+                            Icon(
+                                AdaptiveIcons.Outlined.Share,
+                                contentDescription = stringResource(Res.string.share_group),
+                            )
+                        }
                     }
                 })
             }
@@ -212,6 +297,7 @@ private fun GroupInfoContent(
     val expenseRepository: ExpenseRepository = koinInject()
     val groupRepository: GroupRepository = koinInject()
     val analyticsManager: AnalyticsManager = koinInject()
+    val tutorialControl = LocalTutorialControl.current
 
     val windowSizeClass = calculateWindowSizeClass()
 
@@ -249,9 +335,15 @@ private fun GroupInfoContent(
         if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
             windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
         ) {
-            SplitView(expenseViewModel, group.balances, actionInterceptor)
+            SplitView(expenseViewModel, group, actionInterceptor)
         } else {
-            PaginationView(expenseViewModel, group.balances, actionInterceptor)
+            PaginationView(expenseViewModel, group, actionInterceptor)
+        }
+    }
+
+    LaunchedEffect(group.balances) {
+        if (group.balances?.participantsBalance?.any { it.amounts.any { it.value != 0.0 } } == true) {
+            tutorialControl.stepRequest(checkBalanceTutorialStepFlow)
         }
     }
 }
@@ -259,16 +351,24 @@ private fun GroupInfoContent(
 @Composable
 private fun SplitView(
     expenseViewModel: ExpenseSectionViewModel,
-    balance: Balance?,
+    group: Group,
     onAction: (GroupInfoAction) -> Unit,
 ) {
+    val tutorialControl = LocalTutorialControl.current
+
     Column {
         TabRow(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             selectedTabIndex = 2,
         ) {
             Tab(selected = false, onClick = {}, text = { Text("Transactions") })
-            Tab(selected = false, onClick = {}, text = { Text("Balances") })
+            TutorialItem(
+                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
+            ) { modifier ->
+                Tab(modifier = modifier, selected = false, onClick = {
+                    tutorialControl.onNext()
+                }, text = { Text("Balances") })
+            }
         }
     }
     Row {
@@ -287,10 +387,10 @@ private fun SplitView(
             contentAlignment = Alignment.TopCenter,
         ) {
             BalanceList(
-                balance = balance,
+                balance = group.balances,
                 onInvite = { onAction(GroupInfoAction.Invite(it)) },
             ) {
-                expenseViewModel.settleAll()
+                onAction(GroupInfoAction.Settle(group))
             }
         }
     }
@@ -299,11 +399,12 @@ private fun SplitView(
 @Composable
 private fun PaginationView(
     expenseViewModel: ExpenseSectionViewModel,
-    balance: Balance?,
+    group: Group,
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val tutorialControl = LocalTutorialControl.current
 
     Column {
         TabRow(
@@ -311,7 +412,14 @@ private fun PaginationView(
             selectedTabIndex = selectedTabIndex,
         ) {
             Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text("Transactions") })
-            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text("Balances") })
+            TutorialItem(
+                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
+            ) { modifier ->
+                Tab(modifier = modifier, selected = selectedTabIndex == 1, onClick = {
+                    tutorialControl.onNext()
+                    selectedTabIndex = 1
+                }, text = { Text("Balances") })
+            }
         }
 
         HorizontalPager(
@@ -332,10 +440,10 @@ private fun PaginationView(
 
                     1 ->
                         BalanceList(
-                            balance = balance,
+                            balance = group.balances,
                             onInvite = { onAction(GroupInfoAction.Invite(it)) },
                         ) {
-                            expenseViewModel.settleAll()
+                            onAction(GroupInfoAction.Settle(group))
                         }
                 }
             }
@@ -358,6 +466,7 @@ private fun GroupHeader(
     group: Group,
     onAction: (GroupInfoAction) -> Unit,
 ) {
+    val tutorialControl = LocalTutorialControl.current
     Row(
         modifier = Modifier.padding(16.dp).fillMaxWidth(1f),
     ) {
@@ -380,17 +489,34 @@ private fun GroupHeader(
             }
         }
         IconButton(onClick = { onAction.invoke(GroupInfoAction.Edit(group)) }) {
-            Icon(
-                AdaptiveIcons.Outlined.Edit,
-                contentDescription = stringResource(Res.string.edit_group),
-            )
+            if (group.participants.any { it.isMe() }) {
+                Icon(
+                    AdaptiveIcons.Outlined.Edit,
+                    contentDescription = stringResource(Res.string.edit_group),
+                )
+            } else {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_user_add),
+                    contentDescription = "Join group",
+                )
+            }
         }
 
-        IconButton(onClick = { onAction.invoke(GroupInfoAction.Share(group)) }) {
-            Icon(
-                AdaptiveIcons.Outlined.Share,
-                contentDescription = stringResource(Res.string.share_group),
-            )
+        TutorialItem(
+            onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[3], it) },
+        ) { modifier ->
+            IconButton(
+                modifier = modifier,
+                onClick = {
+                    tutorialControl.onNext()
+                    onAction.invoke(GroupInfoAction.Share(group))
+                },
+            ) {
+                Icon(
+                    AdaptiveIcons.Outlined.Share,
+                    contentDescription = stringResource(Res.string.share_group),
+                )
+            }
         }
     }
 }

@@ -32,6 +32,7 @@ interface GroupRepository {
         id: String?,
         title: String,
         participants: Set<Participant>,
+        imageUrl: String?,
     )
 
     suspend fun leave(groupId: String)

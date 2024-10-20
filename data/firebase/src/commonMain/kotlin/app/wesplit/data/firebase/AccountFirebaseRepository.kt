@@ -15,8 +15,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -146,7 +144,6 @@ class AccountFirebaseRepository(
             return Account.Restricted
         }
 
-        val user = userRepository.get().filterNotNull().first()
-        return Account.Authorized(authUser, user)
+        return Account.Authorized(authUser, userRepository.get())
     }
 }

@@ -87,13 +87,14 @@ kotlin {
             implementation(libs.androidx.core.google.shortcuts)
 
             implementation(libs.review.gplay)
+            implementation(libs.billing.android)
         }
 
         commonMain {
             kotlin.srcDir("build/generated/ksp/metadata/commonMain/kotlin")
             dependencies {
-                api(projects.domain.model)
-                api(projects.domain)
+                implementation(projects.domain.model)
+                implementation(projects.domain)
                 implementation(projects.data.firebase)
 
                 implementation(compose.runtime)
@@ -123,6 +124,7 @@ kotlin {
                 implementation(libs.firebase.common.analytics)
                 implementation(libs.firebase.common.firestore)
                 implementation(libs.firebase.common.functions)
+                implementation(libs.firebase.common.storage)
 
                 implementation(libs.bundles.cupertino)
                 implementation(libs.materialKolor)
@@ -131,6 +133,9 @@ kotlin {
                 implementation(libs.kotlinx.datetime)
 
                 implementation(libs.multiplatform.settings)
+
+                implementation(libs.filekit.compose)
+                implementation(libs.korge.core)
             }
 
             desktopMain.dependencies {

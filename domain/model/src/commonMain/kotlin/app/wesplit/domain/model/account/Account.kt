@@ -1,8 +1,10 @@
 package app.wesplit.domain.model.account
 
-import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.User
+import app.wesplit.domain.model.user.isPlus
+import app.wesplit.domain.model.user.participant
 import dev.gitlive.firebase.auth.FirebaseUser
+import kotlinx.coroutines.flow.StateFlow
 
 sealed interface Account {
     data object Unknown : Account
@@ -17,14 +19,10 @@ sealed interface Account {
 
     data class Authorized(
         val authUser: FirebaseUser,
-        val user: User,
+        val user: StateFlow<User?>,
     ) : Account
 }
 
-fun Account.participant(): Participant? =
-    (this as? Account.Authorized)?.user?.let { user ->
-        Participant(
-            name = user.name,
-            user = user,
-        )
-    }
+fun Account.isPlus() = (this as? Account.Authorized)?.user?.value?.isPlus() == true
+
+fun Account.participant() = (this as? Account.Authorized)?.user?.value?.participant()

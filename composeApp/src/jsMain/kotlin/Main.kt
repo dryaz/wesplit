@@ -10,6 +10,8 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.NotSupportedAppReviewManager
 import app.wesplit.domain.model.account.LoginDelegate
+import app.wesplit.domain.model.paywall.BillingDelegate
+import app.wesplit.domain.model.paywall.UnsupportedBiilingDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
 import dev.gitlive.firebase.Firebase
@@ -46,14 +48,17 @@ fun main() {
         val deepLinkHandler = DeepLinkHandler()
         deepLinkHandler.handleDeeplink(window.location.toString())
 
-        CanvasBasedWindow("WeSplit") {
+        CanvasBasedWindow("Wesplit") {
             // TODO: Support initial destination
             // TODO: Provide parsed UTM into Common app to have SSOT for utm tracking
+
             App(
+                koinApp = null,
                 module {
                     single<CoroutineDispatcher> { Dispatchers.Main }
                     single<LoginDelegate> { LoginJsDelegate() }
                     single<AppReviewManager> { NotSupportedAppReviewManager }
+                    single<BillingDelegate> { UnsupportedBiilingDelegate(get()) }
                     single<ShareDelegate> { DefaultShareDelegate }
                     single<AnalyticsManager> { JsAnalyticsManager() }
 //                    single<AnalyticsManager> { DebugAnalyticsManager() }
