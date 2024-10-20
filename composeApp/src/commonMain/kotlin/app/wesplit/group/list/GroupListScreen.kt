@@ -167,8 +167,10 @@ fun GroupListScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        tutorialControl.stepRequest(listOf(tutorialStep))
+    LaunchedEffect(accountState) {
+        if (accountState is Account.Authorized) {
+            tutorialControl.stepRequest(listOf(tutorialStep))
+        }
     }
 }
 
