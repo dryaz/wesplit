@@ -146,14 +146,14 @@ internal val checkBalanceTutorialStepFlow =
                 "You could adjust date of expense or currency. By default date is today and currency is the one last used.",
             onboardingStep = OnboardingStep.EXPENSE_DATE_CURRENCY,
             isModal = true,
-            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
         ),
         TutorialStep(
             title = "Put the amount",
             description = "What was the total bill of this expense, put it here.",
             onboardingStep = OnboardingStep.EXPENSE_AMOUNT,
             isModal = false,
-            helpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
+            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
         TutorialStep(
             title = "Choose the payer",
@@ -161,15 +161,6 @@ internal val checkBalanceTutorialStepFlow =
             onboardingStep = OnboardingStep.EXPENSE_PAYER,
             isModal = true,
             helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
-        ),
-        TutorialStep(
-            title = "Define each person's cut",
-            description =
-                "By default expense is equally shared among participants. " +
-                    "You could define each sum by participation, shares or exact amount.",
-            onboardingStep = OnboardingStep.EXPENSE_SPLIT,
-            isModal = true,
-            helpOverlayPosition = HelpOverlayPosition.TOP_RIGHT,
         ),
         TutorialStep(
             title = "Save the expense",
@@ -402,20 +393,15 @@ private fun SharesDetails(
     data: ExpenseDetailsViewModel.State.Data,
     onUpdated: (UpdateAction) -> Unit,
 ) {
-    val tutorialControl = LocalTutorialControl.current
-    TutorialItem(
-        onPositioned = { tutorialControl.onPositionRecieved(getStep(OnboardingStep.EXPENSE_SPLIT), it) },
-    ) { modifier ->
-        Card(
-            modifier = modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
-            colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                ),
-        ) {
-            SharesDetailsHeader(data)
-            SharesDetailsParticipants(data, data.splitOptions.selectedSplitType, onUpdated)
-        }
+    Card(
+        modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+    ) {
+        SharesDetailsHeader(data)
+        SharesDetailsParticipants(data, data.splitOptions.selectedSplitType, onUpdated)
     }
 }
 

@@ -141,6 +141,8 @@ class UserFirebaseRepository(
                     id = it.id,
                 )
             }
-        }.catch { }
+        }.catch { e ->
+            analytics.log(e)
+        }
     }
 }

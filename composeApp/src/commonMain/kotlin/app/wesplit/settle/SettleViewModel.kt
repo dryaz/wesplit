@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 
 private const val SETTLE_ALL_EVENT = "settle_all"
@@ -166,7 +167,7 @@ class SettleViewModel(
     fun settleAll() {
         analyticsManager.track(SETTLE_ALL_EVENT)
         viewModelScope.launch {
-            with(NonCancellable) {
+            withContext(NonCancellable) {
                 expenseRepository.settle(groupId)
             }
         }

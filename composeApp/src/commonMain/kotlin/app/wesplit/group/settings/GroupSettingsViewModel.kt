@@ -26,6 +26,8 @@ import korlibs.image.format.PNG
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -33,9 +35,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.getAndUpdate
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
@@ -59,7 +63,13 @@ class GroupSettingsViewModel(
                 .paramName,
         ]
 
+    val event: Flow<Event>
+        get() = _event.receiveAsFlow()
+
+    private val _event = Channel<Event>(Channel.BUFFERED)
+
     private val dataState = MutableStateFlow<DataState>(DataState.Loading)
+    private val imageProcessing = MutableStateFlow(false)
     private var loadJob: Job? = null
 
     init {
@@ -71,8 +81,8 @@ class GroupSettingsViewModel(
     }
 
     val state: StateFlow<UiState> =
-        combine(dataState, accountRepository.get()) { value1, value2 ->
-            UiState(value1, value2)
+        combine(dataState, accountRepository.get(), imageProcessing) { data, account, imageProcessing ->
+            UiState(data, account, imageProcessing)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -80,6 +90,7 @@ class GroupSettingsViewModel(
                 UiState(
                     DataState.Loading,
                     Account.Unknown,
+                    false,
                 ),
         )
 
@@ -181,21 +192,29 @@ class GroupSettingsViewModel(
             viewModelScope.launch {
                 val file =
                     FileKit.pickFile(
-                        type = PickerType.File((PNG.extensions + JPEGInfo.extensions).toList()),
+                        type = PickerType.File((JPEGInfo.extensions + PNG.extensions).toList()),
                         mode = PickerMode.Single,
                         title = "Pick an image for group",
                     )
                 file?.let { pickedFile ->
-                    with(ioDispatcher) {
-                        val fileName = groupId ?: "${Clock.System.now().epochSeconds}"
-                        val ref = Firebase.storage.reference.child("$fileName.${pickedFile.extension}")
-                        val fileContent = pickedFile.readBytes().resizeImage(pickedFile.name, 300, 300).toPlatformData()
-                        ref.putData(fileContent)
-                        val groupUrl = ref.getDownloadUrl()
-                        with(Dispatchers.Main) {
-                            dataState.getAndUpdate {
-                                if (it is DataState.Group) it.copy(imageUrl = groupUrl) else it
+                    imageProcessing.update { true }
+                    withContext(ioDispatcher) {
+                        try {
+                            val fileName = groupId ?: "${Clock.System.now().epochSeconds}"
+                            val ref = Firebase.storage.reference.child("$fileName.${pickedFile.extension}")
+                            val fileContent = pickedFile.readBytes().resizeImage(pickedFile.name, 300, 300).toPlatformData()
+                            ref.putData(fileContent)
+                            val groupUrl = ref.getDownloadUrl()
+                            withContext(Dispatchers.Main) {
+                                imageProcessing.update { false }
+                                dataState.getAndUpdate {
+                                    if (it is DataState.Group) it.copy(imageUrl = groupUrl) else it
+                                }
                             }
+                        } catch (e: Throwable) {
+                            analyticsManager.log(e)
+                            _event.send(Event.Error("Invalid image, try PNG"))
+                            imageProcessing.update { false }
                         }
                     }
                 }
@@ -208,6 +227,7 @@ class GroupSettingsViewModel(
     data class UiState(
         val dataState: DataState,
         val account: Account,
+        val isImageProcessing: Boolean,
     )
 
     sealed interface DataState {
@@ -228,5 +248,9 @@ class GroupSettingsViewModel(
             val imageUrl: String?,
             val participants: Set<Participant>,
         ) : DataState
+    }
+
+    sealed interface Event {
+        data class Error(val msg: String) : Event
     }
 }

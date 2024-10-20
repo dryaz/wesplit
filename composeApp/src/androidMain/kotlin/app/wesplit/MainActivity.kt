@@ -17,6 +17,7 @@ import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
+import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import org.koin.dsl.module
@@ -27,6 +28,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FileKit.init(this)
         handleDeepLinkIntent(intent)
         enableEdgeToEdge(
             statusBarStyle =
