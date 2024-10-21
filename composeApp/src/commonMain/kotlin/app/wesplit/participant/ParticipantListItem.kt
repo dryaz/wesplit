@@ -39,7 +39,7 @@ fun ParticipantListItem(
 
     Row(
         modifier =
-        internalModifier
+            internalModifier
                 .fillMaxWidth(1f)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
