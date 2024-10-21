@@ -481,7 +481,7 @@ private fun ParticipantPickerItem(
 ) {
     val clickHandler: ((Participant) -> Unit)? = if (participant.isMe()) null else onParticipantClick
     ParticipantListItem(
-        modifier = if (participant.isMe()) modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh) else modifier,
+        modifier = if (participant.isMe()) Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh).then(modifier) else modifier,
         participant = participant,
         action = {
             if (participant in currentParticipants && !participant.isMe()) {
