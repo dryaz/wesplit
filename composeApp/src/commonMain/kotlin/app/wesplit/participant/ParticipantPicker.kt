@@ -396,7 +396,9 @@ private fun LazyListScope.currentParticipants(
                 onParticipantClick = onParticipantClick,
                 inGroupIcon = AdaptiveIcons.Outlined.Delete,
             )
-            HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+            if (!participant.isMe()) {
+                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+            }
         }
     }
 }
@@ -421,7 +423,9 @@ private fun LazyListScope.currentConnectionsItem(
                 currentParticipants = currentParticipants,
                 onParticipantClick = onParticipantClick,
             )
-            HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+            if (!participant.isMe()) {
+                HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+            }
         }
     }
 }
