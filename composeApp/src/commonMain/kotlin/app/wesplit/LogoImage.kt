@@ -8,8 +8,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import app.wesplit.domain.model.user.Plan
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.model.user.isPlus
 import app.wesplit.theme.ColorMode
 import app.wesplit.theme.LocalThemeState
 import org.jetbrains.compose.resources.painterResource
@@ -32,7 +32,7 @@ fun AppLogo(
 
     val isPlus by remember(user) {
         derivedStateOf {
-            user.value?.plan == Plan.PLUS
+            user.value?.isPlus() == true
         }
     }
 

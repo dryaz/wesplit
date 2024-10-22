@@ -55,9 +55,9 @@ import androidx.compose.ui.unit.sp
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.Subscription
-import app.wesplit.domain.model.user.Plan
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.model.user.isPlus
 import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.PlusProtected
@@ -168,10 +168,10 @@ fun PaywallScreen(
     onSubscribe: (Subscription) -> Unit,
 ) {
     val trailingIcon =
-        if (user?.plan == Plan.BASIC) {
-            AdaptiveIcons.Outlined.Lock
-        } else {
+        if (user?.isPlus() == true) {
             AdaptiveIcons.Outlined.Done
+        } else {
+            AdaptiveIcons.Outlined.Lock
         }
 
     var selected by remember {

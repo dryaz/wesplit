@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.PaywallRepository
 import app.wesplit.domain.model.paywall.Subscription
-import app.wesplit.domain.model.user.Plan
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.model.user.isPlus
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -40,7 +40,7 @@ class PaywallViewModel(
 
     private fun refresh() =
         coroutinScope.launch {
-            if (userRepository.get().value?.plan == Plan.PLUS) {
+            if (userRepository.get().value?.isPlus() == true) {
                 _state.update { State.AlreadySubscribed }
                 return@launch
             }

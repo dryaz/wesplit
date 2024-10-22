@@ -1,6 +1,9 @@
 package app.wesplit.domain.model.user
 
 import app.wesplit.domain.model.group.Participant
+import dev.gitlive.firebase.firestore.Timestamp
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -33,6 +36,8 @@ data class User(
     val lastUsedCurrency: String? = null,
     @SerialName("subs")
     val plan: Plan? = Plan.BASIC,
+    @SerialName("expiresAt")
+    val planExpiration: Timestamp? = null,
     @SerialName("onboard")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val completedOnboardingSteps: List<OnboardingStep> = emptyList(),
@@ -135,8 +140,28 @@ fun User.participant(): Participant =
         user = this,
     )
 
-fun User.isPlus() = plan == Plan.PLUS
+fun User.isPlus() = (plan == Plan.PLUS && !isSubscriptionExpired())
 
 fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email
 
-fun User.planNotNull() = plan ?: Plan.BASIC
+fun User.planValidTill() = planExpiration?.let { Instant.fromEpochSeconds(it.seconds, it.nanoseconds.toLong()) }
+
+// Function to compare planExpiration with current time
+private fun User.isSubscriptionExpired(): Boolean {
+    // Check if planExpiration is not null
+    println(planExpiration)
+    if (planExpiration != null) {
+        // Convert Firestore Timestamp to kotlinx.datetime.Instant
+        val expirationInstant: Instant = Instant.fromEpochSeconds(planExpiration.seconds, planExpiration.nanoseconds.toLong())
+        println("expInstant $expirationInstant")
+        // Get the current instant
+        val currentInstant: Instant = Clock.System.now()
+        println("currentInstant $currentInstant")
+
+        // Compare the two Instants
+        return expirationInstant < currentInstant
+    }
+
+    // If planExpiration is null, decide on your logic (e.g., not expired)
+    return false
+}

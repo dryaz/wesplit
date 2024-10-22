@@ -46,11 +46,12 @@ import app.wesplit.ShareData
 import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.Login
-import app.wesplit.domain.model.user.Plan
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.email
+import app.wesplit.domain.model.user.isPlus
 import app.wesplit.domain.model.user.participant
-import app.wesplit.domain.model.user.planNotNull
+import app.wesplit.domain.model.user.planValidTill
+import app.wesplit.domain.model.utils.createValidityDaysString
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.PlusProtected
@@ -354,40 +355,34 @@ private fun ColumnScope.Plan(
         modifier = Modifier.fillMaxWidth(1f).padding(16.dp),
     ) {
         val title =
-            when (user.planNotNull()) {
-                Plan.BASIC -> "Try Plus"
-                Plan.PLUS -> "Your have Plus+"
+            if (user.isPlus()) {
+                "You have Plus+"
+            } else {
+                "Try Plus"
             }
 
         val desc =
-            when (user.planNotNull()) {
-                Plan.BASIC -> "Unlock all features"
-                Plan.PLUS -> "All features unlocked"
-            }
-
-        val modifier =
-            when (user.planNotNull()) {
-                Plan.BASIC -> Modifier.fillMaxWidth().clickable { onSubscribe() }
-                Plan.PLUS -> Modifier
+            if (user.isPlus()) {
+                createValidityDaysString(user.planValidTill())
+            } else {
+                "Unlock all features"
             }
 
         val trailing: @Composable (() -> Unit)? =
-            when (user.planNotNull()) {
-                Plan.BASIC -> {
-                    {
-                        Icon(
-                            modifier = Modifier.minimumInteractiveComponentSize(),
-                            imageVector = AdaptiveIcons.Outlined.KeyboardArrowRight,
-                            contentDescription = "Subscribe to Plus",
-                        )
-                    }
+            if (user.isPlus()) {
+                null
+            } else {
+                {
+                    Icon(
+                        modifier = Modifier.minimumInteractiveComponentSize(),
+                        imageVector = AdaptiveIcons.Outlined.KeyboardArrowRight,
+                        contentDescription = "Subscribe to Plus",
+                    )
                 }
-
-                Plan.PLUS -> null
             }
 
         ListItem(
-            modifier = modifier,
+            modifier = Modifier.fillMaxWidth().clickable { onSubscribe() },
             colors =
                 ListItemDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
@@ -412,13 +407,13 @@ private fun ColumnScope.Plan(
         HorizontalDivider()
 
         FeaturesList(
-            subscription = user.planNotNull(),
+            isPlus = user.isPlus(),
             onSubscribe = onSubscribe,
         )
 
         AnimatedVisibility(
             modifier = Modifier.fillMaxWidth(1f),
-            visible = user.plan == Plan.BASIC,
+            visible = !user.isPlus(),
         ) {
             ListItem(
                 modifier =
@@ -444,13 +439,14 @@ private fun ColumnScope.Plan(
 
 @Composable
 private fun FeaturesList(
-    subscription: Plan,
+    isPlus: Boolean,
     onSubscribe: () -> Unit,
 ) {
     val icon =
-        when (subscription) {
-            Plan.BASIC -> AdaptiveIcons.Outlined.Lock
-            Plan.PLUS -> AdaptiveIcons.Outlined.Done
+        if (isPlus) {
+            AdaptiveIcons.Outlined.Done
+        } else {
+            AdaptiveIcons.Outlined.Lock
         }
 
     val featuresMap =
@@ -460,6 +456,7 @@ private fun FeaturesList(
             Res.string.plus_feature_images_title to Res.string.plus_feature_images_descr_short,
             Res.string.plus_feature_more_title to Res.string.plus_feature_more_descr,
         )
+
     featuresMap.map { feature ->
         ListItem(
             modifier =
