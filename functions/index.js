@@ -973,3 +973,37 @@ exports.handleAppleServerNotification = onRequest(async (req, res) => {
     res.status(500).send('Error processing notification');
   }
 });
+
+// Import Firestore Timestamp
+const { Timestamp } = admin.firestore;
+
+// Define the Cloud Function
+exports.updateUserSubscription = functions.firestore
+  .document('users/{userId}')
+  .onCreate(async (snap, context) => {
+    // Extract the user ID from the context parameters
+    const userId = context.params.userId;
+
+    // Reference to the newly created user document
+    const userRef = admin.firestore().collection('users').doc(userId);
+
+    // Current server timestamp
+    const currentTime = Timestamp.now();
+
+    // Calculate the expiration time (current time + 1 week)
+    const oneWeekInSeconds = 7 * 24 * 60 * 60; // 7 days in seconds
+    const expiresAt = Timestamp.fromMillis(currentTime.toMillis() + oneWeekInSeconds * 1000);
+
+    try {
+      // Update the 'subs' field to 'plus' and add 'expiresAt'
+      await userRef.update({
+        subs: 'plus',
+        expiresAt: expiresAt,
+        lastUpdate: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log(`User ${userId} subscription updated to 'plus' with expiration at ${expiresAt.toDate()}.`);
+    } catch (error) {
+      console.error(`Error updating subscription for user ${userId}:`, error);
+    }
+  });
