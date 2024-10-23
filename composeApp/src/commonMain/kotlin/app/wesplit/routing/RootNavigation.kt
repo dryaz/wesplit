@@ -538,6 +538,7 @@ private fun Navigation(
                                 paywallRepository = paywallRepository,
                                 coroutineDispatcher = ioDispatcher,
                                 userRepository = userRepository,
+                                analyticsManager = analyticsManager,
                             )
                         }
                     PaywallRoute(

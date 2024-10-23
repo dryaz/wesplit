@@ -140,7 +140,7 @@ fun User.participant(): Participant =
         user = this,
     )
 
-fun User.isPlus() = (plan == Plan.PLUS && !isSubscriptionExpired())
+fun User?.isPlus() = this?.let { plan == Plan.PLUS && !isSubscriptionExpired() } ?: false
 
 fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email
 

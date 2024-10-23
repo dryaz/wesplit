@@ -991,7 +991,7 @@ exports.updateUserSubscription = functions.firestore
     const currentTime = Timestamp.now();
 
     // Calculate the expiration time (current time + 1 week)
-    const oneWeekInSeconds = 7 * 24 * 60 * 60; // 7 days in seconds
+    const oneWeekInSeconds = 3 * 24 * 60 * 60; // 3 days in seconds
     const expiresAt = Timestamp.fromMillis(currentTime.toMillis() + oneWeekInSeconds * 1000);
 
     try {
@@ -1007,3 +1007,135 @@ exports.updateUserSubscription = functions.firestore
       console.error(`Error updating subscription for user ${userId}:`, error);
     }
   });
+
+/**
+ * Callable Cloud Function to apply a promo code.
+ *
+ * Input:
+ * - promo: string (the promo code to apply)
+ *
+ * Output:
+ * - success: boolean
+ * - message: string
+ */
+exports.applyPromoCode = functions.https.onCall(async (data, context) => {
+    // 1. Authenticate the user
+    if (!context.auth) {
+        console.log('Unauthenticated access attempt to apply promo code.');
+        throw new functions.https.HttpsError(
+            'unauthenticated',
+            'The function must be called while authenticated.'
+        );
+    }
+
+    const uid = context.auth.uid;
+    const promoCode = data.promo;
+
+    if (!promoCode || typeof promoCode !== 'string') {
+        console.log(`User ${uid} provided an invalid promo code.`);
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            'The promo code must be a non-empty string.'
+        );
+    }
+
+    console.log(`User ${uid} is attempting to apply promo code: ${promoCode}`);
+
+    const promoRef = db.collection('promo').doc(promoCode);
+    const userRef = db.collection('users').doc(uid);
+
+    try {
+        // 2. Fetch the promo document
+        const promoDoc = await promoRef.get();
+        if (!promoDoc.exists) {
+            console.log(`Promo code "${promoCode}" does not exist. User: ${uid}`);
+            throw new functions.https.HttpsError(
+                'not-found',
+                'Promo code does not exist.'
+            );
+        }
+
+        const promoData = promoDoc.data();
+        const promoDays = promoData.days;
+        const promoExpiresAt = promoData.expiresAt;
+
+        if (typeof promoDays !== 'number' || promoDays <= 0) {
+            console.log(`Promo code "${promoCode}" has invalid "days" value. User: ${uid}`);
+            throw new functions.https.HttpsError(
+                'invalid-argument',
+                'Promo code has invalid "days" value.'
+            );
+        }
+
+        // 3. Run a transaction to ensure atomicity
+        await db.runTransaction(async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists) {
+                console.log(`User document for UID "${uid}" not found.`);
+                throw new functions.https.HttpsError(
+                    'invalid-data',
+                    'Can\'t find user document with provided ID in auth header'
+                );
+            }
+
+            const userData = userDoc.data();
+            const appliedPromos = userData.appliedPromos || [];
+
+            // 4. Check if the promo code has already been used
+            if (appliedPromos.includes(promoCode)) {
+                console.log(`User ${uid} has already used promo code "${promoCode}".`);
+                throw new functions.https.HttpsError(
+                    'already-exists',
+                    'Promo code has already been used by this user.'
+                );
+            }
+
+            // 5. Calculate the new expiresAt value
+            let newExpiresAt;
+            const now = admin.firestore.Timestamp.now();
+
+            if (userData.expiresAt && userData.expiresAt.toMillis() > now.toMillis()) {
+                // Extend the existing expiresAt
+                newExpiresAt = admin.firestore.Timestamp.fromMillis(
+                    userData.expiresAt.toMillis() + promoDays * 24 * 60 * 60 * 1000
+                );
+                console.log(`Extending subscription for user ${uid} by ${promoDays} days.`);
+            } else {
+                // Set expiresAt to now + promoDays
+                newExpiresAt = admin.firestore.Timestamp.fromMillis(
+                    now.toMillis() + promoDays * 24 * 60 * 60 * 1000
+                );
+                console.log(`Setting new subscription for user ${uid} for ${promoDays} days.`);
+            }
+
+            // 6. Update the user's document
+            transaction.update(userRef, {
+                subs: 'plus',
+                expiresAt: newExpiresAt,
+                appliedPromos: admin.firestore.FieldValue.arrayUnion(promoCode)
+            });
+        });
+
+        // 7. Log success and return success response
+        console.log(`Promo code "${promoCode}" applied successfully for user ${uid}.`);
+        return {
+            success: true,
+            message: 'Promo code applied successfully.'
+        };
+
+    } catch (error) {
+        // Handle known errors
+        if (error instanceof functions.https.HttpsError) {
+            // Log the error message with user and promo details
+            console.log(`Error for user ${uid} applying promo "${promoCode}": ${error.message}`);
+            throw error;
+        }
+
+        // Handle unexpected errors
+        console.error(`Unexpected error applying promo code "${promoCode}" for user ${uid}:`, error);
+        throw new functions.https.HttpsError(
+            'internal',
+            'An internal error occurred while applying the promo code.'
+        );
+    }
+});

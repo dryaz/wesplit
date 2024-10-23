@@ -22,12 +22,14 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +37,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -78,6 +82,7 @@ import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.ic_badge_white
 import split.composeapp.generated.resources.ic_mobile_app
 import split.composeapp.generated.resources.ic_plus
+import split.composeapp.generated.resources.ic_promo
 import split.composeapp.generated.resources.img_best_offer
 
 sealed interface PaywallAction {
@@ -98,6 +103,7 @@ fun PaywallRoute(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var isPendingPurchase by remember { mutableStateOf(false) }
+    var showPromoDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         snackbarHost = {
@@ -127,6 +133,21 @@ fun PaywallRoute(
                         )
                     }
                 },
+                actions = {
+                    if (!userState.value.isPlus()) {
+                        IconButton(
+                            modifier = modifier,
+                            onClick = { showPromoDialog = true },
+                        ) {
+                            Icon(
+                                painter = painterResource(Res.drawable.ic_promo),
+                                contentDescription = "Enter promocode",
+                            )
+                        }
+                    } else {
+                        Unit
+                    }
+                },
             )
         },
     ) { paddings ->
@@ -142,6 +163,46 @@ fun PaywallRoute(
         }
     }
 
+    if (showPromoDialog) {
+        var promoValue by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showPromoDialog = false },
+            title = {
+                Text(text = "Enter Promocode")
+            },
+            text = {
+                Column {
+                    Text(text = "Enter valid Promocode")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextField(
+                        value = promoValue,
+                        onValueChange = { promoValue = it },
+                        label = { Text("Code") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        isPendingPurchase = true
+                        showPromoDialog = false
+                        viewModel.applyPromocode(promoValue)
+                    },
+                    enabled = promoValue.isNotBlank(),
+                ) {
+                    Text("Apply")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPromoDialog = false }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+
     LaunchedEffect(Unit) {
         viewModel.event.collectLatest { event ->
             when (event) {
@@ -151,6 +212,7 @@ fun PaywallRoute(
                         snackbarHostState.showSnackbar(event.msg)
                     }
                 }
+
                 PaywallViewModel.Event.Purchased -> onAction(PaywallAction.Back)
             }
         }
