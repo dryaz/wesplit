@@ -11,7 +11,6 @@ import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.account.LoginDelegate
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.GoogleAuthProvider
@@ -73,16 +72,15 @@ class LoginAndroidDelegate(
                         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                         val authCredential = GoogleAuthProvider.credential(googleIdTokenCredential.idToken, null)
 
-                        val signinResult =
-                            kotlin.runCatching {
-                                Firebase.auth.currentUser?.let {
-                                    Firebase.auth.currentUser?.linkWithCredential(authCredential)
-                                } ?: Firebase.auth.signInWithCredential(authCredential)
-                            }.onFailure { e ->
-                                analyticsManager.log(e)
-                            }.recover {
-                                Firebase.auth.signInWithCredential(authCredential)
-                            }.getOrNull()
+                        val signinResult = kotlin.runCatching {
+                            Firebase.auth.currentUser?.let {
+                                Firebase.auth.currentUser?.linkWithCredential(authCredential)
+                            } ?: Firebase.auth.signInWithCredential(authCredential)
+                        }.onFailure { e ->
+                            analyticsManager.log(e)
+                        }.recover {
+                            Firebase.auth.signInWithCredential(authCredential)
+                        }.getOrNull()
 
                         val user = signinResult?.user
                         if (user != null) {
@@ -92,7 +90,7 @@ class LoginAndroidDelegate(
                         }
                         // TODO: Continue with firebase
                         //  https://firebase.google.com/docs/auth/android/google-signin
-                    } catch (e: GoogleIdTokenParsingException) {
+                    } catch (e: Throwable) {
                         analyticsManager.log(e)
                     }
                 } else {
