@@ -39,7 +39,7 @@ class TutorialViewModel(
                     }
                     Account.Anonymous,
                     Account.Restricted,
-                    -> steps
+                    -> emptyList()
 
                     Account.Unknown -> throw IllegalStateException("Try to show tutorial for unknown acc")
                 }
