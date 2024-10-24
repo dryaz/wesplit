@@ -56,6 +56,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.wesplit.KotlinPlatform
+import app.wesplit.currentPlatform
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.Subscription
@@ -134,7 +136,7 @@ fun PaywallRoute(
                     }
                 },
                 actions = {
-                    if (!userState.value.isPlus()) {
+                    if (!userState.value.isPlus() && currentPlatform !is KotlinPlatform.Mobile) {
                         IconButton(
                             modifier = modifier,
                             onClick = { showPromoDialog = true },
