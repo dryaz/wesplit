@@ -18,6 +18,11 @@ let productIdentifiers: Set<String> = [
 
 @available(iOS 15.0, *)
 class PlatformBillingDelegate: BillingIosNativeDelegate {
+
+  func openPromoRedeem() {
+    SKPaymentQueue.default().presentCodeRedemptionSheet()
+  }
+
   func requestPricingUpdate() {
     Task {
       await fetchProductInfo()

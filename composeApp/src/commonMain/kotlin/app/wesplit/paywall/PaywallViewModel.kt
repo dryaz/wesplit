@@ -103,6 +103,10 @@ class PaywallViewModel(
             }
         }
 
+    fun openPromoRedeem() {
+        paywallRepository.openPromoRedeem()
+    }
+
     sealed interface State {
         data object Loading : State
 

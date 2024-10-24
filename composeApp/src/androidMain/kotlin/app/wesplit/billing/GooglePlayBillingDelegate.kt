@@ -151,6 +151,10 @@ class GooglePlayBillingDelegate(
 
     override fun isBillingSupported(): Boolean = true
 
+    override fun openPromoRedeem() {
+        TODO("Not yet implemented")
+    }
+
     private fun startConnection() {
         billingClient.value.startConnection(
             object : BillingClientStateListener {

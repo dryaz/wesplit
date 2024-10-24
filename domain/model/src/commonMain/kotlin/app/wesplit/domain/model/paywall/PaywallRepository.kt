@@ -8,6 +8,8 @@ interface PaywallRepository {
     suspend fun subscribe(period: Subscription.Period): Result<Boolean>
 
     fun isBillingSupported(): Boolean
+
+    fun openPromoRedeem()
 }
 
 data class Subscription(

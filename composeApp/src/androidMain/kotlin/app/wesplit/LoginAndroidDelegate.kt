@@ -72,15 +72,16 @@ class LoginAndroidDelegate(
                         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                         val authCredential = GoogleAuthProvider.credential(googleIdTokenCredential.idToken, null)
 
-                        val signinResult = kotlin.runCatching {
-                            Firebase.auth.currentUser?.let {
-                                Firebase.auth.currentUser?.linkWithCredential(authCredential)
-                            } ?: Firebase.auth.signInWithCredential(authCredential)
-                        }.onFailure { e ->
-                            analyticsManager.log(e)
-                        }.recover {
-                            Firebase.auth.signInWithCredential(authCredential)
-                        }.getOrNull()
+                        val signinResult =
+                            kotlin.runCatching {
+                                Firebase.auth.currentUser?.let {
+                                    Firebase.auth.currentUser?.linkWithCredential(authCredential)
+                                } ?: Firebase.auth.signInWithCredential(authCredential)
+                            }.onFailure { e ->
+                                analyticsManager.log(e)
+                            }.recover {
+                                Firebase.auth.signInWithCredential(authCredential)
+                            }.getOrNull()
 
                         val user = signinResult?.user
                         if (user != null) {

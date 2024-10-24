@@ -10,6 +10,8 @@ interface BillingDelegate {
 
     fun isBillingSupported(): Boolean
 
+    fun openPromoRedeem()
+
     interface StateRepository {
         fun update(pricingResult: List<Subscription>)
 
@@ -73,4 +75,8 @@ class UnsupportedBiilingDelegate(val repository: BillingDelegate.StateRepository
     }
 
     override fun isBillingSupported(): Boolean = false
+
+    override fun openPromoRedeem() {
+        TODO("Not yet implemented")
+    }
 }

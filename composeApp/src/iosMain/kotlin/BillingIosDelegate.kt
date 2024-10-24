@@ -14,6 +14,8 @@ class BillingIosDelegate(
     }
 
     override fun isBillingSupported(): Boolean = platformDelegate.isBillingSupported()
+
+    override fun openPromoRedeem() = platformDelegate.openPromoRedeem()
 }
 
 interface BillingIosNativeDelegate : BillingDelegate

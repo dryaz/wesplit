@@ -136,10 +136,16 @@ fun PaywallRoute(
                     }
                 },
                 actions = {
-                    if (!userState.value.isPlus() && currentPlatform !is KotlinPlatform.Mobile) {
+                    if (!userState.value.isPlus() && currentPlatform != KotlinPlatform.Android) {
                         IconButton(
                             modifier = modifier,
-                            onClick = { showPromoDialog = true },
+                            onClick = {
+                                if (currentPlatform == KotlinPlatform.Web) {
+                                    showPromoDialog = true
+                                } else {
+                                    viewModel.openPromoRedeem()
+                                }
+                            },
                         ) {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_promo),

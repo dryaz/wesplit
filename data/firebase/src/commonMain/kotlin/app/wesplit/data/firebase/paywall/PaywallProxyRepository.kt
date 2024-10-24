@@ -80,4 +80,6 @@ class PaywallProxyRepository(
     }
 
     override fun isBillingSupported(): Boolean = billingDelegate.isBillingSupported()
+
+    override fun openPromoRedeem() = billingDelegate.openPromoRedeem()
 }
