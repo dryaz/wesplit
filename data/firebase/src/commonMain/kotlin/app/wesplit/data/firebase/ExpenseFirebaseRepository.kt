@@ -25,6 +25,7 @@ private const val PROTECTION_FIELD = "protectedBy"
 
 private const val EXPENSE_COLLECTION = "expenses"
 private const val DATE_FIELD = "date"
+private const val INVALID_BALANCE_FIELD = "balances.invalid"
 
 private const val EXPENSE_CREATE_EVENT = "expense_create"
 private const val EXPENSE_UPDATE_EVENT = "expense_update"
@@ -89,13 +90,13 @@ class ExpenseFirebaseRepository(
 
             analyticsManager.track(eventName)
 
+            val batch = Firebase.firestore.batch()
             if (expenseId != null) {
                 val doc =
                     Firebase.firestore.collection(
                         GROUP_COLLECTION,
                     ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).get()
                 if (doc.exists) {
-                    val batch = Firebase.firestore.batch()
                     batch.update(
                         documentRef =
                             Firebase.firestore.collection(
@@ -114,17 +115,25 @@ class ExpenseFirebaseRepository(
                             data = mapOf(PROTECTION_FIELD to FieldValue.delete),
                         )
                     }
-                    batch.commit()
                 } else {
                     // TODO: Fire back and error to ui
                     analyticsManager.log(IllegalStateException("Try to edit expense document with id $expenseId which not exists"))
+                    return@withContext
                 }
             } else {
-                Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).collection(EXPENSE_COLLECTION).add(
+                val newExpenseRef =
+                    Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).collection(EXPENSE_COLLECTION).document
+                batch.set(
+                    documentRef = newExpenseRef,
                     strategy = Expense.serializer(),
                     data = newExpense,
                 )
             }
+            batch.update(
+                documentRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId),
+                INVALID_BALANCE_FIELD to true,
+            )
+            batch.commit()
         }
 
     override suspend fun delete(
@@ -135,9 +144,17 @@ class ExpenseFirebaseRepository(
             analyticsManager.track(EXPENSE_DELETE_EVENT)
             val expenseId = expense.id
             if (expenseId != null) {
-                Firebase.firestore.collection(
-                    GROUP_COLLECTION,
-                ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId).delete()
+                val batch = Firebase.firestore.batch()
+                batch.delete(
+                    Firebase.firestore.collection(
+                        GROUP_COLLECTION,
+                    ).document(groupId).collection(EXPENSE_COLLECTION).document(expenseId),
+                )
+                batch.update(
+                    documentRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId),
+                    INVALID_BALANCE_FIELD to true,
+                )
+                batch.commit()
             } else {
                 analyticsManager.log("Try to delete expense with null ID", LogLevel.ERROR)
             }
@@ -189,6 +206,10 @@ class ExpenseFirebaseRepository(
                 }
 
                 for ((batchIndex, batchToCommit) in batches.withIndex()) {
+                    batchToCommit.update(
+                        documentRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId),
+                        INVALID_BALANCE_FIELD to true,
+                    )
                     batchToCommit.commit()
                     analyticsManager.log("Batch ${batchIndex + 1} committed successfully.", LogLevel.DEBUG)
                 }

@@ -16,6 +16,8 @@ data class Balance(
     @SerialName("undistributed")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val undistributed: Set<Amount> = emptySet(),
+    @SerialName("invalid")
+    val invalid: Boolean = false,
 )
 
 @OptIn(ExperimentalSerializationApi::class)

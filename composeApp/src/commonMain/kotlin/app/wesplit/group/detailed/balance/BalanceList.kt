@@ -1,6 +1,7 @@
 package app.wesplit.group.detailed.balance
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -28,8 +30,10 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Participant
@@ -38,11 +42,17 @@ import app.wesplit.group.detailed.checkBalanceTutorialStepFlow
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
+import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveCircularProgressIndicator
+import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Email
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_flag
+import split.composeapp.generated.resources.ic_plus
+
+private const val BACKED_CALCULATION_CLICK = "plus_recalculate_click"
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -52,6 +62,7 @@ fun BalanceList(
     onSettle: () -> Unit,
 ) {
     val tutorialControl = LocalTutorialControl.current
+    val analyticsManager: AnalyticsManager = koinInject()
 
     if (balance != null) {
         Column(
@@ -103,6 +114,7 @@ fun BalanceList(
                             }
 
                         ParticipantListItem(
+                            modifier = if (balance.invalid) Modifier.alpha(0.4f) else Modifier,
                             action = action,
                             onClick = callback,
                             participant = balanceItem.participant,
@@ -144,6 +156,15 @@ fun BalanceList(
                         Undistributed(balance)
                     }
 
+                    AnimatedVisibility(
+                        visible = balance.invalid,
+                    ) {
+                        HorizontalDivider()
+                        Invalid {
+                            analyticsManager.track(BACKED_CALCULATION_CLICK)
+                        }
+                    }
+
                     TutorialItem(
                         onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[2], it) },
                     ) { modifier ->
@@ -154,8 +175,10 @@ fun BalanceList(
                             ListItem(
                                 modifier =
                                     Modifier.fillMaxWidth().clickable {
-                                        onSettle()
-                                    },
+                                        if (!balance.invalid) onSettle()
+                                    }.then(
+                                        if (balance.invalid) Modifier.alpha(0.4f) else Modifier,
+                                    ),
                                 colors =
                                     ListItemDefaults.colors(
                                         containerColor = MaterialTheme.colorScheme.secondary,
@@ -179,10 +202,45 @@ fun BalanceList(
     }
 }
 
+@OptIn(ExperimentalAdaptiveApi::class)
+@Composable
+fun Invalid(onClick: () -> Unit) {
+    ListItem(
+        modifier = Modifier.clickable { onClick() },
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        headlineContent = {
+            Text(
+                text = "Recalculating on backend",
+            )
+        },
+        leadingContent = {
+            AdaptiveCircularProgressIndicator()
+        },
+        trailingContent = {
+            Image(
+                modifier = Modifier.height(24.dp),
+                painter = painterResource(Res.drawable.ic_plus),
+                contentDescription = "Plus badge",
+            )
+        },
+        supportingContent = {
+            Text(
+                text = "Get Plus to enable instant balances",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        },
+    )
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Undistributed(balance: Balance) {
     ListItem(
+        modifier = if (balance.invalid) Modifier.alpha(0.4f) else Modifier,
         colors =
             ListItemDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
