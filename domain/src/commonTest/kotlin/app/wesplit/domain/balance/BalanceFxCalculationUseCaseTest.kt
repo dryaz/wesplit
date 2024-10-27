@@ -8,10 +8,10 @@ import app.wesplit.domain.model.group.ParticipantBalance
 import io.kotest.matchers.shouldBe
 import kotlin.test.Test
 
-class BalanceCalculationUseCaseTest {
+class BalanceFxCalculationUseCaseTest {
     @Test
     fun `map_currency_to_base_value`() {
-        val useCase = BalanceCalculationUseCase()
+        val useCase = BalanceFxCalculationUseCase()
         val balance =
             Balance(
                 participantsBalance =
@@ -56,7 +56,7 @@ class BalanceCalculationUseCaseTest {
 
     @Test
     fun `map_currency_to_non_base_value`() {
-        val useCase = BalanceCalculationUseCase()
+        val useCase = BalanceFxCalculationUseCase()
         val balance =
             Balance(
                 participantsBalance =

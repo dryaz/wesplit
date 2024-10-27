@@ -3,7 +3,7 @@ package app.wesplit.settle
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.wesplit.domain.balance.BalanceCalculationUseCase
+import app.wesplit.domain.balance.BalanceFxCalculationUseCase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.account.Account
@@ -55,7 +55,7 @@ class SettleViewModel(
     private val expenseRepository: ExpenseRepository,
     private val currencyRepository: CurrencyRepository,
     private val analyticsManager: AnalyticsManager,
-    private val balanceCalculationUseCase: BalanceCalculationUseCase,
+    private val balanceFxCalculationUseCase: BalanceFxCalculationUseCase,
     private val onSubscriptionRequest: (String) -> Unit,
 ) : ViewModel(), KoinComponent {
     val uiState: StateFlow<UiState>
@@ -121,7 +121,7 @@ class SettleViewModel(
             val participant: Balance =
                 if (uiSettings.isRecalculateEnabled && fxState is FxState.Data) {
                     // TODO: Some loading if fxrates is still loading?
-                    balanceCalculationUseCase.recalculate(balance, fxState.fxRates, uiSettings.selectedCurrency)
+                    balanceFxCalculationUseCase.recalculate(balance, fxState.fxRates, uiSettings.selectedCurrency)
                 } else {
                     balance
                 }

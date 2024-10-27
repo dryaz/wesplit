@@ -39,7 +39,7 @@ import app.wesplit.ShortcutDelegate
 import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
-import app.wesplit.domain.balance.BalanceCalculationUseCase
+import app.wesplit.domain.balance.BalanceFxCalculationUseCase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.AccountRepository
@@ -343,7 +343,7 @@ private fun Navigation(
     val userRepository: UserRepository = koinInject()
     val expenseRepository: ExpenseRepository = koinInject()
     val currencyRepository: CurrencyRepository = koinInject()
-    val balanceCalculationUseCase: BalanceCalculationUseCase = koinInject()
+    val balanceFxCalculationUseCase: BalanceFxCalculationUseCase = koinInject()
     val coroutineScope = rememberCoroutineScope()
     val shareDelegate: ShareDelegate = koinInject()
     val clipboardManager = LocalClipboardManager.current
@@ -700,7 +700,7 @@ private fun Navigation(
                                 expenseRepository,
                                 currencyRepository,
                                 analyticsManager,
-                                balanceCalculationUseCase,
+                                balanceFxCalculationUseCase,
                                 onSubscriptionRequest,
                             )
                         }

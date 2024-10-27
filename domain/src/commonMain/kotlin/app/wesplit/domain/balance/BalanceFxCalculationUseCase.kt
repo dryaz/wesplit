@@ -6,7 +6,7 @@ import app.wesplit.domain.model.group.Balance
 import org.koin.core.annotation.Single
 
 @Single
-class BalanceCalculationUseCase {
+class BalanceFxCalculationUseCase {
     fun recalculate(
         balance: Balance,
         fxRates: FxRates,
