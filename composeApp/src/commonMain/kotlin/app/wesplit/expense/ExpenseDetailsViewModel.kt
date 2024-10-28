@@ -273,6 +273,8 @@ class ExpenseDetailsViewModel(
                     (_state.value as? State.Data)?.expense?.let { exp ->
                         viewModelScope.launch {
                             val commitedExpenses = settings.get<Int>(EXPENSE_COMMIT_COUNTER_KEY) ?: 0
+                            settings.putInt(EXPENSE_COMMIT_COUNTER_KEY, commitedExpenses + 1)
+                            expenseRepository.commit(groupId, exp)
                             if ((commitedExpenses + 1) % 5 == 0) {
                                 appReviewManager.requestReview(ReviewType.IN_APP).collectLatest { result ->
                                     analyticsManager.track(
@@ -290,8 +292,6 @@ class ExpenseDetailsViewModel(
                                     )
                                 }
                             }
-                            settings.putInt(EXPENSE_COMMIT_COUNTER_KEY, commitedExpenses + 1)
-                            expenseRepository.commit(groupId, exp)
                         }
                         // TODO: should we check for success event from here to close the screen of Firebase could handle it properly
                         //  saving first in local and only then pushing to remote?
