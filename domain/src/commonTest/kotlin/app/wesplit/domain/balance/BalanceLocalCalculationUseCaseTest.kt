@@ -5,6 +5,7 @@ import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseStatus
 import app.wesplit.domain.model.expense.ExpenseType
 import app.wesplit.domain.model.expense.Share
+import app.wesplit.domain.model.group.BalanceStatus
 import app.wesplit.domain.model.group.Participant
 import io.kotest.matchers.shouldBe
 import kotlin.random.Random
@@ -17,7 +18,7 @@ class BalanceLocalCalculationUseCaseTest {
         val result = useCase.invoke(emptyList())
         result.participantsBalance shouldBe emptySet()
         result.undistributed shouldBe emptySet()
-        result.invalid shouldBe false
+        result.status shouldBe BalanceStatus.LOCAL
     }
 
     @Test
@@ -41,7 +42,7 @@ class BalanceLocalCalculationUseCaseTest {
         val result = useCase.invoke(listOf(expense))
         result.participantsBalance shouldBe emptySet()
         result.undistributed shouldBe emptySet()
-        result.invalid shouldBe false
+        result.status shouldBe BalanceStatus.LOCAL
     }
 
     @Test
@@ -77,7 +78,7 @@ class BalanceLocalCalculationUseCaseTest {
             this.value shouldBe 50.0
             this.currencyCode shouldBe "USD"
         }
-        result.invalid shouldBe false
+        result.status shouldBe BalanceStatus.LOCAL
     }
 
     @Test
@@ -101,7 +102,7 @@ class BalanceLocalCalculationUseCaseTest {
         val result = useCase.invoke(listOf(expense))
         result.participantsBalance shouldBe emptySet()
         result.undistributed shouldBe emptySet()
-        result.invalid shouldBe false
+        result.status shouldBe BalanceStatus.LOCAL
     }
 
     @Test
@@ -151,7 +152,7 @@ class BalanceLocalCalculationUseCaseTest {
             it.amounts shouldBe emptySet()
         }
         result.undistributed shouldBe emptySet()
-        result.invalid shouldBe false
+        result.status shouldBe BalanceStatus.LOCAL
     }
 
     @Test
@@ -196,7 +197,7 @@ class BalanceLocalCalculationUseCaseTest {
             }
         }
         result.undistributed shouldBe emptySet()
-        result.invalid shouldBe false
+        result.status shouldBe BalanceStatus.LOCAL
     }
 
     @Test
@@ -265,7 +266,7 @@ class BalanceLocalCalculationUseCaseTest {
             }
         }
         result.undistributed shouldBe emptySet()
-        result.invalid shouldBe false
+        result.status shouldBe BalanceStatus.LOCAL
     }
 }
 

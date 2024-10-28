@@ -4,6 +4,7 @@ import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseStatus
 import app.wesplit.domain.model.group.Balance
+import app.wesplit.domain.model.group.BalanceStatus
 import app.wesplit.domain.model.group.ParticipantBalance
 import org.koin.core.annotation.Single
 
@@ -68,7 +69,7 @@ class BalanceLocalCalculationUseCase {
                         )
                     }
                 }.toSet(),
-            invalid = false,
+            status = BalanceStatus.LOCAL,
         )
     }
 }

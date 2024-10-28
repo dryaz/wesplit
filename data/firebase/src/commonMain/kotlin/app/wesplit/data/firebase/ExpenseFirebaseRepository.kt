@@ -25,7 +25,7 @@ private const val PROTECTION_FIELD = "protectedBy"
 
 private const val EXPENSE_COLLECTION = "expenses"
 private const val DATE_FIELD = "date"
-private const val INVALID_BALANCE_FIELD = "balances.invalid"
+private const val INVALID_BALANCE_FIELD = "balances.status"
 
 private const val EXPENSE_CREATE_EVENT = "expense_create"
 private const val EXPENSE_UPDATE_EVENT = "expense_update"
@@ -131,7 +131,7 @@ class ExpenseFirebaseRepository(
             }
             batch.update(
                 documentRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId),
-                INVALID_BALANCE_FIELD to true,
+                INVALID_BALANCE_FIELD to "invalid",
             )
             batch.commit()
         }
@@ -152,7 +152,7 @@ class ExpenseFirebaseRepository(
                 )
                 batch.update(
                     documentRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId),
-                    INVALID_BALANCE_FIELD to true,
+                    INVALID_BALANCE_FIELD to "invalid",
                 )
                 batch.commit()
             } else {
@@ -208,7 +208,7 @@ class ExpenseFirebaseRepository(
                 for ((batchIndex, batchToCommit) in batches.withIndex()) {
                     batchToCommit.update(
                         documentRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId),
-                        INVALID_BALANCE_FIELD to true,
+                        INVALID_BALANCE_FIELD to "invalid",
                     )
                     batchToCommit.commit()
                     analyticsManager.log("Batch ${batchIndex + 1} committed successfully.", LogLevel.DEBUG)

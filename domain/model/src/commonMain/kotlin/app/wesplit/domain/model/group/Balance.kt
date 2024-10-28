@@ -16,8 +16,8 @@ data class Balance(
     @SerialName("undistributed")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val undistributed: Set<Amount> = emptySet(),
-    @SerialName("invalid")
-    val invalid: Boolean = false,
+    @SerialName("status")
+    val status: BalanceStatus = BalanceStatus.SYNC,
 )
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -30,3 +30,15 @@ data class ParticipantBalance(
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val amounts: Set<Amount> = emptySet(),
 )
+
+@SerialName("status")
+enum class BalanceStatus {
+    @SerialName("sync")
+    SYNC,
+
+    @SerialName("local")
+    LOCAL,
+
+    @SerialName("invalid")
+    INVALID,
+}

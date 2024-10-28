@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.group.Balance
+import app.wesplit.domain.model.group.BalanceStatus
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isConnected
 import app.wesplit.group.detailed.checkBalanceTutorialStepFlow
@@ -46,6 +47,7 @@ import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveCircularProgressIndic
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Email
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Refresh
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
@@ -114,7 +116,7 @@ fun BalanceList(
                             }
 
                         ParticipantListItem(
-                            modifier = if (balance.invalid) Modifier.alpha(0.4f) else Modifier,
+                            modifier = if (balance.status == BalanceStatus.INVALID) Modifier.alpha(0.4f) else Modifier,
                             action = action,
                             onClick = callback,
                             participant = balanceItem.participant,
@@ -157,12 +159,19 @@ fun BalanceList(
                     }
 
                     AnimatedVisibility(
-                        visible = balance.invalid,
+                        visible = balance.status == BalanceStatus.INVALID,
                     ) {
                         HorizontalDivider()
                         Invalid {
                             analyticsManager.track(BACKED_CALCULATION_CLICK)
                         }
+                    }
+
+                    AnimatedVisibility(
+                        visible = balance.status == BalanceStatus.LOCAL,
+                    ) {
+                        HorizontalDivider()
+                        LocalBalances()
                     }
 
                     TutorialItem(
@@ -175,9 +184,9 @@ fun BalanceList(
                             ListItem(
                                 modifier =
                                     Modifier.fillMaxWidth().clickable {
-                                        if (!balance.invalid) onSettle()
+                                        if (balance.status == BalanceStatus.SYNC) onSettle()
                                     }.then(
-                                        if (balance.invalid) Modifier.alpha(0.4f) else Modifier,
+                                        if (balance.status == BalanceStatus.SYNC) Modifier else Modifier.alpha(0.4f),
                                     ),
                                 colors =
                                     ListItemDefaults.colors(
@@ -236,11 +245,46 @@ fun Invalid(onClick: () -> Unit) {
     )
 }
 
+@Composable
+fun LocalBalances() {
+    ListItem(
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        headlineContent = {
+            Text(
+                text = "Offline balances",
+            )
+        },
+        leadingContent = {
+            Icon(
+                imageVector = AdaptiveIcons.Outlined.Refresh,
+                contentDescription = "Data is syncing",
+            )
+        },
+        trailingContent = {
+            Image(
+                modifier = Modifier.height(24.dp),
+                painter = painterResource(Res.drawable.ic_plus),
+                contentDescription = "Plus badge",
+            )
+        },
+        supportingContent = {
+            Text(
+                text = "Sync in progress",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        },
+    )
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Undistributed(balance: Balance) {
     ListItem(
-        modifier = if (balance.invalid) Modifier.alpha(0.4f) else Modifier,
+        modifier = if (balance.status == BalanceStatus.INVALID) Modifier.alpha(0.4f) else Modifier,
         colors =
             ListItemDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
