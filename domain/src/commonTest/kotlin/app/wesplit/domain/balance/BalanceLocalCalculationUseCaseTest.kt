@@ -81,6 +81,30 @@ class BalanceLocalCalculationUseCaseTest {
     }
 
     @Test
+    fun `settle_expense_not_counted`() {
+        val useCase = BalanceLocalCalculationUseCase()
+        val participant = Participant("a", "b")
+        val expense =
+            createExpense(
+                payedBy = participant,
+                shares =
+                    setOf(
+                        Share(
+                            participant = participant,
+                            amount = Amount(50.0, "USD"),
+                        ),
+                    ),
+                totalAmount = Amount(100.0, "USD"),
+                undistributedAmount = Amount(50.0, "USD"),
+                status = ExpenseStatus.SETTLED,
+            )
+        val result = useCase.invoke(listOf(expense))
+        result.participantsBalance shouldBe emptySet()
+        result.undistributed shouldBe emptySet()
+        result.invalid shouldBe false
+    }
+
+    @Test
     fun `even_2_trx_split`() {
         val useCase = BalanceLocalCalculationUseCase()
         val participant1 = Participant("a", "b")

@@ -2,6 +2,7 @@ package app.wesplit.domain.balance
 
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.expense.Expense
+import app.wesplit.domain.model.expense.ExpenseStatus
 import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.ParticipantBalance
 import org.koin.core.annotation.Single
@@ -12,7 +13,7 @@ class BalanceLocalCalculationUseCase {
         val participantBalance = mutableMapOf<String, MutableMap<String, Double>>()
         var nonDistributed = mutableMapOf<String, Double>()
 
-        expenses.forEach { expense ->
+        expenses.filter { it.status != ExpenseStatus.SETTLED }.forEach { expense ->
             val currency = expense.totalAmount.currencyCode
             expense.shares.forEach { share ->
                 val currentBalance = participantBalance.get(share.participant.id)?.get(currency) ?: 0.0
