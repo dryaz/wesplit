@@ -40,6 +40,7 @@ import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
 import app.wesplit.domain.balance.BalanceFxCalculationUseCase
+import app.wesplit.domain.balance.BalanceLocalCalculationUseCase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.AccountRepository
@@ -342,6 +343,7 @@ private fun Navigation(
     val accountRepository: AccountRepository = koinInject()
     val userRepository: UserRepository = koinInject()
     val expenseRepository: ExpenseRepository = koinInject()
+    val balanceLocalCalculationUseCase: BalanceLocalCalculationUseCase = koinInject()
     val currencyRepository: CurrencyRepository = koinInject()
     val balanceFxCalculationUseCase: BalanceFxCalculationUseCase = koinInject()
     val coroutineScope = rememberCoroutineScope()
@@ -591,6 +593,8 @@ private fun Navigation(
                                 groupRepository,
                                 accountRepository,
                                 analyticsManager,
+                                expenseRepository,
+                                balanceLocalCalculationUseCase,
                             )
                         }
                     GroupInfoScreen(

@@ -3,23 +3,26 @@ package app.wesplit.group.detailed
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.balance.BalanceLocalCalculationUseCase
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.Login
+import app.wesplit.domain.model.account.isPlus
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
+import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.ParticipantBalance
-import app.wesplit.expense.ExpenseDetailsViewModel.State
 import app.wesplit.routing.RightPane
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapLatest
@@ -33,6 +36,8 @@ class GroupInfoViewModel(
     private val groupRepository: GroupRepository,
     private val accountRepository: AccountRepository,
     private val analyticsManager: AnalyticsManager,
+    private val expenseRepository: ExpenseRepository,
+    private val balanceLocalCalculationUseCase: BalanceLocalCalculationUseCase,
 ) : ViewModel(),
     KoinComponent {
     val dataState: StateFlow<State>
@@ -80,8 +85,8 @@ class GroupInfoViewModel(
                     }
                 }
                 .distinctUntilChanged()
-                .flatMapLatest {
-                    when (it) {
+                .flatMapLatest { account ->
+                    when (account) {
                         Account.Unknown,
                         Account.Anonymous,
                         -> flow { emit(State.Loading) }
@@ -98,31 +103,8 @@ class GroupInfoViewModel(
                                         if (exception != null) {
                                             State.Error(State.Error.Type.FETCH_ERROR)
                                         } else {
-                                            val group = groupResult.getOrThrow()
-                                            val balance = group.balances ?: Balance()
-                                            val currentBalanceParticipants = balance.participantsBalance.map { it.participant.id }
-                                            val notReflectedParticipants =
-                                                group.participants.filterNot {
-                                                    it.id in currentBalanceParticipants
-                                                }
-                                            val processedGroup =
-                                                if (notReflectedParticipants.isEmpty()) {
-                                                    group
-                                                } else {
-                                                    group.copy(
-                                                        balances =
-                                                            balance.copy(
-                                                                participantsBalance =
-                                                                    balance.participantsBalance +
-                                                                        notReflectedParticipants.map { ppl ->
-                                                                            ParticipantBalance(
-                                                                                participant = ppl,
-                                                                            )
-                                                                        },
-                                                            ),
-                                                    )
-                                                }
-                                            State.GroupInfo(processedGroup)
+                                            val group = groupResult.getOrThrow().recalculateBalance(isPlus = account.isPlus())
+                                            State.GroupInfo(group)
                                         }
                                 }
                             }
@@ -140,6 +122,39 @@ class GroupInfoViewModel(
                     _dataState.value = it
                 }
         }
+
+    private suspend fun Group.recalculateBalance(isPlus: Boolean): Group {
+        val tempBalance = this.balances ?: Balance()
+        val balance =
+            if (tempBalance.invalid && isPlus) {
+                val localExpenses = expenseRepository.getByGroupId(this.id).first().getOrNull()
+                if (localExpenses != null) {
+                    balanceLocalCalculationUseCase.invoke(localExpenses)
+                } else {
+                    tempBalance
+                }
+            } else {
+                tempBalance
+            }
+
+        val currentBalanceParticipants = balance.participantsBalance.map { it.participant.id }
+        val notReflectedParticipants =
+            this.participants.filterNot {
+                it.id in currentBalanceParticipants
+            }
+        return this.copy(
+            balances =
+                balance.copy(
+                    participantsBalance =
+                        balance.participantsBalance +
+                            notReflectedParticipants.map { ppl ->
+                                ParticipantBalance(
+                                    participant = ppl,
+                                )
+                            },
+                ),
+        )
+    }
 
     sealed interface State {
         data object Loading : State
