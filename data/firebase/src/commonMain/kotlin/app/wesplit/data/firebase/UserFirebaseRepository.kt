@@ -155,9 +155,9 @@ class UserFirebaseRepository(
             if (!fcmToken.isNullOrBlank()) {
                 val messagingTokens =
                     user.messagingTokens.copy(
-                        android = (currentPlatform as? KotlinPlatform.Android)?.let { fcmToken },
-                        iOS = (currentPlatform as? KotlinPlatform.Ios)?.let { fcmToken },
-                        web = (currentPlatform as? KotlinPlatform.Web)?.let { fcmToken },
+                        android = (currentPlatform as? KotlinPlatform.Android)?.let { fcmToken } ?: user.messagingTokens.android,
+                        iOS = (currentPlatform as? KotlinPlatform.Ios)?.let { fcmToken } ?: user.messagingTokens.iOS,
+                        web = (currentPlatform as? KotlinPlatform.Web)?.let { fcmToken } ?: user.messagingTokens.web,
                     )
 
                 Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).update(

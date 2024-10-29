@@ -1,9 +1,10 @@
 import SwiftUI
+import FirebaseMessaging
 import GoogleSignIn
 import FirebaseCore
 import ComposeApp
 
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   
   var window: UIWindow?
   lazy var deeplinkHandler = Dependencies.shared.deepLinkHandler
@@ -11,6 +12,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func application(_ application: UIApplication,
                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
     FirebaseApp.configure()
+    
+    UNUserNotificationCenter.current().delegate = self
+
+    // Request notification permissions
+    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+        if granted {
+            DispatchQueue.main.async {
+                application.registerForRemoteNotifications()
+            }
+        }
+    }
+    
     if let userActDic = launchOptions?[.userActivityDictionary] as? [String: Any],
        let auserActivity = userActDic["UIApplicationLaunchOptionsUserActivityKey"] as? NSUserActivity {
       let urlString = auserActivity.webpageURL?.absoluteString ?? ""
@@ -35,6 +48,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       deeplinkHandler.handleDeeplink(url: url.absoluteString)
     }
     return true
+  }
+  
+  func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+      // Set APNs device token for Firebase
+      Messaging.messaging().apnsToken = deviceToken
+
+      // Optionally, fetch FCM token after setting the APNs token
+      Messaging.messaging().token { token, error in
+          if let error = error {
+              print("Error fetching FCM token: \(error)")
+          } else if let token = token {
+              print("FCM token: \(token)")
+              // Use the FCM token
+          }
+      }
   }
 }
 
