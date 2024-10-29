@@ -5,7 +5,7 @@ import app.wesplit.domain.model.KotlinPlatform
 import app.wesplit.domain.model.currentPlatform
 import app.wesplit.domain.model.user.Contact
 import app.wesplit.domain.model.user.Plan
-import app.wesplit.domain.model.user.Platform
+import app.wesplit.domain.model.user.PlatformTokens
 import app.wesplit.domain.model.user.Setting
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.UserRepository
@@ -119,7 +119,12 @@ class UserFirebaseRepository(
         }
 
         val doc = Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).get()
-        val fcmToken = Firebase.messaging.getToken()
+        val fcmToken =
+            try {
+                Firebase.messaging.getToken()
+            } catch (e: Throwable) {
+                ""
+            }
 
         if (!doc.exists) {
             val contactList = mutableListOf<Contact>()
@@ -137,16 +142,11 @@ class UserFirebaseRepository(
                     contacts = contactList,
                     authIds = listOf(authUser.uid),
                     messagingTokens =
-                        mutableMapOf<Platform, String>().apply {
-                            val platformKey =
-                                when (currentPlatform) {
-                                    KotlinPlatform.Android -> Platform.ANDROID
-                                    KotlinPlatform.Ios -> Platform.IOS
-                                    KotlinPlatform.Web -> Platform.WEB
-                                    else -> Platform.OTHER
-                                }
-                            this[platformKey] = Firebase.messaging.getToken()
-                        },
+                        PlatformTokens(
+                            android = (currentPlatform as? KotlinPlatform.Android)?.let { fcmToken },
+                            iOS = (currentPlatform as? KotlinPlatform.Ios)?.let { fcmToken },
+                            web = (currentPlatform as? KotlinPlatform.Web)?.let { fcmToken },
+                        ),
                 )
 
             Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).set(User.serializer(), newUser)
@@ -154,16 +154,11 @@ class UserFirebaseRepository(
             val user = doc.data(User.serializer())
             if (!fcmToken.isNullOrBlank()) {
                 val messagingTokens =
-                    user.messagingTokens.toMutableMap().apply {
-                        val platformKey =
-                            when (currentPlatform) {
-                                KotlinPlatform.Android -> Platform.ANDROID
-                                KotlinPlatform.Ios -> Platform.IOS
-                                KotlinPlatform.Web -> Platform.WEB
-                                else -> Platform.OTHER
-                            }
-                        this[platformKey] = fcmToken
-                    }
+                    user.messagingTokens.copy(
+                        android = (currentPlatform as? KotlinPlatform.Android)?.let { fcmToken },
+                        iOS = (currentPlatform as? KotlinPlatform.Ios)?.let { fcmToken },
+                        web = (currentPlatform as? KotlinPlatform.Web)?.let { fcmToken },
+                    )
 
                 Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).update(
                     user.copy(

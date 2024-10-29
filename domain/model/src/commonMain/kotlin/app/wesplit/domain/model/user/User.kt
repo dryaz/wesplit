@@ -44,25 +44,16 @@ data class User(
     @SerialName("trxId")
     val transactionId: String? = null,
     @SerialName("fcm")
-    @EncodeDefault(EncodeDefault.Mode.NEVER)
-    val messagingTokens: Map<Platform, String> = emptyMap(),
+    val messagingTokens: PlatformTokens = PlatformTokens(),
 )
 
 @Serializable
-@SerialName("platform")
-enum class Platform {
-    @SerialName("a")
-    ANDROID,
-
-    @SerialName("i")
-    IOS,
-
-    @SerialName("w")
-    WEB,
-
-    @SerialName("other")
-    OTHER,
-}
+@SerialName("platformTokens")
+data class PlatformTokens(
+    val android: String? = null,
+    val iOS: String? = null,
+    val web: String? = null,
+)
 
 @Serializable
 sealed interface Contact {
