@@ -25,11 +25,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
-import app.wesplit.KotlinPlatform
 import app.wesplit.ShareData
 import app.wesplit.ShareDelegate
-import app.wesplit.currentPlatform
+import app.wesplit.domain.model.KotlinPlatform
 import app.wesplit.domain.model.account.Login
+import app.wesplit.domain.model.currentPlatform
 import app.wesplit.ui.OrDivider
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource

@@ -1,6 +1,8 @@
 import androidx.compose.ui.window.ComposeUIViewController
+import app.IosPermissionDelegate
 import app.wesplit.App
 import app.wesplit.DeepLinkHandler
+import app.wesplit.PermissionsDelegate
 import app.wesplit.ShareDelegate
 import app.wesplit.ShortcutDelegate
 import app.wesplit.ShortcutDelegateNotSupport
@@ -26,6 +28,7 @@ fun mainViewController(iosDiHelper: IosDiHelper): UIViewController {
                 single<AppReviewManager> { IosAppReviewManager() }
                 single<BillingIosRepositoryController> { BillingIosRepositoryController(get()) }
                 single<IosDiHelper> { iosDiHelper }
+                single<PermissionsDelegate> { IosPermissionDelegate }
                 single<ShareDelegate> { iosDiHelper.shareDelegate }
                 single<ShortcutDelegate> { ShortcutDelegateNotSupport }
                 single<DeepLinkHandler> { iosDiHelper.deepLinkHandler }

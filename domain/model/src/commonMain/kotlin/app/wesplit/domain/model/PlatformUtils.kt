@@ -1,4 +1,4 @@
-package app.wesplit
+package app.wesplit.domain.model
 
 sealed interface KotlinPlatform {
     sealed interface Mobile : KotlinPlatform

@@ -56,9 +56,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.wesplit.KotlinPlatform
-import app.wesplit.currentPlatform
+import app.wesplit.domain.model.KotlinPlatform
 import app.wesplit.domain.model.currency.format
+import app.wesplit.domain.model.currentPlatform
 import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.Subscription
 import app.wesplit.domain.model.user.User

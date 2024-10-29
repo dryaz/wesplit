@@ -17,6 +17,7 @@ import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate
+import dev.icerock.moko.permissions.PermissionsController
 import io.github.vinceglb.filekit.core.FileKit
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,7 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = true
         }
+        val permissionsController = PermissionsController(application)
         setContent {
             App(
                 koinApp = null,
@@ -58,6 +60,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     single<ShortcutDelegate> { ShortcutAndroidDelegate(application) }
+                    single<PermissionsDelegate> { AndroidPermissionDelegate(permissionsController) }
                     single<CoroutineDispatcher> { Dispatchers.IO }
                     single<AppReviewManager> { AndroidAppReviewManager(get()) }
                     single<AnalyticsManager> { AndroidAnalyticsManager() }
@@ -69,6 +72,7 @@ class MainActivity : ComponentActivity() {
                 },
             )
         }
+        permissionsController.bind(this)
     }
 
     override fun onNewIntent(intent: Intent) {

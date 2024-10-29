@@ -44,6 +44,8 @@ import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.KotlinPlatform
+import app.wesplit.domain.model.currentPlatform
 import app.wesplit.theme.ColorMode
 import app.wesplit.theme.LocalThemeState
 import app.wesplit.theme.ThemeAction

@@ -1,5 +1,7 @@
 package app.wesplit.data.firebase
 
+import app.wesplit.Permission
+import app.wesplit.PermissionsDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.expense.Expense
@@ -14,6 +16,7 @@ import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.WriteBatch
 import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -32,6 +35,8 @@ private const val EXPENSE_UPDATE_EVENT = "expense_update"
 private const val EXPENSE_DELETE_EVENT = "expense_delete"
 private const val EXPENSE_SPLIT_TYPE_PARAM = "split_type"
 
+private const val PUSH_ENABLED = "push_enabled"
+
 private const val SETTLED_COMPLETE = "settlment_completed"
 
 @Single
@@ -39,6 +44,7 @@ class ExpenseFirebaseRepository(
     private val coroutineDispatcher: CoroutineDispatcher,
     private val userRepository: UserRepository,
     private val analyticsManager: AnalyticsManager,
+    private val permissionsDelegate: PermissionsDelegate,
 ) : ExpenseRepository {
     // TODO: Check if firebase get local balances or maybe need to cache expenses by group id in order
     //  not to fetch this multiple times, e.g. for showing trxs and for computing balances.
@@ -134,6 +140,11 @@ class ExpenseFirebaseRepository(
                 INVALID_BALANCE_FIELD to "invalid",
             )
             batch.commit()
+
+            withContext(Dispatchers.Main) {
+                val result = permissionsDelegate.requestPermission(Permission.PUSH)
+                analyticsManager.setParam(PUSH_ENABLED, "${result.isSuccess}")
+            }
         }
 
     override suspend fun delete(

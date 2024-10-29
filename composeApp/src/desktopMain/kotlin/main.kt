@@ -2,6 +2,8 @@ import android.app.Application
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import app.wesplit.App
+import app.wesplit.DefaultPermissionDelegate
+import app.wesplit.PermissionsDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.LoginDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
@@ -56,6 +58,7 @@ fun main() {
                 koinApp = null,
                 module {
                     single<LoginDelegate> { LoginDesktopDelegate() }
+                    single<PermissionsDelegate> { DefaultPermissionDelegate }
                     single<AnalyticsManager> { DesktopAnalyticsManager() }
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 },

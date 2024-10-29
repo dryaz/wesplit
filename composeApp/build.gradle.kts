@@ -88,6 +88,8 @@ kotlin {
 
             implementation(libs.review.gplay)
             implementation(libs.billing.android)
+
+            implementation(libs.permissions)
         }
 
         commonMain {
@@ -125,6 +127,7 @@ kotlin {
                 implementation(libs.firebase.common.firestore)
                 implementation(libs.firebase.common.functions)
                 implementation(libs.firebase.common.storage)
+                implementation(libs.firebase.common.messaging)
 
                 implementation(libs.bundles.cupertino)
                 implementation(libs.materialKolor)
@@ -148,6 +151,7 @@ kotlin {
             // TODO: Custom set of dependencies 'mobile' could be share if needed
             iosMain.dependencies {
 //                implementation(libs.ktor.client.darwin)
+                implementation(libs.permissions)
                 implementation(libs.firebase.common.crashlytics)
                 implementation(libs.review)
             }

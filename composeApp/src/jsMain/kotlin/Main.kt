@@ -2,7 +2,9 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
 import app.wesplit.App
 import app.wesplit.DeepLinkHandler
+import app.wesplit.DefaultPermissionDelegate
 import app.wesplit.DefaultShareDelegate
+import app.wesplit.PermissionsDelegate
 import app.wesplit.ShareDelegate
 import app.wesplit.ShortcutDelegate
 import app.wesplit.ShortcutDelegateNotSupport
@@ -61,6 +63,7 @@ fun main() {
                     single<BillingDelegate> { UnsupportedBiilingDelegate(get()) }
                     single<ShareDelegate> { DefaultShareDelegate }
                     single<AnalyticsManager> { JsAnalyticsManager() }
+                    single<PermissionsDelegate> { DefaultPermissionDelegate }
 //                    single<AnalyticsManager> { DebugAnalyticsManager() }
                     single<ShortcutDelegate> { ShortcutDelegateNotSupport }
                     single<DeepLinkHandler> { deepLinkHandler }

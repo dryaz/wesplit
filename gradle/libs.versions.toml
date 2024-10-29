@@ -3,6 +3,7 @@ filekitCompose = "0.8.7"
 inAppReview = "3.1.21"
 korgeCore = "5.1.0"
 multiplatformSettings = "1.2.0"
+permissions = "0.18.1"
 versionName = "2.1.8"
 android-versionCode = "47"
 
@@ -64,6 +65,7 @@ deeplink = { module = "com.motorro.keeplink:deeplink", version.ref = "deeplink" 
 filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekitCompose" }
 korge-core = { module = "com.soywiz.korge:korge-core", version.ref = "korgeCore" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
+permissions = { module = "dev.icerock.moko:permissions", version.ref = "permissions" }
 review = { module = "io.github.sergeimikhailovskii:in-app-review-kmp", version.ref = "inAppReview" }
 review-gplay = { module = "io.github.sergeimikhailovskii:in-app-review-kmp-google-play", version.ref = "inAppReview" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
@@ -125,6 +127,7 @@ firebase-common-perf = { module = "dev.gitlive:firebase-perf", version.ref = "fi
 firebase-common-crashlytics = { module = "dev.gitlive:firebase-crashlytics", version.ref = "firebase" }
 firebase-common-installations = { module = "dev.gitlive:firebase-installations", version.ref = "firebase" }
 firebase-common-storage = { module = "dev.gitlive:firebase-storage", version.ref = "firebase" }
+firebase-common-messaging = { module = "dev.gitlive:firebase-messaging", version.ref = "firebase" }
 
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
