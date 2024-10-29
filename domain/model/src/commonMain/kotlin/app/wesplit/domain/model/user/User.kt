@@ -44,15 +44,7 @@ data class User(
     @SerialName("trxId")
     val transactionId: String? = null,
     @SerialName("fcm")
-    val messagingTokens: PlatformTokens = PlatformTokens(),
-)
-
-@Serializable
-@SerialName("platformTokens")
-data class PlatformTokens(
-    val android: String? = null,
-    val iOS: String? = null,
-    val web: String? = null,
+    val messagingTokens: List<String> = emptyList(),
 )
 
 @Serializable

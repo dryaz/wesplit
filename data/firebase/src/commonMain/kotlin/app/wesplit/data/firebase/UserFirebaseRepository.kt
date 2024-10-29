@@ -1,11 +1,8 @@
 package app.wesplit.data.firebase
 
 import app.wesplit.domain.model.AnalyticsManager
-import app.wesplit.domain.model.KotlinPlatform
-import app.wesplit.domain.model.currentPlatform
 import app.wesplit.domain.model.user.Contact
 import app.wesplit.domain.model.user.Plan
-import app.wesplit.domain.model.user.PlatformTokens
 import app.wesplit.domain.model.user.Setting
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.UserRepository
@@ -141,28 +138,16 @@ class UserFirebaseRepository(
                     photoUrl = authUser.photoURL,
                     contacts = contactList,
                     authIds = listOf(authUser.uid),
-                    messagingTokens =
-                        PlatformTokens(
-                            android = (currentPlatform as? KotlinPlatform.Android)?.let { fcmToken },
-                            iOS = (currentPlatform as? KotlinPlatform.Ios)?.let { fcmToken },
-                            web = (currentPlatform as? KotlinPlatform.Web)?.let { fcmToken },
-                        ),
+                    messagingTokens = listOf(fcmToken),
                 )
 
             Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).set(User.serializer(), newUser)
         } else {
             val user = doc.data(User.serializer())
             if (!fcmToken.isNullOrBlank()) {
-                val messagingTokens =
-                    user.messagingTokens.copy(
-                        android = (currentPlatform as? KotlinPlatform.Android)?.let { fcmToken } ?: user.messagingTokens.android,
-                        iOS = (currentPlatform as? KotlinPlatform.Ios)?.let { fcmToken } ?: user.messagingTokens.iOS,
-                        web = (currentPlatform as? KotlinPlatform.Web)?.let { fcmToken } ?: user.messagingTokens.web,
-                    )
-
                 Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).update(
                     user.copy(
-                        messagingTokens = messagingTokens,
+                        messagingTokens = user.messagingTokens + fcmToken,
                     ),
                 )
             }
