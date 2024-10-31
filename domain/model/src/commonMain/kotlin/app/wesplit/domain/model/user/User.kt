@@ -44,7 +44,7 @@ data class User(
     @SerialName("trxId")
     val transactionId: String? = null,
     @SerialName("fcm")
-    val messagingTokens: List<String> = emptyList(),
+    val messagingTokens: Set<String> = emptySet(),
 )
 
 @Serializable

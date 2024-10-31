@@ -138,7 +138,7 @@ class UserFirebaseRepository(
                     photoUrl = authUser.photoURL,
                     contacts = contactList,
                     authIds = listOf(authUser.uid),
-                    messagingTokens = listOf(fcmToken),
+                    messagingTokens = setOf(fcmToken),
                 )
 
             Firebase.firestore.collection(USER_COLLECTION).document(authUser.uid).set(User.serializer(), newUser)

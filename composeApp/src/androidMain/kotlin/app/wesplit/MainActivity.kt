@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     single<ShortcutDelegate> { ShortcutAndroidDelegate(application) }
-                    single<PermissionsDelegate> { AndroidPermissionDelegate(permissionsController) }
+                    single<PermissionsDelegate> { AndroidPermissionDelegate(get(), permissionsController) }
                     single<CoroutineDispatcher> { Dispatchers.IO }
                     single<AppReviewManager> { AndroidAppReviewManager(get()) }
                     single<AnalyticsManager> { AndroidAnalyticsManager() }

@@ -63,6 +63,102 @@ exports.generateGroupToken = functions.https.onCall(async (data, context) => {
   }
 });
 
+// Dedicated function to send notifications when a new expense is created
+exports.notificationOnNewExpense = functions.firestore
+  .document("groups/{groupId}/expenses/{expenseId}")
+  .onCreate(async (snapshot, context) => {
+    const expense = snapshot.data();
+    const groupId = context.params.groupId;
+
+    if (!expense || !groupId) {
+      console.error("Expense data or Group ID is missing");
+      return;
+    }
+
+    console.log("New expense created, notify users");
+    await sendNotifications(expense, groupId);
+  });
+
+// Helper function to send notifications
+async function sendNotifications(expense, groupId) {
+  const title = `${expense.title}: ${expense.totalAmount.currency} ${expense.totalAmount.value}`;
+
+  console.log("Preparing notifications for each participant in the expense");
+
+  for (const share of expense.shares) {
+    const participant = share.participant;
+
+    if (!participant || !participant.user || !participant.user.authIds || participant.user.authIds.length === 0) {
+      console.warn("Skipping participant with missing authIds");
+      continue; // If authIds is missing or empty, skip this participant
+    }
+
+    // Get the first authId
+    const userId = participant.user.authIds[0];
+    const userRef = admin.firestore().collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      console.warn(`User document for ID ${userId} does not exist`);
+      continue;
+    }
+
+    const userData = userDoc.data();
+    if (!userData.fcm) {
+      console.warn(`No FCM tokens found for user ID ${userId}`);
+      continue;
+    }
+
+    const tokens = Array.from(userData.fcm);
+    const message = {
+      notification: {
+        title: title,
+        body: `Your share: ${share.amount.currency} ${share.amount.value}`,
+      },
+      android: {
+        notification: {
+          channelId: "expense_added",
+        },
+      },
+      data: {
+        groupId: String(groupId),
+        expenseId: String(expense.id),
+        url: `https://web.wesplit.app/group/${groupId}`, // URL is already a string
+      },
+      topic: "expense_added",
+    };
+
+    console.log(`Sending notification to user ID ${userId} with tokens`, tokens);
+
+    try {
+      const response = await admin.messaging().sendEachForMulticast({
+        tokens: tokens,
+        ...message,
+      });
+
+      for (let i = 0; i < response.responses.length; i++) {
+        const resp = response.responses[i];
+        if (!resp.success) {
+          console.error(`Error sending to token ${tokens[i]}:`, resp.error);
+          if (
+            resp.error.code === "messaging/invalid-registration-token" ||
+            resp.error.code === "messaging/registration-token-not-registered"
+          ) {
+            console.log(`Removing invalid token for user ID ${userId}`);
+            await userRef.update({
+              fcm: admin.firestore.FieldValue.arrayRemove(tokens[i]),
+            });
+          }
+        } else {
+          console.log(`Notification sent successfully to token ${tokens[i]}`);
+        }
+      }
+    } catch (error) {
+      console.error(`Error sending notification to user ID ${userId}:`, error);
+    }
+  }
+}
+
 // Cloud Function to recalculate balances and update lastExpenseAt
 exports.recalculateBalances = functions.firestore
   .document('groups/{groupId}/expenses/{expenseId}')
@@ -201,6 +297,13 @@ exports.recalculateBalances = functions.firestore
 
     // Update the group document with the recalculated balances and lastExpenseAt
     await groupRef.update(updateData);
+
+    // After recalculating balances, send notifications for new expense
+//    if (!change.before.exists) { // Only send if it's a new expense (not an update or deletion)
+//      const expense = change.after.data();
+//      console.log(`Send notifications for new expense`);
+//      await sendNotifications(expense, groupId);
+//    }
   });
 
 exports.updateCurrencyRates = functions.pubsub.schedule('0 0 * * *').timeZone('UTC').onRun(async (context) => {
