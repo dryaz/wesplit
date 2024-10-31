@@ -32,7 +32,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>49</string>
+	<string>50</string>
 	<key>FirebaseAutomaticScreenReportingEnabled</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -61,5 +61,13 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSContactsUsageDescription</key>
+	<string>Firebase Invites uses this contact information to populate the list of friends</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Firebase uses this motion data to improve user experience</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Firebase uses location when in use to improve user experience </string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Firebase messaging uses it to promptly deliver push when user allowes to</string>
 </dict>
 </plist>
