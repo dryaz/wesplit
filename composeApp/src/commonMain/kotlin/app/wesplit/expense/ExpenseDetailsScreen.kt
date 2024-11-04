@@ -916,7 +916,7 @@ private fun ExpenseDetails(
     }
 
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        if (data.expense.title.isNullOrBlank()) focusRequester.requestFocus()
     }
 }
 
