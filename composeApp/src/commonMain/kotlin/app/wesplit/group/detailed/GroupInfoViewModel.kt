@@ -111,10 +111,13 @@ class GroupInfoViewModel(
         }
 
     private suspend fun Group.recalculateBalance(isPlus: Boolean): Group {
-        val tempBalance = this.balances ?: Balance(status = BalanceStatus.INVALID)
+        val localExpenses = expenseRepository.getByGroupId(this.id).first().getOrNull()
+        val tempBalance = this.balances ?: Balance(
+            status = if (localExpenses?.size == 0) BalanceStatus.SYNC else BalanceStatus.INVALID
+        )
+
         val balance =
             if (tempBalance.status == BalanceStatus.INVALID && isPlus) {
-                val localExpenses = expenseRepository.getByGroupId(this.id).first().getOrNull()
                 if (localExpenses != null) {
                     balanceLocalCalculationUseCase.invoke(localExpenses)
                 } else {
