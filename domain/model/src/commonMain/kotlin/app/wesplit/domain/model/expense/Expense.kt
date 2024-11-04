@@ -42,6 +42,8 @@ data class Expense(
     @SerialName("protectedBy")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val protectionList: Set<String> = emptySet(),
+    @SerialName("lastUpdatedAt")
+    val lastUpdated: BaseTimestamp = Timestamp.ServerTimestamp,
     // TODO: Yet support only equal split in v1
 //    @SerialName("splitType")
 //    val splitType: SplitType = SplitType.EQUAL,

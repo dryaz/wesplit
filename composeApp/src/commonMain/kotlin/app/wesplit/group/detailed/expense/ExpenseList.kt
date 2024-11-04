@@ -56,6 +56,7 @@ import split.composeapp.generated.resources.img_search_empty
 import split.composeapp.generated.resources.non_distr_cd
 
 enum class FilterType {
+    NOT_SETTLED,
     NOT_SPLIT,
     WITH_ME,
     PAYED_ME,
@@ -68,13 +69,14 @@ fun ExpenseList(
     expenses: Map<String, List<Expense>>,
     onAction: (ExpenseAction) -> Unit,
 ) {
-    val filters = remember { mutableStateListOf<FilterType>() }
+    val filters = remember { mutableStateListOf<FilterType>(FilterType.NOT_SETTLED) }
     // TODO: Maybe move to VM when do pagination etc.
     val dataUnderFilters =
         remember(expenses, filters.size) {
             val notSplit = filters.contains(FilterType.NOT_SPLIT)
             val withMe = filters.contains(FilterType.WITH_ME)
             val payedByMe = filters.contains(FilterType.PAYED_ME)
+            val notSettled = filters.contains(FilterType.NOT_SETTLED)
             expenses.mapNotNull {
                 val expensesUnderFilter =
                     it.value.filter {
@@ -87,6 +89,9 @@ fun ExpenseList(
                         }
                         if (payedByMe) {
                             result = result && it.payedBy.isMe()
+                        }
+                        if (notSettled) {
+                            result = result && it.status != ExpenseStatus.SETTLED
                         }
                         result
                     }
@@ -113,6 +118,21 @@ fun ExpenseList(
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp).horizontalScroll(rememberScrollState()),
             ) {
+                FilterChip(
+                    selected = filters.contains(FilterType.NOT_SETTLED),
+                    onClick = {
+                        if (filters.contains(
+                                FilterType.NOT_SETTLED,
+                            )
+                        ) {
+                            filters.remove(FilterType.NOT_SETTLED)
+                        } else {
+                            filters.add(FilterType.NOT_SETTLED)
+                        }
+                    },
+                    label = { Text("Not settled") },
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 FilterChip(
                     selected = filters.contains(FilterType.NOT_SPLIT),
                     onClick = {

@@ -13,6 +13,7 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
+import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.WriteBatch
 import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineDispatcher
@@ -24,6 +25,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 
 private const val STATUS_FIELD = "status"
+private const val LAST_UPDATED_FIELD = "lastUpdatedAt"
 private const val PROTECTION_FIELD = "protectedBy"
 
 private const val EXPENSE_COLLECTION = "expenses"
@@ -89,7 +91,11 @@ class ExpenseFirebaseRepository(
         expense: Expense,
     ): Unit =
         withContext(coroutineDispatcher + NonCancellable) {
-            val newExpense = expense.copy(status = ExpenseStatus.NEW)
+            val newExpense =
+                expense.copy(
+                    status = ExpenseStatus.NEW,
+                    lastUpdated = Timestamp.ServerTimestamp,
+                )
             userRepository.update(Setting.Currency(newExpense.totalAmount.currencyCode))
             val expenseId = newExpense.id
             val eventName = if (expenseId != null) EXPENSE_UPDATE_EVENT else EXPENSE_CREATE_EVENT
@@ -204,7 +210,11 @@ class ExpenseFirebaseRepository(
 
                 for ((index, document) in documents.withIndex()) {
                     val expenseRef = document.reference
-                    batch.update(expenseRef, "status" to ExpenseStatus.SETTLED.name)
+                    batch.update(
+                        expenseRef,
+                        STATUS_FIELD to ExpenseStatus.SETTLED.name,
+                        LAST_UPDATED_FIELD to Timestamp.ServerTimestamp,
+                    )
                     operationCount++
 
                     // Firestore allows a maximum of 500 operations per batch
