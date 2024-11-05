@@ -144,10 +144,19 @@ class GroupInfoViewModel(
             balances =
                 balance.copy(
                     participantsBalance =
-                        newParticipantBalance.sortedWith(
-                            compareByDescending<ParticipantBalance> { it.participant.isMe() }
-                                .thenBy { it.participant.name },
-                        ).toSet(),
+                        newParticipantBalance
+                            .map { partBalance ->
+                                partBalance.copy(
+                                    participant =
+                                        this
+                                            .participants
+                                            .firstOrNull { it == partBalance.participant } ?: partBalance.participant,
+                                )
+                            }
+                            .sortedWith(
+                                compareByDescending<ParticipantBalance> { it.participant.isMe() }
+                                    .thenBy { it.participant.name },
+                            ).toSet(),
                 ),
         )
     }

@@ -190,8 +190,8 @@ class ExpenseDetailsViewModel(
                             date = Timestamp.fromMilliseconds(Clock.System.now().toEpochMilliseconds().toDouble()),
                         )
 
-                    val expenseParticipants = expense.shares.map { it.participant }.toHashSet()
-                    val extraParticipants = group.participants.filter { it !in expenseParticipants }
+                    val expenseParticipants = expense.shares.map { it.participant.id }.toHashSet()
+                    val extraParticipants = group.participants.filter { it.id !in expenseParticipants }
 
                     return@combine State.Data(
                         group = group,

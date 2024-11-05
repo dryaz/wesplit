@@ -22,7 +22,17 @@ data class Participant(
     val name: String,
     @SerialName("user")
     val user: User? = null,
-)
+) {
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Participant) return false
+        return id == other.id
+    }
+}
 
 fun Participant.isMe(): Boolean {
     val uid = Firebase.auth.currentUser?.uid

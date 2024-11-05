@@ -118,12 +118,23 @@ class SettleViewModel(
 
             val balance = checkNotNull(groupState.group.balances)
 
-            val participant: Balance =
+            val participantBalance: Balance =
                 if (uiSettings.isRecalculateEnabled && fxState is FxState.Data) {
                     // TODO: Some loading if fxrates is still loading?
                     balanceFxCalculationUseCase.recalculate(balance, fxState.fxRates, uiSettings.selectedCurrency)
                 } else {
-                    balance
+                    balance.copy(
+                        participantsBalance =
+                            balance.participantsBalance.map { partBalance ->
+                                partBalance.copy(
+                                    participant =
+                                        groupState
+                                            .group
+                                            .participants
+                                            .firstOrNull { it == partBalance.participant } ?: partBalance.participant,
+                                )
+                            }.toSet(),
+                    )
                 }
 
             println("FX STATE IS $fxState")
@@ -133,7 +144,7 @@ class SettleViewModel(
                 selectedCurrency = uiSettings.selectedCurrency,
                 fxRates = fxState,
                 currencyCodesCollection = availableCurrencies,
-                participantBalances = participant,
+                participantBalances = participantBalance,
                 // TODO: Store in settings?
                 recalculationEnabled = uiSettings.isRecalculateEnabled,
             )
