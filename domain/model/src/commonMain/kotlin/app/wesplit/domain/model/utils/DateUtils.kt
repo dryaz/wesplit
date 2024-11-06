@@ -61,7 +61,7 @@ fun calculateHoursUntil(futureInstant: Instant): Int {
  * @return A string in the format "Valid for X days".
  */
 fun createValidityDaysString(futureInstant: Instant?): String {
-    if (futureInstant == null) return "Valid Forever"
+    if (futureInstant == null) return "Valid subscription"
 
     val days = calculateDaysUntil(futureInstant)
 
