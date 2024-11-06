@@ -500,10 +500,10 @@ const { SignedDataVerifier, Environment } = require('@apple/app-store-server-lib
 
 // List of Apple CA secrets in Secret Manager
 const appleCaSecrets = [
-  'projects/548791587175/secrets/apple-ca-1/versions/latest',
-  'projects/548791587175/secrets/apple-ca-2/versions/latest',
   'projects/548791587175/secrets/apple-ca-3/versions/latest',
   'projects/548791587175/secrets/apple-ca-4/versions/latest',
+  'projects/548791587175/secrets/apple-ca-1/versions/latest',
+  'projects/548791587175/secrets/apple-ca-2/versions/latest',
 ];
 
 // Function to convert DER (binary) to PEM format
@@ -542,6 +542,7 @@ async function loadAppleRootCAs() {
 
 // Global variable to cache the verifier
 let signedDataVerifier;
+let signedDataVerifierDev;
 
 // Function to initialize the SignedDataVerifier
 async function initializeVerifier() {
@@ -553,7 +554,7 @@ async function initializeVerifier() {
     const bundleId = 'app.wesplit.ios'; // Replace with your app's bundle ID
     const enableOnlineChecks = true; // Enable CRL and OCSP checks
     const environment = Environment.PRODUCTION; // Use Environment.SANDBOX for sandbox or PRODUCTION for prod
-    const appAppleId = '6714482007'; // Replace with your app's Apple ID if in production
+    const appAppleId = 6714482007; // Replace with your app's Apple ID if in production
 
     // Initialize SignedDataVerifier with the required parameters
     signedDataVerifier = new SignedDataVerifier(
@@ -570,7 +571,7 @@ async function initializeVerifier() {
 
 // Function to initialize the SignedDataVerifier
 async function initializeVerifierDev() {
-  if (!signedDataVerifier) {
+  if (!signedDataVerifierDev) {
     // Load Apple Root CAs from Secret Manager
     const appleRootCAs = await loadAppleRootCAs();
 
@@ -578,10 +579,10 @@ async function initializeVerifierDev() {
     const bundleId = 'app.wesplit.ios'; // Replace with your app's bundle ID
     const enableOnlineChecks = true; // Enable CRL and OCSP checks
     const environment = Environment.SANDBOX; // Use Environment.SANDBOX for sandbox or PRODUCTION for prod
-    const appAppleId = '6714482007'; // Replace with your app's Apple ID if in production
+    const appAppleId = undefined; // Replace with your app's Apple ID if in production
 
     // Initialize SignedDataVerifier with the required parameters
-    signedDataVerifier = new SignedDataVerifier(
+    signedDataVerifierDev = new SignedDataVerifier(
       appleRootCAs,
       enableOnlineChecks,
       environment,
@@ -589,7 +590,7 @@ async function initializeVerifierDev() {
       appAppleId
     );
 
-    console.log('SignedDataVerifier initialized successfully.');
+    console.log('SignedDataVerifier Dev initialized successfully.');
   }
 }
 
@@ -608,7 +609,7 @@ exports.handleAppleServerNotificationDev = onRequest(async (req, res) => {
     // Verify and decode the notification
     let decodedPayload;
     try {
-      decodedPayload = await signedDataVerifier.verifyAndDecodeNotification(signedPayload);
+      decodedPayload = await signedDataVerifierDev.verifyAndDecodeNotification(signedPayload);
     } catch (error) {
       console.error('Failed to verify and decode notification:', error);
       res.status(400).send('Invalid notification signature');
@@ -624,7 +625,7 @@ exports.handleAppleServerNotificationDev = onRequest(async (req, res) => {
     let transactionInfo;
     if (signedTransactionInfo) {
       try {
-        transactionInfo = await signedDataVerifier.verifyAndDecodeTransaction(signedTransactionInfo);
+        transactionInfo = await signedDataVerifierDev.verifyAndDecodeTransaction(signedTransactionInfo);
       } catch (error) {
         console.error('Failed to verify and decode transaction info:', error);
         res.status(400).send('Invalid transaction info signature');
