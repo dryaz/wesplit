@@ -27,9 +27,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import app.wesplit.ShareData
 import app.wesplit.ShareDelegate
-import app.wesplit.domain.model.KotlinPlatform
 import app.wesplit.domain.model.account.Login
-import app.wesplit.domain.model.currentPlatform
 import app.wesplit.ui.OrDivider
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -67,14 +65,10 @@ internal fun LoginSection(
         )
         Spacer(modifier = Modifier.height(32.dp))
         GoogleLoginButton { onLoginRequest(Login.Social(Login.Social.Type.GOOGLE)) }
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         OrDivider()
-        Spacer(modifier = Modifier.height(4.dp))
-        if (currentPlatform is KotlinPlatform.Ios) {
-            AppleLoginButton { onLoginRequest(Login.Social(Login.Social.Type.APPLE)) }
-        } else {
-            AnonymousLoginButton { onLoginRequest(Login.Anonymous) }
-        }
+        Spacer(modifier = Modifier.height(8.dp))
+        AppleLoginButton { onLoginRequest(Login.Social(Login.Social.Type.APPLE)) }
         Spacer(modifier = Modifier.height(32.dp))
         TermsAndPolicyText(modifier = Modifier.padding(horizontal = 32.dp).alpha(0.65f))
     }
