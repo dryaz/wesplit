@@ -150,6 +150,7 @@ fun GroupSettingsScreen(
                     },
                     onJoin = { participant ->
                         viewModel.join(participant)
+                        onAction(GroupSettingsAction.Back)
                     },
                     tutorialControl = tutorialControl,
                     onImageChange = {

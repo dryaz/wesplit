@@ -209,23 +209,37 @@ class GroupFirebaseRepository(
                     existingGroup.participants.firstOrNull { it.isMe() }?.user?.authIds
                         ?: emptyList()
                 ) + (userRepository.get().value?.authIds ?: emptyList())
-            if (myTokens.isEmpty()) return
+            val newParticipants = existingGroup.participants.filterNot { it.isMe() }.toSet()
 
             val newTokens = existingGroup.tokens.filterNot { it in myTokens }
+            val batch = Firebase.firestore.batch()
             // TODO: Check if it's accurate (spoiler: probably not)
+            val groupRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId)
             if (newTokens.isNotEmpty()) {
-                Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).update(
-                    strategy = Group.serializer(),
-                    data =
-                        existingGroup.copy(
-                            tokens = newTokens,
-                        ),
+                batch.update(
+                    documentRef = groupRef,
+                    mapOf(TOKENS_FIELD to newTokens),
                 )
             } else {
-                Firebase.firestore.collection(GROUP_COLLECTION).document(groupId).update(
+                batch.update(
+                    documentRef = groupRef,
                     mapOf(TOKENS_FIELD to FieldValue.delete),
                 )
             }
+
+            if (newParticipants.isNotEmpty()) {
+                batch.update(
+                    documentRef = groupRef,
+                    mapOf(PARTICIPANTS_FIELD to newParticipants),
+                )
+            } else {
+                batch.update(
+                    documentRef = groupRef,
+                    mapOf(PARTICIPANTS_FIELD to FieldValue.delete),
+                )
+            }
+
+            batch.commit()
         }
     }
 
