@@ -93,7 +93,6 @@ class ExpenseFirebaseRepository(
         withContext(coroutineDispatcher + NonCancellable) {
             val newExpense =
                 expense.copy(
-                    status = ExpenseStatus.NEW,
                     lastUpdated = Timestamp.ServerTimestamp,
                 )
             userRepository.update(Setting.Currency(newExpense.totalAmount.currencyCode))

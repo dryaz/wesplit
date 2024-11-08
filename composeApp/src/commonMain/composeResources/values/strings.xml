@@ -62,6 +62,10 @@
     <string name="plus_feature_currencies_descr_short">Simplify multi currency debts</string>
     <string name="plus_feature_currencies_descr_full">Effortlessly manage and convert multiple currencies. Use different currencies in one group. Convert to the base one when settling.</string>
 
+    <string name="plus_feature_single_settle_title">Settle single expense</string>
+    <string name="plus_feature_single_settle_descr_short">Granular Control for Settlements</string>
+    <string name="plus_feature_single_settle_descr_full">Settle all group transactions effortlessly for FREE. Gain better control with single settlement adjustments!</string>
+
     <string name="plus_feature_noads_title">No ads</string>
     <string name="plus_feature_noads_descr_short">Nothing will interrupt you</string>
     <string name="plus_feature_noads_descr_full">Experience uninterrupted debt management everywhere with a distraction-free interface. Focus solely on tracking and settling your debts.</string>

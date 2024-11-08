@@ -21,6 +21,7 @@ import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.expense.ExpenseStatus
 import app.wesplit.domain.model.expense.ExpenseType
 import app.wesplit.domain.model.expense.Share
 import app.wesplit.domain.model.expense.SplitType
@@ -55,6 +56,9 @@ private const val UPDATE_AMOUNT_EVENT = "exp_update_amount"
 private const val UPDATE_PAYER_EVENT = "exp_update_payer"
 private const val UPDATE_SHARES_EVENT = "exp_update_shares"
 
+private const val SETTLEMENT_CHANGE = "exp_update_settled"
+private const val SETTLEMENT_PARAM = "isSettled"
+
 private const val UPDATE_PROTECTION = "exp_update_protection"
 
 sealed interface UpdateAction {
@@ -64,6 +68,8 @@ sealed interface UpdateAction {
     data class TotalAmount(val value: Double, val currencyCode: String) : UpdateAction
 
     data class Date(val millis: Long) : UpdateAction
+
+    data class Settled(val isSettled: Boolean) : UpdateAction
 
     data object Commit : UpdateAction
 
@@ -316,6 +322,22 @@ class ExpenseDetailsViewModel(
                     } else {
                         onSubscriptionRequest(EXP_PROTECT_PAYWALL_SOURCE)
                         _state.update { data.copy(expense = expense.copy(protectionList = emptySet())) }
+                    }
+                }
+
+                is UpdateAction.Settled -> {
+                    if (accountRepository.get().value.isPlus() || !action.isSettled) {
+                        analyticsManager.track(SETTLEMENT_CHANGE, mapOf(SETTLEMENT_PARAM to action.isSettled.toString()))
+                        _state.update {
+                            data.copy(
+                                expense =
+                                    expense.copy(
+                                        status = if (action.isSettled) ExpenseStatus.SETTLED else ExpenseStatus.NEW,
+                                    ),
+                            )
+                        }
+                    } else {
+                        onSubscriptionRequest(SETTLEMENT_CHANGE)
                     }
                 }
             }

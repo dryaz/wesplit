@@ -1,6 +1,7 @@
 package app.wesplit.expense
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -63,6 +65,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -81,6 +84,7 @@ import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.SplitType
 import app.wesplit.domain.model.expense.allowedToChange
 import app.wesplit.domain.model.expense.isProtected
+import app.wesplit.domain.model.expense.isSettled
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
@@ -94,8 +98,9 @@ import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
 import app.wesplit.ui.tutorial.TutorialStep
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
+import dev.gitlive.firebase.firestore.Timestamp
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Clear
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Create
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
@@ -110,6 +115,7 @@ import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.create
 import split.composeapp.generated.resources.ic_down
 import split.composeapp.generated.resources.ic_flag
+import split.composeapp.generated.resources.ic_plus
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_expense
 import split.composeapp.generated.resources.retry
@@ -263,9 +269,26 @@ private fun AddExpenseScreenView(
         modifier = modifier.padding(top = 16.dp).verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        AnimatedVisibility(
+            modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp).padding(bottom = 16.dp),
+            visible = data.expense.isSettled(),
+        ) {
+            SettledDisclaimer(data) {
+                onUpdated(UpdateAction.Settled(isSettled = false))
+            }
+        }
         ExpenseDetails(data, onUpdated)
         Spacer(modifier = Modifier.height(16.dp))
         SharesDetails(data, onUpdated)
+
+        AnimatedVisibility(
+            modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(16.dp),
+            visible = !data.expense.isSettled(),
+        ) {
+            MarkAsSettled {
+                onUpdated(UpdateAction.Settled(isSettled = true))
+            }
+        }
 
         if (data.expense.id != null) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -320,7 +343,98 @@ private fun AddExpenseScreenView(
     }
 }
 
-@OptIn(ExperimentalAdaptiveApi::class)
+@Composable
+fun SettledDisclaimer(
+    data: ExpenseDetailsViewModel.State.Data,
+    onDismiss: () -> Unit,
+) {
+    ListItem(
+        modifier = Modifier.clip(RoundedCornerShape(15.dp)),
+        leadingContent = {
+            Icon(
+                modifier = Modifier.minimumInteractiveComponentSize(),
+                imageVector = AdaptiveIcons.Outlined.Done,
+                contentDescription = "Expense already settled",
+            )
+        },
+        headlineContent = {
+            Text(
+                text = "Already settled",
+            )
+        },
+        supportingContent = {
+            val text =
+                if (data.expense.lastUpdated is Timestamp.ServerTimestamp) {
+                    "Happy splitting!"
+                } else {
+                    "At ${data.expense.lastUpdated.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())}"
+                }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        },
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        trailingContent = {
+            IconButton(
+                onClick = onDismiss,
+            ) {
+                Icon(
+                    modifier = Modifier.minimumInteractiveComponentSize(),
+                    imageVector = AdaptiveIcons.Outlined.Clear,
+                    contentDescription = "Mark as non-settled",
+                )
+            }
+        },
+    )
+}
+
+@Composable
+fun MarkAsSettled(onSettled: () -> Unit) {
+    ListItem(
+        modifier =
+            Modifier.clip(RoundedCornerShape(15.dp)).clickable {
+                onSettled()
+            },
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                headlineColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                leadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                supportingColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+            ),
+        leadingContent = {
+            Icon(
+                modifier = Modifier.minimumInteractiveComponentSize(),
+                imageVector = AdaptiveIcons.Outlined.Done,
+                contentDescription = "Mark as settled",
+            )
+        },
+        headlineContent = {
+            Text(
+                text = "Mark as settled",
+            )
+        },
+        supportingContent = {
+            Text(
+                text = "Only this transaction",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        trailingContent = {
+            Image(
+                modifier = Modifier.height(24.dp),
+                painter = painterResource(Res.drawable.ic_plus),
+                contentDescription = "Protected feature",
+            )
+        },
+    )
+}
+
 @Composable
 private fun ProtectionBlock(
     onUpdated: (UpdateAction) -> Unit,

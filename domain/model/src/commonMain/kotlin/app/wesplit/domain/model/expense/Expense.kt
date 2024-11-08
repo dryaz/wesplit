@@ -51,6 +51,8 @@ data class Expense(
     // TODO: Comments
 )
 
+fun Expense.isSettled() = this.status == ExpenseStatus.SETTLED
+
 fun BaseTimestamp.toInstant() = Instant.fromEpochSeconds((this as Timestamp).seconds)
 
 @Serializable
@@ -66,6 +68,6 @@ fun Expense.myAmount() = shares.find { it.participant.isMe() }?.amount ?: Amount
 
 fun Expense.myAmount(group: Group) = shares.find { it.participant.isMe(group) }?.amount ?: Amount(0.0, totalAmount.currencyCode)
 
-fun Expense.allowedToChange() = protectionList.isEmpty() || Firebase.auth.currentUser?.uid in protectionList
+fun Expense.allowedToChange() = (protectionList.isEmpty() || Firebase.auth.currentUser?.uid in protectionList) && !isSettled()
 
 fun Expense.isProtected() = protectionList.isNotEmpty()
