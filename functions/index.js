@@ -1,64 +1,71 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const axios = require('axios');
-const { getFirestore } = require('firebase-admin/firestore');
+const { getFirestore, Timestamp } = require('firebase-admin/firestore');
+
+const { onCall } = require("firebase-functions/v2/https");
+const { getAuth } = require("firebase-admin/auth");
+const { HttpsError } = require("firebase-functions/v2");
+const crypto = require("crypto");
 
 admin.initializeApp();
 
 const db = getFirestore();
+const auth = getAuth();
 
-exports.generateGroupToken = functions.https.onCall(async (data, context) => {
-  const { groupId, publicToken } = data;
+exports.generateGroupToken = onCall(async (request) => {
+  const { groupId, publicToken } = request.data;
 
+  // Validate input parameters
   if (!groupId || !publicToken) {
-    throw new functions.https.HttpsError(
-      'invalid-argument',
+    throw new HttpsError(
+      "invalid-argument",
       'The function must be called with both "groupId" and "publicToken" arguments.'
     );
   }
 
   try {
-    const groupDoc = await admin.firestore().collection('groups').doc(groupId).get();
+    const groupDoc = await db.collection("groups").doc(groupId).get();
 
+    // Check if the group exists
     if (!groupDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Group not found.');
+      throw new HttpsError("not-found", "Group not found.");
     }
 
     const groupData = groupDoc.data();
 
     // Hash the provided publicToken
-    // const hashedPublicToken = crypto.createHash('sha256').update(publicToken).digest('hex');
+    // const hashedPublicToken = crypto.createHash("sha256").update(publicToken).digest("hex");
 
     // Verify the hashed token matches
     if (groupData.publicToken !== publicToken) {
-      throw new functions.https.HttpsError('permission-denied', 'Invalid public token.');
+      throw new HttpsError("permission-denied", "Invalid public token.");
     }
 
     // Check if the public token has expired
-    // const currentTime = admin.firestore.Timestamp.now();
-    // if (groupData.publicTokenExpiration && currentTime > groupData.publicTokenExpiration) {
-    //   throw new functions.https.HttpsError('permission-denied', 'Public token has expired.');
-    // }
+    const currentTime = Timestamp.now();
+    if (groupData.publicTokenExpiration && currentTime > groupData.publicTokenExpiration) {
+      throw new HttpsError("permission-denied", "Public token has expired.");
+    }
 
     // Optionally invalidate the token to make it single-use
-    // await groupDoc.ref.update({ publicTokenHash: null, publicTokenExpiration: null });
+    // await groupDoc.ref.update({ publicToken: null, publicTokenExpiration: null });
 
     const customClaims = {
       groupId: groupId,
     };
 
     const uid = `group_${groupId}`;
-
-    const customToken = await admin.auth().createCustomToken(uid, customClaims);
+    const customToken = await auth.createCustomToken(uid, customClaims);
 
     return { customToken };
   } catch (error) {
-    console.error('Error generating custom token:', error);
+    console.error("Error generating custom token:", error);
 
-    if (error instanceof functions.https.HttpsError) {
+    if (error instanceof HttpsError) {
       throw error;
     } else {
-      throw new functions.https.HttpsError('internal', 'Unable to generate custom token.');
+      throw new HttpsError("internal", "Unable to generate custom token.");
     }
   }
 });
@@ -1077,9 +1084,6 @@ exports.handleAppleServerNotification = onRequest(async (req, res) => {
     res.status(500).send('Error processing notification');
   }
 });
-
-// Import Firestore Timestamp
-const { Timestamp } = admin.firestore;
 
 // Define the Cloud Function
 exports.updateUserSubscription = functions.firestore
