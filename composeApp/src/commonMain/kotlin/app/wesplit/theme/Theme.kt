@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import app.wesplit.domain.model.AnalyticsManager
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamicColorScheme
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveTheme
@@ -22,6 +23,7 @@ import io.github.alexzhirkevich.cupertino.adaptive.CupertinoThemeSpec
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.MaterialThemeSpec
 import io.github.alexzhirkevich.cupertino.adaptive.Theme
+import org.koin.compose.koinInject
 
 @Immutable
 data class ColorFamily(
@@ -90,10 +92,14 @@ val MaterialTheme.extraColorScheme: ExtraColorsPalette
     @ReadOnlyComposable
     get() = LocalExtraColorsPalette.current
 
+private const val CHANGE_COLOR_EVENT = "change_color_mode"
+private const val CHANGE_COLOR_PARAM = "mode"
+
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
     val systemDark = isSystemInDarkTheme()
+    val analyticsManager: AnalyticsManager = koinInject()
 
     var colorMode by remember { mutableStateOf(ColorMode.SYSTEM) }
     val darkTheme by remember {
@@ -118,32 +124,32 @@ fun AppTheme(content: @Composable () -> Unit) {
 
     AdaptiveTheme(
         material =
-            MaterialThemeSpec.Default(
-                colorScheme =
-                    dynamicColorScheme(
-                        seedColor = Color(0xFF48B04A),
-                        isDark = darkTheme,
-                        isAmoled = false,
-                        style = PaletteStyle.Rainbow,
-                        modifyColorScheme = { scheme ->
-                            if (darkTheme) {
-                                scheme.copy(
-                                    surfaceContainerLowest = scheme.surfaceContainerHighest,
-                                    surfaceContainerLow = scheme.surfaceContainerHigh,
-                                    surfaceContainerHigh = scheme.surfaceContainerLow,
-                                    surfaceContainerHighest = scheme.surfaceContainerLowest,
-                                )
-                            } else {
-                                scheme
-                            }
-                        },
-                    ),
-                typography = MaterialTypography(),
+        MaterialThemeSpec.Default(
+            colorScheme =
+            dynamicColorScheme(
+                seedColor = Color(0xFF48B04A),
+                isDark = darkTheme,
+                isAmoled = false,
+                style = PaletteStyle.Rainbow,
+                modifyColorScheme = { scheme ->
+                    if (darkTheme) {
+                        scheme.copy(
+                            surfaceContainerLowest = scheme.surfaceContainerHighest,
+                            surfaceContainerLow = scheme.surfaceContainerHigh,
+                            surfaceContainerHigh = scheme.surfaceContainerLow,
+                            surfaceContainerHighest = scheme.surfaceContainerLowest,
+                        )
+                    } else {
+                        scheme
+                    }
+                },
             ),
+            typography = MaterialTypography(),
+        ),
         cupertino =
-            CupertinoThemeSpec.Default(
-                colorScheme = cupertinoColorScheme,
-            ),
+        CupertinoThemeSpec.Default(
+            colorScheme = cupertinoColorScheme,
+        ),
         content = {
             val themeState =
                 ThemeState(
@@ -151,7 +157,15 @@ fun AppTheme(content: @Composable () -> Unit) {
                     colorMode = colorMode,
                     actionCallback = { action ->
                         when (action) {
-                            is ThemeAction.ChangeColorMode -> colorMode = action.mode
+                            is ThemeAction.ChangeColorMode -> {
+                                analyticsManager.track(
+                                    CHANGE_COLOR_EVENT, mapOf(
+                                        CHANGE_COLOR_PARAM to action.mode.toString()
+                                    )
+                                )
+                                colorMode = action.mode
+                            }
+
                             is ThemeAction.ChangeTheme -> theme = action.theme
                         }
                     },
