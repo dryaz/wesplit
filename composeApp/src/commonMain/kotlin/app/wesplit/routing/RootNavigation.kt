@@ -49,6 +49,7 @@ import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.paywall.PaywallRepository
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.settle.SettleSuggestionUseCase
 import app.wesplit.expense.AddExpenseAction
 import app.wesplit.expense.ExpenseDetailsScreen
 import app.wesplit.expense.ExpenseDetailsViewModel
@@ -346,6 +347,7 @@ private fun Navigation(
     val balanceLocalCalculationUseCase: BalanceLocalCalculationUseCase = koinInject()
     val currencyRepository: CurrencyRepository = koinInject()
     val balanceFxCalculationUseCase: BalanceFxCalculationUseCase = koinInject()
+    val settleSuggestionUseCase: SettleSuggestionUseCase = koinInject()
     val coroutineScope = rememberCoroutineScope()
     val shareDelegate: ShareDelegate = koinInject()
     val clipboardManager = LocalClipboardManager.current
@@ -705,6 +707,7 @@ private fun Navigation(
                                 currencyRepository,
                                 analyticsManager,
                                 balanceFxCalculationUseCase,
+                                settleSuggestionUseCase,
                                 onSubscriptionRequest,
                             )
                         }

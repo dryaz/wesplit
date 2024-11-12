@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
@@ -26,6 +27,7 @@ fun ParticipantListItem(
     enabled: Boolean = true,
     showImage: Boolean = true,
     showMeBadge: Boolean = true,
+    avatarSize: Dp = 56.dp,
     subComposable: @Composable (() -> Unit)? = null,
     action: @Composable (() -> Unit)? = null,
     onClick: ((Participant) -> Unit)? = null,
@@ -45,7 +47,10 @@ fun ParticipantListItem(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (showImage) {
-            ParticipantAvatar(participant = participant)
+            ParticipantAvatar(
+                participant = participant,
+                size = avatarSize,
+            )
         }
 
         val suffix =

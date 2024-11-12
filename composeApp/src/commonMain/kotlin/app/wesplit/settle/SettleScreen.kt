@@ -161,6 +161,7 @@ private fun SettleContent(
     ) {
         SettleBalanceList(
             balance = state.participantBalances,
+            appliedSuggestions = state.suggestions?.appliedSuggestions,
             footer = {
                 FxBlock(
                     fxRates = state.fxRates,
@@ -169,6 +170,10 @@ private fun SettleContent(
                     isRecalculateEnabled = state.recalculationEnabled,
                     onCurrencyChanged = { viewModel.selectCurrency(it) },
                     onToggle = { viewModel.toggleRecalculation(it) },
+                )
+                SuggestionsBlock(
+                    isSuggestionsEnabled = state.suggestionsEnabled,
+                    onToggle = { viewModel.toggleSuggestions(it) },
                 )
             },
         )
@@ -341,4 +346,41 @@ private fun FxBlock(
             },
         )
     }
+}
+
+@Composable
+private fun SuggestionsBlock(
+    isSuggestionsEnabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+    val protectCallback: (Boolean) -> Unit =
+        remember {
+            { onToggle(it) }
+        }
+
+    ListItem(
+        modifier = Modifier.clickable { protectCallback(!isSuggestionsEnabled) }.height(IntrinsicSize.Max),
+        headlineContent = {
+            PlusProtected {
+                Text(
+                    text = "Suggest split",
+                )
+            }
+        },
+        supportingContent = {
+            Text(
+                text = "Calculate best way to settle",
+            )
+        },
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        trailingContent = {
+            Switch(
+                checked = isSuggestionsEnabled,
+                onCheckedChange = { protectCallback(it) },
+            )
+        },
+    )
 }

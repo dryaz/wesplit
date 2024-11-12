@@ -19,6 +19,8 @@ import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.settle.SettleSuggestion
+import app.wesplit.domain.settle.SettleSuggestionUseCase
 import app.wesplit.routing.RightPane
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
@@ -42,9 +44,9 @@ import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 
 private const val SETTLE_ALL_EVENT = "settle_all"
-private const val RECALCULATION_EVENT = "recalculation"
 
 private const val RECALCULATION_PAYWALL_SOURCE = "recalculation"
+private const val SUGGESTIONS_PAYWALL_SOURCE = "settle_suggestions"
 private const val CURRENCY_PAYWALL_SOURCE = "currency_recalc"
 
 class SettleViewModel(
@@ -56,6 +58,7 @@ class SettleViewModel(
     private val currencyRepository: CurrencyRepository,
     private val analyticsManager: AnalyticsManager,
     private val balanceFxCalculationUseCase: BalanceFxCalculationUseCase,
+    private val settleSuggestionUseCase: SettleSuggestionUseCase,
     private val onSubscriptionRequest: (String) -> Unit,
 ) : ViewModel(), KoinComponent {
     val uiState: StateFlow<UiState>
@@ -86,6 +89,8 @@ class SettleViewModel(
             UiSetting(
                 selectedCurrency = "USD",
                 isRecalculateEnabled = false,
+                // TODO: True if PRO
+                isSuggestionsEnabled = false,
             ),
         )
 
@@ -137,8 +142,6 @@ class SettleViewModel(
                     )
                 }
 
-            println("FX STATE IS $fxState")
-
             UiState.Data(
                 group = groupState.group,
                 selectedCurrency = uiSettings.selectedCurrency,
@@ -147,6 +150,17 @@ class SettleViewModel(
                 participantBalances = participantBalance,
                 // TODO: Store in settings?
                 recalculationEnabled = uiSettings.isRecalculateEnabled,
+                suggestionsEnabled = uiSettings.isSuggestionsEnabled,
+                suggestions =
+                    if (uiSettings.isSuggestionsEnabled) {
+                        UiState.Data.ApplicableSuggestion(
+                            appliedSuggestions = settleSuggestionUseCase.get(participantBalance),
+                            // TODO: IDEA is to give granular control for user
+                            suggestion = emptyList(),
+                        )
+                    } else {
+                        null
+                    },
             )
         }.stateIn(
             scope = viewModelScope,
@@ -175,6 +189,14 @@ class SettleViewModel(
         }
     }
 
+    fun toggleSuggestions(isEnabled: Boolean) {
+        plusProtectedCall(SUGGESTIONS_PAYWALL_SOURCE) {
+            uiSetting.getAndUpdate {
+                it.copy(isSuggestionsEnabled = isEnabled)
+            }
+        }
+    }
+
     fun settleAll() {
         analyticsManager.track(SETTLE_ALL_EVENT)
         viewModelScope.launch {
@@ -189,7 +211,7 @@ class SettleViewModel(
         call: () -> Unit,
     ) {
         if (accountRepository.get().value.isPlus()) {
-            analyticsManager.track(RECALCULATION_EVENT)
+            analyticsManager.track(eventSource)
             call.invoke()
         } else {
             onSubscriptionRequest(eventSource)
@@ -277,13 +299,21 @@ class SettleViewModel(
             val recalculationEnabled: Boolean,
             val currencyCodesCollection: CurrencyCodesCollection,
             val participantBalances: Balance,
-        ) : UiState
+            val suggestionsEnabled: Boolean,
+            val suggestions: ApplicableSuggestion?,
+        ) : UiState {
+            data class ApplicableSuggestion(
+                val appliedSuggestions: List<SettleSuggestion>,
+                val suggestion: List<SettleSuggestion>,
+            )
+        }
     }
 }
 
 private data class UiSetting(
     val selectedCurrency: String,
     val isRecalculateEnabled: Boolean,
+    val isSuggestionsEnabled: Boolean,
 )
 
 private sealed interface GroupState {
