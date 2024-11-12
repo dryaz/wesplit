@@ -62,6 +62,10 @@
     <string name="plus_feature_currencies_descr_short">Simplify multi currency debts</string>
     <string name="plus_feature_currencies_descr_full">Effortlessly manage and convert multiple currencies. Use different currencies in one group. Convert to the base one when settling.</string>
 
+    <string name="plus_feature_suggest_title">Smart Settlement Suggestions</string>
+    <string name="plus_feature_suggest_descr_short">Optimize payments to settle up quickly</string>
+    <string name="plus_feature_suggest_descr_full">Effortlessly balance expenses with our Smart Settlement feature. Get personalized suggestions to simplify group payments and minimize the number of transactions.</string>
+
     <string name="plus_feature_single_settle_title">Settle single expense</string>
     <string name="plus_feature_single_settle_descr_short">Granular Control for Settlements</string>
     <string name="plus_feature_single_settle_descr_full">Settle all group transactions effortlessly for FREE. Gain better control with single settlement adjustments!</string>

@@ -8,6 +8,7 @@ import split.composeapp.generated.resources.img_feature_images
 import split.composeapp.generated.resources.img_feature_no_ads
 import split.composeapp.generated.resources.img_feature_protect
 import split.composeapp.generated.resources.img_feature_single_settle
+import split.composeapp.generated.resources.img_feature_suggest
 import split.composeapp.generated.resources.plus_feature_currencies_descr_full
 import split.composeapp.generated.resources.plus_feature_currencies_descr_short
 import split.composeapp.generated.resources.plus_feature_currencies_title
@@ -23,6 +24,9 @@ import split.composeapp.generated.resources.plus_feature_protect_title
 import split.composeapp.generated.resources.plus_feature_single_settle_descr_full
 import split.composeapp.generated.resources.plus_feature_single_settle_descr_short
 import split.composeapp.generated.resources.plus_feature_single_settle_title
+import split.composeapp.generated.resources.plus_feature_suggest_descr_full
+import split.composeapp.generated.resources.plus_feature_suggest_descr_short
+import split.composeapp.generated.resources.plus_feature_suggest_title
 
 internal val features: List<Feature> =
     listOf(
@@ -37,6 +41,12 @@ internal val features: List<Feature> =
             shortDescr = Res.string.plus_feature_currencies_descr_short,
             fullDescr = Res.string.plus_feature_currencies_descr_full,
             image = Res.drawable.img_feature_fx,
+        ),
+        Feature(
+            title = Res.string.plus_feature_suggest_title,
+            shortDescr = Res.string.plus_feature_suggest_descr_short,
+            fullDescr = Res.string.plus_feature_suggest_descr_full,
+            image = Res.drawable.img_feature_suggest,
         ),
         Feature(
             title = Res.string.plus_feature_images_title,

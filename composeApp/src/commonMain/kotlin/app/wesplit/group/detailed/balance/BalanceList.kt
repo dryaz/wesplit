@@ -254,7 +254,7 @@ fun LocalBalances() {
             ),
         headlineContent = {
             Text(
-                text = "Offline balances",
+                text = "Offline balances is shown",
             )
         },
         leadingContent = {
