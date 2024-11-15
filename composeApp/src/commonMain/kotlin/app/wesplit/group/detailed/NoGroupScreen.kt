@@ -24,6 +24,7 @@ import split.composeapp.generated.resources.empty_group_cd
 import split.composeapp.generated.resources.group_detailed_empty_description
 import split.composeapp.generated.resources.img_empty_group
 import split.composeapp.generated.resources.img_logo_color
+import split.composeapp.generated.resources.wesplit_logo
 
 /**
  * Right pane state for expanded UI when no group selected.
@@ -53,7 +54,7 @@ fun NoGroupScreen() {
             Image(
                 modifier = Modifier,
                 painter = painterResource(Res.drawable.img_logo_color),
-                contentDescription = "Wesplit Logo",
+                contentDescription = stringResource(Res.string.wesplit_logo),
             )
         }
     }

@@ -8,6 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import app.wesplit.domain.model.expense.Expense
+import org.jetbrains.compose.resources.stringResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.error
 
 sealed interface ExpenseAction {
     data class OpenDetails(val expense: Expense) : ExpenseAction
@@ -27,6 +30,6 @@ fun ExpenseSection(
                 CircularProgressIndicator()
             }
 
-        ExpenseSectionViewModel.State.Error -> Text("Error") // TOOD: Non-auth state
+        ExpenseSectionViewModel.State.Error -> Text(stringResource(Res.string.error)) // TOOD: Non-auth state
     }
 }

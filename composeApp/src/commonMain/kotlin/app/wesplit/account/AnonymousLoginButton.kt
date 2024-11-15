@@ -16,6 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.login_anon
 
 @Composable
 fun AnonymousLoginButton(onAction: () -> Unit) {
@@ -30,7 +33,7 @@ fun AnonymousLoginButton(onAction: () -> Unit) {
             if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp))
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "Login Anonymously",
+                text = stringResource(Res.string.login_anon),
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }

@@ -44,7 +44,6 @@ import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
 import app.wesplit.ui.tutorial.TutorialStep
-import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AddCircle
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Menu
@@ -56,6 +55,9 @@ import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.group_list_empty_description_authorized
 import split.composeapp.generated.resources.group_list_title
 import split.composeapp.generated.resources.img_add_data
+import split.composeapp.generated.resources.tutorial_step_create_group_description
+import split.composeapp.generated.resources.tutorial_step_create_group_title
+import split.composeapp.generated.resources.users_count
 
 sealed interface GroupListAction {
     data class Select(val group: Group) : GroupListAction
@@ -98,8 +100,8 @@ fun GroupListScreen(
     val tutorialStep =
         remember {
             TutorialStep(
-                title = "Create new group",
-                description = "All expenses combined into groups. Who owes what is calculated automatically.",
+                title = Res.string.tutorial_step_create_group_title,
+                description = Res.string.tutorial_step_create_group_description,
                 onboardingStep = OnboardingStep.GROUP_ADD,
                 helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
                 isModal = false,
@@ -225,7 +227,6 @@ private fun EmptyGroupAuthorized(
     }
 }
 
-@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 private fun GroupList(
     modifier: Modifier = Modifier,
@@ -258,7 +259,7 @@ private fun GroupList(
                             overflow = TextOverflow.Ellipsis,
                         )
                     },
-                    supportingContent = { Text("Users: ${group.participants.size}") },
+                    supportingContent = { Text(stringResource(Res.string.users_count, group.participants.size)) },
                     leadingContent = {
                         GroupImage(
                             imageUrl = group.imageUrl,

@@ -54,6 +54,19 @@ import split.composeapp.generated.resources.empty_transactions_cd
 import split.composeapp.generated.resources.ic_flag
 import split.composeapp.generated.resources.img_search_empty
 import split.composeapp.generated.resources.non_distr_cd
+import split.composeapp.generated.resources.not_participating
+import split.composeapp.generated.resources.not_settled
+import split.composeapp.generated.resources.not_split
+import split.composeapp.generated.resources.not_split_amount
+import split.composeapp.generated.resources.paid_by_me
+import split.composeapp.generated.resources.paid_by_person
+import split.composeapp.generated.resources.paid_by_you
+import split.composeapp.generated.resources.personal_expense
+import split.composeapp.generated.resources.settled
+import split.composeapp.generated.resources.with_me
+import split.composeapp.generated.resources.you_borrowed
+import split.composeapp.generated.resources.you_lent
+import split.composeapp.generated.resources.your_share
 
 enum class FilterType {
     NOT_SETTLED,
@@ -130,7 +143,7 @@ fun ExpenseList(
                             filters.add(FilterType.NOT_SETTLED)
                         }
                     },
-                    label = { Text("Not settled") },
+                    label = { Text(stringResource(Res.string.not_settled)) },
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 FilterChip(
@@ -145,7 +158,7 @@ fun ExpenseList(
                             filters.add(FilterType.NOT_SPLIT)
                         }
                     },
-                    label = { Text("Not split") },
+                    label = { Text(stringResource(Res.string.not_split)) },
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 FilterChip(
@@ -160,7 +173,7 @@ fun ExpenseList(
                             filters.add(FilterType.WITH_ME)
                         }
                     },
-                    label = { Text("With me") },
+                    label = { Text(stringResource(Res.string.with_me)) },
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 FilterChip(
@@ -175,7 +188,7 @@ fun ExpenseList(
                             filters.add(FilterType.PAYED_ME)
                         }
                     },
-                    label = { Text("Payed by me") },
+                    label = { Text(stringResource(Res.string.paid_by_me)) },
                 )
             }
         }
@@ -242,7 +255,12 @@ private fun ExpenseItem(
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = if (expense.payedBy.isMe(group)) "Payed by You" else "Payed by ${expense.payedBy.name}",
+                text =
+                    if (expense.payedBy.isMe(group)) {
+                        stringResource(Res.string.paid_by_you)
+                    } else {
+                        stringResource(Res.string.paid_by_person, expense.payedBy.name)
+                    },
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.secondary,
             )
@@ -266,7 +284,7 @@ private fun ExpenseItem(
                 color = MaterialTheme.colorScheme.secondary,
             )
             Text(
-                text = "You: ${expense.myAmount(group).format()}",
+                text = stringResource(Res.string.your_share, expense.myAmount(group).format()),
                 style = MaterialTheme.typography.bodySmall,
                 color =
                     if (expense.myAmount().value != 0.0) {
@@ -302,20 +320,20 @@ private fun LentString(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "Not split: ${undistributed?.format()}!",
+                text = stringResource(Res.string.not_split_amount, "${undistributed?.format()}"),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onErrorContainer,
             )
         }
     } else if (expense.status == ExpenseStatus.SETTLED) {
         Text(
-            text = "Settled",
+            text = stringResource(Res.string.settled),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outlineVariant,
         )
     } else if (expense.myAmount(group).value == 0.0 && !expense.payedBy.isMe(group)) {
         Text(
-            text = "You're not participating",
+            text = stringResource(Res.string.not_participating),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outlineVariant,
         )
@@ -327,20 +345,20 @@ private fun LentString(
             )
         if (lent.value != 0.0) {
             Text(
-                text = "You lent: ${lent.format()}",
+                text = stringResource(Res.string.you_lent, lent.format()),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
         } else {
             Text(
-                text = "Personal expense",
+                text = stringResource(Res.string.personal_expense),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outlineVariant,
             )
         }
     } else {
         Text(
-            text = "You borrowed: ${expense.myAmount(group).format()}",
+            text = stringResource(Res.string.you_borrowed, expense.myAmount(group).format()),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
         )

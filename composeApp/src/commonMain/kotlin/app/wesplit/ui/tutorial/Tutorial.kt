@@ -48,6 +48,11 @@ import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.theme.extraColorScheme
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.got_it
+import split.composeapp.generated.resources.tutorial_info
 import kotlin.math.roundToInt
 
 /* Usage
@@ -135,8 +140,8 @@ NB:
  */
 
 data class TutorialStep(
-    val title: String,
-    val description: String,
+    val title: StringResource,
+    val description: StringResource,
     val onboardingStep: OnboardingStep,
     val isModal: Boolean = true,
     val helpOverlayPosition: HelpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
@@ -300,19 +305,19 @@ fun TutorialOverlay(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = AdaptiveIcons.Outlined.Info,
-                            contentDescription = "Tutorial information",
+                            contentDescription = stringResource(Res.string.tutorial_info),
                             tint = MaterialTheme.extraColorScheme.onInfoContainer,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = step.title,
+                            text = stringResource(step.title),
                             color = MaterialTheme.extraColorScheme.onInfoContainer,
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = step.description,
+                        text = stringResource(step.description),
                         color = MaterialTheme.extraColorScheme.onInfoContainer,
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -323,7 +328,7 @@ fun TutorialOverlay(
                     ) {
                         TextButton(onClick = onClose) {
                             Text(
-                                text = "Got it",
+                                text = stringResource(Res.string.got_it),
                                 color = MaterialTheme.extraColorScheme.onInfoContainerAction,
                             )
                         }

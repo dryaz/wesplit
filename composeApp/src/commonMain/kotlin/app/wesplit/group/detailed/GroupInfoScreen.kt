@@ -64,15 +64,31 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
+import split.composeapp.generated.resources.balances
 import split.composeapp.generated.resources.edit_group
+import split.composeapp.generated.resources.error
 import split.composeapp.generated.resources.ic_user_add
+import split.composeapp.generated.resources.join_group
+import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.share_group
 import split.composeapp.generated.resources.share_link_copied
+import split.composeapp.generated.resources.transactions
+import split.composeapp.generated.resources.tutorial_step_add_expense_description
+import split.composeapp.generated.resources.tutorial_step_add_expense_title
+import split.composeapp.generated.resources.tutorial_step_balances_tab_description
+import split.composeapp.generated.resources.tutorial_step_balances_tab_title
+import split.composeapp.generated.resources.tutorial_step_check_balances_description
+import split.composeapp.generated.resources.tutorial_step_check_balances_title
+import split.composeapp.generated.resources.tutorial_step_invite_friends_description
+import split.composeapp.generated.resources.tutorial_step_invite_friends_title
+import split.composeapp.generated.resources.tutorial_step_settle_up_description
+import split.composeapp.generated.resources.tutorial_step_settle_up_title
 
 sealed interface GroupInfoAction {
     data object Back : GroupInfoAction
@@ -93,8 +109,8 @@ sealed interface GroupInfoAction {
 
 private val addExpenseTutorialStep =
     TutorialStep(
-        title = "Add expense to group",
-        description = "Let create first expense in group to see how it works",
+        title = Res.string.tutorial_step_add_expense_title,
+        description = Res.string.tutorial_step_add_expense_description,
         onboardingStep = OnboardingStep.EXPENSE_ADD,
         isModal = false,
         helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
@@ -103,31 +119,29 @@ private val addExpenseTutorialStep =
 internal val checkBalanceTutorialStepFlow =
     listOf(
         TutorialStep(
-            title = "Balances tab",
-            description = "This section contains info about who ows whom.",
+            title = Res.string.tutorial_step_balances_tab_title,
+            description = Res.string.tutorial_step_balances_tab_description,
             onboardingStep = OnboardingStep.BALANCE_CHOOSER,
             isModal = false,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
         TutorialStep(
-            title = "Check balances",
-            description =
-                "Here you could see who owes what. -X means that person ows money. " +
-                    "+Y means that person is need to pay back.",
+            title = Res.string.tutorial_step_check_balances_title,
+            description = Res.string.tutorial_step_check_balances_description,
             onboardingStep = OnboardingStep.BALANCE_PREVIEW,
             isModal = true,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
         TutorialStep(
-            title = "Settle up when you're ready",
-            description = "When it's time to settleup, press this button ;)",
+            title = Res.string.tutorial_step_settle_up_title,
+            description = Res.string.tutorial_step_settle_up_description,
             onboardingStep = OnboardingStep.SETTLE_UP,
             isModal = true,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
         TutorialStep(
-            title = "Invite your friends by link",
-            description = "Share the link to your friends so they could safely see group details and add expenses.",
+            title = Res.string.tutorial_step_invite_friends_title,
+            description = Res.string.tutorial_step_invite_friends_description,
             onboardingStep = OnboardingStep.SHARE_GROUP,
             isModal = false,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
@@ -156,13 +170,9 @@ fun GroupInfoScreen(
             (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.participants?.any { it.isMe() } ?: false
         }
 
-    // TODO: Doesnt work for some reason
-    val shareMsg = stringResource(Res.string.share_link_copied)
-
-    // TODO: Improve - on mobile show share intent, check what is better on web
     fun showLinkCopiedSnackbar() {
         scope.launch {
-            snackbarHostState.showSnackbar("Sharable link copied!")
+            snackbarHostState.showSnackbar(getString(Res.string.share_link_copied))
         }
     }
 
@@ -207,9 +217,9 @@ fun GroupInfoScreen(
                     Text(
                         text =
                             when (val state = data.value) {
-                                is GroupInfoViewModel.State.Error -> "Error"
+                                is GroupInfoViewModel.State.Error -> stringResource(Res.string.error)
                                 is GroupInfoViewModel.State.GroupInfo -> state.group.uiTitle()
-                                GroupInfoViewModel.State.Loading -> "Loading"
+                                GroupInfoViewModel.State.Loading -> stringResource(Res.string.loading)
                             },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -233,7 +243,7 @@ fun GroupInfoScreen(
                         } else {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_user_add),
-                                contentDescription = "Join group",
+                                contentDescription = stringResource(Res.string.join_group),
                             )
                         }
                     }
@@ -282,7 +292,7 @@ fun GroupInfoScreen(
                         CircularProgressIndicator()
                     }
 
-                is GroupInfoViewModel.State.Error -> Text("Error") // TODO: Error state
+                is GroupInfoViewModel.State.Error -> Text(stringResource(Res.string.error)) // TODO: Error state
             }
         }
     }
@@ -361,13 +371,13 @@ private fun SplitView(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             selectedTabIndex = 2,
         ) {
-            Tab(selected = false, onClick = {}, text = { Text("Transactions") })
+            Tab(selected = false, onClick = {}, text = { Text(stringResource(Res.string.transactions)) })
             TutorialItem(
                 onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
             ) { modifier ->
                 Tab(modifier = modifier, selected = false, onClick = {
                     tutorialControl.onNext()
-                }, text = { Text("Balances") })
+                }, text = { Text(stringResource(Res.string.balances)) })
             }
         }
     }
@@ -411,14 +421,18 @@ private fun PaginationView(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
             selectedTabIndex = selectedTabIndex,
         ) {
-            Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text("Transactions") })
+            Tab(
+                selected = selectedTabIndex == 0,
+                onClick = { selectedTabIndex = 0 },
+                text = { Text(stringResource(Res.string.transactions)) },
+            )
             TutorialItem(
                 onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
             ) { modifier ->
                 Tab(modifier = modifier, selected = selectedTabIndex == 1, onClick = {
                     tutorialControl.onNext()
                     selectedTabIndex = 1
-                }, text = { Text("Balances") })
+                }, text = { Text(stringResource(Res.string.balances)) })
             }
         }
 
@@ -497,7 +511,7 @@ private fun GroupHeader(
             } else {
                 Icon(
                     painter = painterResource(Res.drawable.ic_user_add),
-                    contentDescription = "Join group",
+                    contentDescription = stringResource(Res.string.join_group),
                 )
             }
         }

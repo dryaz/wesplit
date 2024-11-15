@@ -20,9 +20,12 @@ import com.seiko.imageloader.ui.AutoSizeBox
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveCircularProgressIndicator
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_group_image
 import split.composeapp.generated.resources.ic_group
 import split.composeapp.generated.resources.ic_plus_round
+import split.composeapp.generated.resources.no_image_user
 
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
@@ -66,7 +69,7 @@ fun GroupImage(
                         Image(
                             modifier = Modifier.size(24.dp),
                             painter = painterResource(Res.drawable.ic_group),
-                            contentDescription = "No image for user $groupTitle",
+                            contentDescription = stringResource(Res.string.no_image_user, groupTitle),
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
                         )
                     }
@@ -82,7 +85,7 @@ fun GroupImage(
                 Image(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(Res.drawable.ic_plus_round),
-                    contentDescription = "Add group image",
+                    contentDescription = stringResource(Res.string.add_group_image),
                 )
             }
         }

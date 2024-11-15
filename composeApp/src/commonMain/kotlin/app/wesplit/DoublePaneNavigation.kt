@@ -40,8 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.capitalize
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.KotlinPlatform
@@ -59,6 +57,10 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.app_version
 import split.composeapp.generated.resources.change_color_mode
 import split.composeapp.generated.resources.change_theme
+import split.composeapp.generated.resources.dark_theme
+import split.composeapp.generated.resources.feedback
+import split.composeapp.generated.resources.get_app
+import split.composeapp.generated.resources.get_mobile_app
 import split.composeapp.generated.resources.ic_android
 import split.composeapp.generated.resources.ic_dark
 import split.composeapp.generated.resources.ic_feedback
@@ -66,7 +68,9 @@ import split.composeapp.generated.resources.ic_light
 import split.composeapp.generated.resources.ic_mobile_app
 import split.composeapp.generated.resources.ic_system
 import split.composeapp.generated.resources.ic_web
+import split.composeapp.generated.resources.light_theme
 import split.composeapp.generated.resources.submit_feedback_cd
+import split.composeapp.generated.resources.system_theme
 
 // TODO: Add expense from top lvl view without defining the group
 //  https://github.com/dryaz/wesplit/issues/68
@@ -141,7 +145,7 @@ fun DoublePaneNavigation(
                     NavigationRailItem(icon = {
                         Icon(
                             painter = painterResource(Res.drawable.ic_mobile_app),
-                            contentDescription = "Get mobile application",
+                            contentDescription = stringResource(Res.string.get_mobile_app),
                         )
                     }, selected = false, onClick = {
                         if (shareDelegate.supportPlatformSharing()) {
@@ -151,7 +155,7 @@ fun DoublePaneNavigation(
                         }
                     }, label = {
                         Text(
-                            text = "Get App",
+                            text = stringResource(Res.string.get_app),
                             style = MaterialTheme.typography.labelSmall,
                         )
                     })
@@ -170,7 +174,7 @@ fun DoublePaneNavigation(
                     }
                 }, label = {
                     Text(
-                        text = "Feedback",
+                        text = stringResource(Res.string.feedback),
                         style = MaterialTheme.typography.labelSmall,
                     )
                 })
@@ -189,7 +193,12 @@ fun DoublePaneNavigation(
                     )
                 }, label = {
                     Text(
-                        text = localTheme.colorMode.name.lowercase().capitalize(Locale.current),
+                        text =
+                            when (localTheme.colorMode) {
+                                ColorMode.LIGHT -> stringResource(Res.string.light_theme)
+                                ColorMode.DARK -> stringResource(Res.string.dark_theme)
+                                ColorMode.SYSTEM -> stringResource(Res.string.system_theme)
+                            },
                         style = MaterialTheme.typography.labelSmall,
                     )
                 }, selected = false, onClick = {
@@ -251,7 +260,7 @@ fun DoublePaneNavigation(
 
                 if (currentPlatform !is KotlinPlatform.Mobile) {
                     NavigationDrawerItem(
-                        label = { Text(text = "Get mobile app") },
+                        label = { Text(text = stringResource(Res.string.get_mobile_app)) },
                         selected = false,
                         onClick = {
                             if (shareDelegate.supportPlatformSharing()) {

@@ -51,7 +51,8 @@ import app.wesplit.domain.model.user.email
 import app.wesplit.domain.model.user.isPlus
 import app.wesplit.domain.model.user.participant
 import app.wesplit.domain.model.user.planValidTill
-import app.wesplit.domain.model.utils.createValidityDaysString
+import app.wesplit.domain.model.utils.calculateDaysUntil
+import app.wesplit.domain.model.utils.calculateHoursUntil
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.PlusProtected
@@ -61,10 +62,20 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowRight
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Lock
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Menu
+import kotlinx.datetime.Instant
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.back_btn_cd
+import split.composeapp.generated.resources.confirm_delete_account
+import split.composeapp.generated.resources.confirm_no_wait
+import split.composeapp.generated.resources.confirm_yes_delete
+import split.composeapp.generated.resources.delete_account
+import split.composeapp.generated.resources.delete_account_confirmation
+import split.composeapp.generated.resources.delete_account_from_wesplit
+import split.composeapp.generated.resources.go_to_privacy
+import split.composeapp.generated.resources.go_to_terms_conditions
+import split.composeapp.generated.resources.logout
 import split.composeapp.generated.resources.plus_feature_currencies_descr_short
 import split.composeapp.generated.resources.plus_feature_currencies_title
 import split.composeapp.generated.resources.plus_feature_images_descr_short
@@ -73,7 +84,16 @@ import split.composeapp.generated.resources.plus_feature_more_descr
 import split.composeapp.generated.resources.plus_feature_more_title
 import split.composeapp.generated.resources.plus_feature_protect_descr_short
 import split.composeapp.generated.resources.plus_feature_protect_title
+import split.composeapp.generated.resources.privacy_policy
 import split.composeapp.generated.resources.profile
+import split.composeapp.generated.resources.subscribe_plus
+import split.composeapp.generated.resources.terms_conditions
+import split.composeapp.generated.resources.try_plus
+import split.composeapp.generated.resources.unlock_all_features
+import split.composeapp.generated.resources.valid_subs
+import split.composeapp.generated.resources.valid_subs_days_more
+import split.composeapp.generated.resources.valid_subs_hours_more
+import split.composeapp.generated.resources.you_have_plus
 
 sealed interface ProfileAction {
     data class LoginWith(val login: Login) : ProfileAction
@@ -225,13 +245,13 @@ private fun AccountInfo(
             trailingContent = {
                 Icon(
                     AdaptiveIcons.Outlined.KeyboardArrowRight,
-                    contentDescription = "Go to privacy policy",
+                    contentDescription = stringResource(Res.string.go_to_privacy),
                     tint = MaterialTheme.colorScheme.outline,
                 )
             },
             headlineContent = {
                 Text(
-                    text = "Privacy policy",
+                    text = stringResource(Res.string.privacy_policy),
                     color = MaterialTheme.colorScheme.outline,
                 )
             },
@@ -253,13 +273,13 @@ private fun AccountInfo(
             trailingContent = {
                 Icon(
                     AdaptiveIcons.Outlined.KeyboardArrowRight,
-                    contentDescription = "Go to terms and conditions",
+                    contentDescription = stringResource(Res.string.go_to_terms_conditions),
                     tint = MaterialTheme.colorScheme.outline,
                 )
             },
             headlineContent = {
                 Text(
-                    text = "Terms&conditions",
+                    text = stringResource(Res.string.terms_conditions),
                     color = MaterialTheme.colorScheme.outline,
                 )
             },
@@ -277,7 +297,7 @@ private fun AccountInfo(
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),
                         textAlign = TextAlign.Center,
-                        text = "Delete account",
+                        text = stringResource(Res.string.delete_account),
                     )
                 },
             )
@@ -293,7 +313,7 @@ private fun AccountInfo(
                     Text(
                         modifier = Modifier.fillMaxWidth(1f),
                         textAlign = TextAlign.Center,
-                        text = "Logout",
+                        text = stringResource(Res.string.logout),
                     )
                 },
             )
@@ -306,17 +326,17 @@ private fun AccountInfo(
         AlertDialog(
             modifier = Modifier.widthIn(max = 450.dp),
             onDismissRequest = { deleteDialogShown = false },
-            title = { Text("Delete Account?") },
+            title = { Text(stringResource(Res.string.delete_account_confirmation)) },
             text = {
                 Text(
-                    text = "Are you sure that \nyou want completely delete your account?",
+                    text = stringResource(Res.string.confirm_delete_account),
                     textAlign = TextAlign.Center,
                 )
             },
             icon = {
                 Icon(
                     AdaptiveIcons.Outlined.Delete,
-                    contentDescription = "Delete account from wesplit",
+                    contentDescription = stringResource(Res.string.delete_account_from_wesplit),
                 )
             },
             confirmButton = {
@@ -324,7 +344,7 @@ private fun AccountInfo(
                     onClick = { onAccountDelete() },
                 ) {
                     Text(
-                        text = "Yes, Delete",
+                        text = stringResource(Res.string.confirm_yes_delete),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -335,7 +355,7 @@ private fun AccountInfo(
                         deleteDialogShown = false
                     },
                 ) {
-                    Text("No, Wait")
+                    Text(stringResource(Res.string.confirm_no_wait))
                 }
             },
         )
@@ -356,16 +376,16 @@ private fun ColumnScope.Plan(
     ) {
         val title =
             if (user.isPlus()) {
-                "You have Plus+"
+                stringResource(Res.string.you_have_plus)
             } else {
-                "Try Plus"
+                stringResource(Res.string.try_plus)
             }
 
         val desc =
             if (user.isPlus()) {
                 createValidityDaysString(user.planValidTill())
             } else {
-                "Unlock all features"
+                stringResource(Res.string.unlock_all_features)
             }
 
         val trailing: @Composable (() -> Unit)? =
@@ -376,7 +396,7 @@ private fun ColumnScope.Plan(
                     Icon(
                         modifier = Modifier.minimumInteractiveComponentSize(),
                         imageVector = AdaptiveIcons.Outlined.KeyboardArrowRight,
-                        contentDescription = "Subscribe to Plus",
+                        contentDescription = stringResource(Res.string.subscribe_plus),
                     )
                 }
             }
@@ -428,12 +448,32 @@ private fun ColumnScope.Plan(
                 headlineContent = {
                     Text(
                         modifier = Modifier.minimumInteractiveComponentSize().fillMaxWidth(1f),
-                        text = "Subscribe to Plus",
+                        text = stringResource(Res.string.subscribe_plus),
                         textAlign = TextAlign.Center,
                     )
                 },
             )
         }
+    }
+}
+
+/**
+ * Creates a validation string indicating how many days are left until the subscription expires.
+ *
+ * @param futureInstant The future Instant representing the expiration date.
+ * @return A string in the format "Valid for X days".
+ */
+@Composable
+fun createValidityDaysString(futureInstant: Instant?): String {
+    if (futureInstant == null) return stringResource(Res.string.valid_subs)
+
+    val days = calculateDaysUntil(futureInstant)
+
+    return if (days > 0) {
+        stringResource(Res.string.valid_subs_days_more, days)
+    } else {
+        val hours = calculateHoursUntil(futureInstant)
+        stringResource(Res.string.valid_subs_hours_more, hours)
     }
 }
 

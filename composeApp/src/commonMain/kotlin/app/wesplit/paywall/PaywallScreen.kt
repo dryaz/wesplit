@@ -80,12 +80,42 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.available_in_mobile_app
 import split.composeapp.generated.resources.back_btn_cd
+import split.composeapp.generated.resources.benefits
+import split.composeapp.generated.resources.best_offer_badge
+import split.composeapp.generated.resources.cancel
+import split.composeapp.generated.resources.download_mobile_app
+import split.composeapp.generated.resources.enter_promocode
+import split.composeapp.generated.resources.enter_valid_promocode
+import split.composeapp.generated.resources.error_encountered_problems
+import split.composeapp.generated.resources.error_fetching_plans
+import split.composeapp.generated.resources.fetch_available_plans
+import split.composeapp.generated.resources.get_mobile_app
 import split.composeapp.generated.resources.ic_badge_white
 import split.composeapp.generated.resources.ic_mobile_app
 import split.composeapp.generated.resources.ic_plus
 import split.composeapp.generated.resources.ic_promo
 import split.composeapp.generated.resources.img_best_offer
+import split.composeapp.generated.resources.label_apply
+import split.composeapp.generated.resources.label_code
+import split.composeapp.generated.resources.locked_feature
+import split.composeapp.generated.resources.month_plus
+import split.composeapp.generated.resources.offer_badge
+import split.composeapp.generated.resources.per_month
+import split.composeapp.generated.resources.plus_active
+import split.composeapp.generated.resources.plus_badge_benefits
+import split.composeapp.generated.resources.subscribe_for
+import split.composeapp.generated.resources.subscribe_via_mobile_app
+import split.composeapp.generated.resources.text_loading
+import split.composeapp.generated.resources.try_days
+import split.composeapp.generated.resources.try_month_plus
+import split.composeapp.generated.resources.try_week_plus
+import split.composeapp.generated.resources.try_year_plus
+import split.composeapp.generated.resources.web_billing_in_progress
+import split.composeapp.generated.resources.week_plus
+import split.composeapp.generated.resources.what_you_get_with
+import split.composeapp.generated.resources.year_plus
 
 sealed interface PaywallAction {
     data object Back : PaywallAction
@@ -125,13 +155,13 @@ fun PaywallRoute(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "Benefits",
+                            text = stringResource(Res.string.benefits),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Image(
                             modifier = Modifier.height(24.dp),
                             painter = painterResource(Res.drawable.ic_plus),
-                            contentDescription = "Plus badge for benefits",
+                            contentDescription = stringResource(Res.string.plus_badge_benefits),
                         )
                     }
                 },
@@ -149,7 +179,7 @@ fun PaywallRoute(
                         ) {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_promo),
-                                contentDescription = "Enter promocode",
+                                contentDescription = stringResource(Res.string.enter_promocode),
                             )
                         }
                     } else {
@@ -176,16 +206,16 @@ fun PaywallRoute(
         AlertDialog(
             onDismissRequest = { showPromoDialog = false },
             title = {
-                Text(text = "Enter Promocode")
+                Text(text = stringResource(Res.string.enter_promocode))
             },
             text = {
                 Column {
-                    Text(text = "Enter valid Promocode")
+                    Text(text = stringResource(Res.string.enter_valid_promocode))
                     Spacer(modifier = Modifier.height(8.dp))
                     TextField(
                         value = promoValue,
                         onValueChange = { promoValue = it },
-                        label = { Text("Code") },
+                        label = { Text(stringResource(Res.string.label_code)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -200,12 +230,12 @@ fun PaywallRoute(
                     },
                     enabled = promoValue.isNotBlank(),
                 ) {
-                    Text("Apply")
+                    Text(stringResource(Res.string.label_apply))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showPromoDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(Res.string.cancel))
                 }
             },
         )
@@ -278,12 +308,12 @@ fun PaywallScreen(
                                 leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
                                 supportingColor = MaterialTheme.colorScheme.onErrorContainer,
                             ),
-                        headlineContent = { Text("Error fetching plans") },
-                        supportingContent = { Text("We encountered problems, please try again later") },
+                        headlineContent = { Text(stringResource(Res.string.error_fetching_plans)) },
+                        supportingContent = { Text(stringResource(Res.string.error_encountered_problems)) },
                         leadingContent = {
                             Icon(
                                 imageVector = AdaptiveIcons.Outlined.Info,
-                                contentDescription = "We encountered problems, please try again later",
+                                contentDescription = stringResource(Res.string.error_encountered_problems),
                             )
                         },
                     )
@@ -296,8 +326,8 @@ fun PaywallScreen(
                             ListItemDefaults.colors(
                                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                             ),
-                        headlineContent = { Text("Loading...") },
-                        supportingContent = { Text("Fetch all available plans") },
+                        headlineContent = { Text(stringResource(Res.string.text_loading)) },
+                        supportingContent = { Text(stringResource(Res.string.fetch_available_plans)) },
                         leadingContent = { CircularProgressIndicator() },
                     )
                 }
@@ -315,12 +345,12 @@ fun PaywallScreen(
                                 leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
                                 supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
                             ),
-                        headlineContent = { Text("Web Billing yet in progress") },
-                        supportingContent = { Text("You could subscribe via iOS or Android app!") },
+                        headlineContent = { Text(stringResource(Res.string.web_billing_in_progress)) },
+                        supportingContent = { Text(stringResource(Res.string.subscribe_via_mobile_app)) },
                         leadingContent = {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_mobile_app),
-                                contentDescription = "Get mobile application",
+                                contentDescription = stringResource(Res.string.get_mobile_app),
                             )
                         },
                     )
@@ -339,12 +369,12 @@ fun PaywallScreen(
                                 leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
                                 supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
                             ),
-                        headlineContent = { Text("Your plus is active") },
-                        supportingContent = { Text("Also available in Wesplit mobile ") },
+                        headlineContent = { Text(stringResource(Res.string.plus_active)) },
+                        supportingContent = { Text(stringResource(Res.string.available_in_mobile_app)) },
                         leadingContent = {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_mobile_app),
-                                contentDescription = "Download mobile app",
+                                contentDescription = stringResource(Res.string.download_mobile_app),
                             )
                         },
                     )
@@ -369,7 +399,7 @@ fun PaywallScreen(
             ) {
                 Text(
                     modifier = Modifier,
-                    text = "What you get with",
+                    text = stringResource(Res.string.what_you_get_with),
                     style = MaterialTheme.typography.headlineSmall,
                     textAlign = TextAlign.Center,
                 )
@@ -403,7 +433,7 @@ fun PaywallScreen(
                                 Icon(
                                     modifier = Modifier.minimumInteractiveComponentSize(),
                                     imageVector = trailingIcon,
-                                    contentDescription = "Locked feature",
+                                    contentDescription = stringResource(Res.string.locked_feature),
                                 )
                             },
                             headlineContent = {
@@ -477,7 +507,7 @@ private fun PricingSelection(
                                 .width(64.dp)
                                 .align(Alignment.TopEnd),
                         painter = painterResource(Res.drawable.img_best_offer),
-                        contentDescription = "Best offer badge",
+                        contentDescription = stringResource(Res.string.best_offer_badge),
                     )
                 }
             } else {
@@ -528,7 +558,7 @@ private fun SubscriptionButton(
             )
         } else {
             Text(
-                text = "Subscribe for ${selected.formattedPrice}",
+                text = stringResource(Res.string.subscribe_for, selected.formattedPrice),
                 style =
                     MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
@@ -563,7 +593,7 @@ private fun SubscriptionItem(
             ),
         overlineContent = {
             Text(
-                text = "Try for ${offer.daysFree} days",
+                text = stringResource(Res.string.try_days, offer.daysFree),
                 style = MaterialTheme.typography.labelSmall,
             )
         },
@@ -572,9 +602,9 @@ private fun SubscriptionItem(
                 Text(
                     text =
                         when (subscription.period) {
-                            Subscription.Period.WEEK -> "Week Plus"
-                            Subscription.Period.MONTH -> "Month Plus"
-                            Subscription.Period.YEAR -> "Year Plus"
+                            Subscription.Period.WEEK -> stringResource(Res.string.week_plus)
+                            Subscription.Period.MONTH -> stringResource(Res.string.month_plus)
+                            Subscription.Period.YEAR -> stringResource(Res.string.year_plus)
                         },
                     style = MaterialTheme.typography.titleMedium,
                 )
@@ -586,7 +616,7 @@ private fun SubscriptionItem(
                         Icon(
                             modifier = Modifier.height(24.dp),
                             painter = painterResource(Res.drawable.ic_badge_white),
-                            contentDescription = "Offer badge",
+                            contentDescription = stringResource(Res.string.offer_badge),
                             tint = MaterialTheme.colorScheme.errorContainer,
                         )
                         Text(
@@ -602,9 +632,9 @@ private fun SubscriptionItem(
             Text(
                 text =
                     when (subscription.period) {
-                        Subscription.Period.WEEK -> "Try Wesplit for 1 week"
-                        Subscription.Period.MONTH -> "Use Wesplit for 1 month"
-                        Subscription.Period.YEAR -> "Enjoy Wesplit for 1 year"
+                        Subscription.Period.WEEK -> stringResource(Res.string.try_week_plus)
+                        Subscription.Period.MONTH -> stringResource(Res.string.try_month_plus)
+                        Subscription.Period.YEAR -> stringResource(Res.string.try_year_plus)
                     },
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -628,7 +658,7 @@ private fun SubscriptionItem(
                 )
                 Text(
                     modifier = Modifier.fillMaxWidth(1f),
-                    text = "${subscription.monthlyPrice.format()}/Month",
+                    text = stringResource(Res.string.per_month, subscription.monthlyPrice.format()),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.End,

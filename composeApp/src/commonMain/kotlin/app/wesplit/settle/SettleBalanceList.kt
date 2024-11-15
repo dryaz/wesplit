@@ -34,10 +34,15 @@ import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.settle.SettleSuggestion
 import app.wesplit.participant.ParticipantListItem
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.forgive_and_forget
+import split.composeapp.generated.resources.gets_back
 import split.composeapp.generated.resources.ic_flag
+import split.composeapp.generated.resources.settle_balances
+import split.composeapp.generated.resources.should_pay_to
+import split.composeapp.generated.resources.undistributed
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 @Deprecated("Need to be refactored, improved")
 fun SettleBalanceList(
@@ -93,7 +98,7 @@ private fun SuggestedPayouts(balance: List<SettleSuggestion>) {
                 participant = payer,
                 subComposable = {
                     Text(
-                        text = "Should pay to",
+                        text = stringResource(Res.string.should_pay_to),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.outline,
                     )
@@ -107,19 +112,19 @@ private fun SuggestedPayouts(balance: List<SettleSuggestion>) {
                     ),
                 headlineContent = {
                     Text(
-                        text = "Undistributed",
+                        text = stringResource(Res.string.undistributed),
                     )
                 },
                 leadingContent = {
                     Icon(
                         modifier = Modifier.width(56.dp),
                         painter = painterResource(Res.drawable.ic_flag),
-                        contentDescription = "Undistributed",
+                        contentDescription = stringResource(Res.string.undistributed),
                     )
                 },
                 supportingContent = {
                     Text(
-                        text = "Time to forgive and forget?",
+                        text = stringResource(Res.string.forgive_and_forget),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.outline,
                     )
@@ -140,7 +145,7 @@ private fun SuggestedPayouts(balance: List<SettleSuggestion>) {
                     avatarSize = 40.dp,
                     subComposable = {
                         Text(
-                            text = "Gets back",
+                            text = stringResource(Res.string.gets_back),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline,
                         )
@@ -208,14 +213,14 @@ private fun Undistributed(balance: Balance) {
             ),
         headlineContent = {
             Text(
-                text = "Undistributed",
+                text = stringResource(Res.string.undistributed),
             )
         },
         leadingContent = {
             Icon(
                 modifier = Modifier.width(56.dp),
                 painter = painterResource(Res.drawable.ic_flag),
-                contentDescription = "Undistributed",
+                contentDescription = stringResource(Res.string.undistributed),
             )
         },
         supportingContent = {
@@ -235,5 +240,5 @@ private fun Undistributed(balance: Balance) {
 
 @Composable
 private fun SettledBalances() {
-    Text("Settled balances here")
+    Text(stringResource(Res.string.settle_balances))
 }

@@ -113,16 +113,57 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
+import split.composeapp.generated.resources.already_settled
+import split.composeapp.generated.resources.amount
+import split.composeapp.generated.resources.amounts
+import split.composeapp.generated.resources.at_date
+import split.composeapp.generated.resources.cancel
+import split.composeapp.generated.resources.confirm_delete_expense_message
+import split.composeapp.generated.resources.confirm_no_wait
+import split.composeapp.generated.resources.confirm_yes_delete
 import split.composeapp.generated.resources.create
+import split.composeapp.generated.resources.delete_expense
+import split.composeapp.generated.resources.delete_expense_group
+import split.composeapp.generated.resources.delete_expense_title
+import split.composeapp.generated.resources.equal
+import split.composeapp.generated.resources.error
+import split.composeapp.generated.resources.expense_title
 import split.composeapp.generated.resources.ic_down
 import split.composeapp.generated.resources.ic_flag
 import split.composeapp.generated.resources.ic_plus
 import split.composeapp.generated.resources.loading
+import split.composeapp.generated.resources.login_to_protect_expense
+import split.composeapp.generated.resources.mark_as_non_settled
+import split.composeapp.generated.resources.mark_as_settled
 import split.composeapp.generated.resources.new_expense
+import split.composeapp.generated.resources.not_allowed_to_update_expense
+import split.composeapp.generated.resources.not_participating
+import split.composeapp.generated.resources.okey
+import split.composeapp.generated.resources.only_this_transaction
+import split.composeapp.generated.resources.only_you_can_update_expense
+import split.composeapp.generated.resources.paid_by
+import split.composeapp.generated.resources.protect_expense
+import split.composeapp.generated.resources.protect_expense_editing
+import split.composeapp.generated.resources.protected_expense
+import split.composeapp.generated.resources.protected_feature
 import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.select_payer_cd
 import split.composeapp.generated.resources.settings
+import split.composeapp.generated.resources.shares
+import split.composeapp.generated.resources.title_should_be_filled
+import split.composeapp.generated.resources.tutorial_step_choose_payer
+import split.composeapp.generated.resources.tutorial_step_choose_payer_description
+import split.composeapp.generated.resources.tutorial_step_date_currency_description
+import split.composeapp.generated.resources.tutorial_step_date_currency_setup
+import split.composeapp.generated.resources.tutorial_step_expense_title
+import split.composeapp.generated.resources.tutorial_step_expense_title_description
+import split.composeapp.generated.resources.tutorial_step_put_amount
+import split.composeapp.generated.resources.tutorial_step_put_amount_description
+import split.composeapp.generated.resources.tutorial_step_save_expense
+import split.composeapp.generated.resources.tutorial_step_save_expense_description
+import split.composeapp.generated.resources.undistributed
+import split.composeapp.generated.resources.we_split_in
 import kotlin.math.roundToInt
 
 private const val CHANGE_SPLIT_TYPE_EVENT = "exp_change_split_type"
@@ -141,37 +182,36 @@ private sealed interface AddExpenseTollbarAction {
 internal val checkBalanceTutorialStepFlow =
     listOf(
         TutorialStep(
-            title = "Enter expense title",
-            description = "Type smth that defines this expense. Let's type Launch for example.",
+            title = Res.string.tutorial_step_expense_title,
+            description = Res.string.tutorial_step_expense_title_description,
             onboardingStep = OnboardingStep.EXPENSE_TITLE,
             isModal = false,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
         TutorialStep(
-            title = "Date and currency setup",
-            description =
-                "You could adjust date of expense or currency. By default date is today and currency is the one last used.",
+            title = Res.string.tutorial_step_date_currency_setup,
+            description = Res.string.tutorial_step_date_currency_description,
             onboardingStep = OnboardingStep.EXPENSE_DATE_CURRENCY,
             isModal = true,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
         ),
         TutorialStep(
-            title = "Put the amount",
-            description = "What was the total bill of this expense, put it here.",
+            title = Res.string.tutorial_step_put_amount,
+            description = Res.string.tutorial_step_put_amount_description,
             onboardingStep = OnboardingStep.EXPENSE_AMOUNT,
             isModal = false,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
         TutorialStep(
-            title = "Choose the payer",
-            description = "By default you're the payer. But you could choose from all group participants.",
+            title = Res.string.tutorial_step_choose_payer,
+            description = Res.string.tutorial_step_choose_payer_description,
             onboardingStep = OnboardingStep.EXPENSE_PAYER,
             isModal = true,
             helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
         ),
         TutorialStep(
-            title = "Save the expense",
-            description = "When everything is done - just save it. No worries - you could edit or delete it anytime.",
+            title = Res.string.tutorial_step_save_expense,
+            description = Res.string.tutorial_step_save_expense_description,
             onboardingStep = OnboardingStep.EXPENSE_SAVE,
             isModal = false,
             helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
@@ -237,7 +277,7 @@ fun ExpenseDetailsScreen(
         },
     ) { paddings ->
         when (val expenseState = state.value) {
-            is ExpenseDetailsViewModel.State.Error -> Text("Error")
+            is ExpenseDetailsViewModel.State.Error -> Text(stringResource(Res.string.error))
             is ExpenseDetailsViewModel.State.Data ->
                 AddExpenseScreenView(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
@@ -249,7 +289,7 @@ fun ExpenseDetailsScreen(
                     }
                 }
             // TODO: Shimmer?
-            ExpenseDetailsViewModel.State.Loading -> Text("Loading")
+            ExpenseDetailsViewModel.State.Loading -> Text(stringResource(Res.string.loading))
         }
     }
 
@@ -303,7 +343,7 @@ private fun AddExpenseScreenView(
                         contentColor = MaterialTheme.colorScheme.error,
                     ),
             ) {
-                Text("Delete expense")
+                Text(stringResource(Res.string.delete_expense))
             }
         }
         Spacer(modifier = Modifier.height(64.dp))
@@ -313,12 +353,12 @@ private fun AddExpenseScreenView(
         AlertDialog(
             modifier = Modifier.widthIn(max = 450.dp),
             onDismissRequest = { deleteDialogShown = false },
-            title = { Text("Delete ${data.expense.title}?") },
-            text = { Text("Are you sure you want to delete this expense from '${data.group.title}'?") },
+            title = { Text(stringResource(Res.string.delete_expense_title, data.expense.title)) },
+            text = { Text(stringResource(Res.string.confirm_delete_expense_message, data.group.uiTitle())) },
             icon = {
                 Icon(
                     AdaptiveIcons.Outlined.Delete,
-                    contentDescription = "Delete expense from group",
+                    contentDescription = stringResource(Res.string.delete_expense_group),
                 )
             },
             confirmButton = {
@@ -326,7 +366,7 @@ private fun AddExpenseScreenView(
                     onClick = { onUpdated(UpdateAction.Delete) },
                 ) {
                     Text(
-                        text = "Yes, Delete",
+                        text = stringResource(Res.string.confirm_yes_delete),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -337,7 +377,7 @@ private fun AddExpenseScreenView(
                         deleteDialogShown = false
                     },
                 ) {
-                    Text("No, Wait")
+                    Text(stringResource(Res.string.confirm_no_wait))
                 }
             },
         )
@@ -355,12 +395,12 @@ fun SettledDisclaimer(
             Icon(
                 modifier = Modifier.minimumInteractiveComponentSize(),
                 imageVector = AdaptiveIcons.Outlined.Done,
-                contentDescription = "Expense already settled",
+                contentDescription = stringResource(Res.string.already_settled),
             )
         },
         headlineContent = {
             Text(
-                text = "Already settled",
+                text = stringResource(Res.string.already_settled),
             )
         },
         supportingContent = {
@@ -368,7 +408,10 @@ fun SettledDisclaimer(
                 if (data.expense.lastUpdated is Timestamp.ServerTimestamp) {
                     "Happy splitting!"
                 } else {
-                    "At ${data.expense.lastUpdated.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())}"
+                    stringResource(
+                        Res.string.at_date,
+                        data.expense.lastUpdated.toInstant().toLocalDateTime(TimeZone.currentSystemDefault()).toString(),
+                    )
                 }
             Text(
                 text = text,
@@ -387,7 +430,7 @@ fun SettledDisclaimer(
                 Icon(
                     modifier = Modifier.minimumInteractiveComponentSize(),
                     imageVector = AdaptiveIcons.Outlined.Clear,
-                    contentDescription = "Mark as non-settled",
+                    contentDescription = stringResource(Res.string.mark_as_non_settled),
                 )
             }
         },
@@ -412,17 +455,17 @@ fun MarkAsSettled(onSettled: () -> Unit) {
             Icon(
                 modifier = Modifier.minimumInteractiveComponentSize(),
                 imageVector = AdaptiveIcons.Outlined.Done,
-                contentDescription = "Mark as settled",
+                contentDescription = stringResource(Res.string.mark_as_settled),
             )
         },
         headlineContent = {
             Text(
-                text = "Mark as settled",
+                text = stringResource(Res.string.mark_as_settled),
             )
         },
         supportingContent = {
             Text(
-                text = "Only this transaction",
+                text = stringResource(Res.string.only_this_transaction),
                 style = MaterialTheme.typography.bodyMedium,
             )
         },
@@ -430,7 +473,7 @@ fun MarkAsSettled(onSettled: () -> Unit) {
             Image(
                 modifier = Modifier.height(24.dp),
                 painter = painterResource(Res.drawable.ic_plus),
-                contentDescription = "Protected feature",
+                contentDescription = stringResource(Res.string.protected_feature),
             )
         },
     )
@@ -458,7 +501,7 @@ private fun ProtectionBlock(
             Icon(
                 modifier = Modifier.minimumInteractiveComponentSize(),
                 imageVector = AdaptiveIcons.Outlined.Lock,
-                contentDescription = "Protect expense from editing",
+                contentDescription = stringResource(Res.string.protect_expense_editing),
             )
         },
         headlineContent = {
@@ -466,9 +509,9 @@ private fun ProtectionBlock(
                 Text(
                     text =
                         if (data.expense.allowedToChange()) {
-                            "Protect expense"
+                            stringResource(Res.string.protect_expense)
                         } else {
-                            "Protected expense"
+                            stringResource(Res.string.protected_expense)
                         },
                 )
             }
@@ -478,12 +521,12 @@ private fun ProtectionBlock(
                 text =
                     if (data.expense.allowedToChange()) {
                         if (data.account is Account.Authorized) {
-                            "Only you able to update this expense"
+                            stringResource(Res.string.only_you_can_update_expense)
                         } else {
-                            "Login to protect this expense"
+                            stringResource(Res.string.login_to_protect_expense)
                         }
                     } else {
-                        "You're not allowed to update this expense"
+                        stringResource(Res.string.not_allowed_to_update_expense)
                     },
             )
         },
@@ -543,9 +586,9 @@ fun SharesDetailsParticipants(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
             selectedTabIndex = selectedTabIndex,
         ) {
-            Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text("Equal") })
-            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text("Shares") })
-            Tab(selected = selectedTabIndex == 2, onClick = { selectedTabIndex = 2 }, text = { Text("Amounts") })
+            Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }, text = { Text(stringResource(Res.string.equal)) })
+            Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }, text = { Text(stringResource(Res.string.shares)) })
+            Tab(selected = selectedTabIndex == 2, onClick = { selectedTabIndex = 2 }, text = { Text(stringResource(Res.string.amounts)) })
         }
 
         HorizontalPager(
@@ -632,14 +675,14 @@ private fun SharesDetailsParticipantList(
                     ),
                 headlineContent = {
                     Text(
-                        text = "Undistributed",
+                        text = stringResource(Res.string.undistributed),
                     )
                 },
                 leadingContent = {
                     Icon(
                         modifier = Modifier.width(56.dp),
                         painter = painterResource(Res.drawable.ic_flag),
-                        contentDescription = "Undistributed",
+                        contentDescription = stringResource(Res.string.undistributed),
                     )
                 },
                 trailingContent = {
@@ -730,7 +773,7 @@ private fun AmountsSplit(
                 text =
                     data.expense.shares.find { it.participant.id == participant.id }?.let {
                         it.amount.format()
-                    } ?: "Not participating",
+                    } ?: stringResource(Res.string.not_participating),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
             )
@@ -776,7 +819,7 @@ private fun EqualSplit(
                 text =
                     data.expense.shares.find { it.participant.id == participant.id }?.let {
                         it.amount.format()
-                    } ?: "Not participating",
+                    } ?: stringResource(Res.string.not_participating),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
             )
@@ -790,7 +833,7 @@ private fun SharesDetailsHeader(data: ExpenseDetailsViewModel.State.Data) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "We split in",
+            text = stringResource(Res.string.we_split_in),
             modifier = Modifier.padding(vertical = 16.dp).padding(start = 16.dp),
             color = MaterialTheme.colorScheme.outline,
         )
@@ -857,21 +900,21 @@ private fun ExpenseDetails(
                         capitalization = KeyboardCapitalization.Sentences,
                     ),
                 supportingText = {
-                    if (data.expense.title.isNullOrBlank()) Text("Title should be filled")
+                    if (data.expense.title.isNullOrBlank()) Text(stringResource(Res.string.title_should_be_filled))
                 },
                 onValueChange = { value -> onUpdated(UpdateAction.Title(value)) },
                 prefix = {
                     Row {
                         Icon(
                             imageVector = AdaptiveIcons.Outlined.Create,
-                            contentDescription = "Expense title",
+                            contentDescription = stringResource(Res.string.expense_title),
                         )
                         Spacer(modifier = Modifier.width(16.dp))
                     }
                 },
                 placeholder = {
                     Text(
-                        text = "Expense title",
+                        text = stringResource(Res.string.expense_title),
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 },
@@ -946,7 +989,7 @@ private fun ExpenseDetails(
                     },
                     placeholder = {
                         Text(
-                            text = "Amount",
+                            text = stringResource(Res.string.amount),
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     },
@@ -958,7 +1001,7 @@ private fun ExpenseDetails(
 
         Text(
             modifier = Modifier.padding(horizontal = 16.dp),
-            text = "Payed by",
+            text = stringResource(Res.string.paid_by),
             style = MaterialTheme.typography.labelSmall,
         )
 
@@ -1008,12 +1051,12 @@ private fun ExpenseDetails(
                     datePickerState.selectedDateMillis?.let {
                         onUpdated(UpdateAction.Date(it))
                     }
-                }, enabled = confirmEnabled.value) { Text("OK") }
+                }, enabled = confirmEnabled.value) { Text(stringResource(Res.string.okey)) }
             }, dismissButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis = data.expense.date.toInstant().toEpochMilliseconds()
                     showDatePicker = false
-                }) { Text("Cancel") }
+                }) { Text(stringResource(Res.string.cancel)) }
             }) {
                 DatePicker(state = datePickerState)
             }

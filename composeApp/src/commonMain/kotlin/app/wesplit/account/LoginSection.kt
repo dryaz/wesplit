@@ -33,9 +33,13 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.andspaces
 import split.composeapp.generated.resources.img_login
+import split.composeapp.generated.resources.join_agree
 import split.composeapp.generated.resources.login_button_cd
 import split.composeapp.generated.resources.login_to_create_descr
+import split.composeapp.generated.resources.privacy_policy
+import split.composeapp.generated.resources.terms_conditions
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
@@ -78,60 +82,64 @@ internal fun LoginSection(
 private fun TermsAndPolicyText(modifier: Modifier = Modifier) {
     val uriHandler = LocalUriHandler.current
     val shareDelegate: ShareDelegate = koinInject()
-    val privacy = "Privacy Policy"
-    val terms = "Terms&Conditions"
+    val privacy = stringResource(Res.string.privacy_policy)
+    val terms = stringResource(Res.string.terms_conditions)
 
     val annotatedString =
-        buildAnnotatedString {
-            append("By joining, you agree to the ")
-            withLink(
-                link =
-                    LinkAnnotation
-                        .Clickable(
-                            tag = privacy,
-                            styles =
-                                TextLinkStyles(
-                                    style =
-                                        SpanStyle(
-                                            color = MaterialTheme.colorScheme.primary,
-                                            textDecoration = TextDecoration.Underline,
-                                        ),
-                                ),
-                            linkInteractionListener = {
-                                if (shareDelegate.supportPlatformSharing()) {
-                                    shareDelegate.open(ShareData.Link("https://wesplit.app/privacypolicy/"))
-                                } else {
-                                    uriHandler.openUri("https://wesplit.app/privacypolicy/")
-                                }
-                            },
-                        ),
-            ) {
-                append(privacy)
-            }
-            append(" and ")
-            withLink(
-                link =
-                    LinkAnnotation
-                        .Clickable(
-                            tag = terms,
-                            styles =
-                                TextLinkStyles(
-                                    style =
-                                        SpanStyle(
-                                            color = MaterialTheme.colorScheme.primary,
-                                            textDecoration = TextDecoration.Underline,
-                                        ),
-                                ),
-                            linkInteractionListener = {
-                                if (shareDelegate.supportPlatformSharing()) {
-                                    shareDelegate.open(ShareData.Link("https://wesplit.app/terms/"))
-                                } else {
-                                    uriHandler.openUri("https://wesplit.app/terms/")
-                                }
-                            },
-                        ),
-            ) {
-                append(terms)
+        if (privacy.isNullOrBlank() || terms.isNullOrBlank()) {
+            buildAnnotatedString {}
+        } else {
+            buildAnnotatedString {
+                append(stringResource(Res.string.join_agree))
+                withLink(
+                    link =
+                        LinkAnnotation
+                            .Clickable(
+                                tag = privacy,
+                                styles =
+                                    TextLinkStyles(
+                                        style =
+                                            SpanStyle(
+                                                color = MaterialTheme.colorScheme.primary,
+                                                textDecoration = TextDecoration.Underline,
+                                            ),
+                                    ),
+                                linkInteractionListener = {
+                                    if (shareDelegate.supportPlatformSharing()) {
+                                        shareDelegate.open(ShareData.Link("https://wesplit.app/privacypolicy/"))
+                                    } else {
+                                        uriHandler.openUri("https://wesplit.app/privacypolicy/")
+                                    }
+                                },
+                            ),
+                ) {
+                    append(privacy)
+                }
+                append(stringResource(Res.string.andspaces))
+                withLink(
+                    link =
+                        LinkAnnotation
+                            .Clickable(
+                                tag = terms,
+                                styles =
+                                    TextLinkStyles(
+                                        style =
+                                            SpanStyle(
+                                                color = MaterialTheme.colorScheme.primary,
+                                                textDecoration = TextDecoration.Underline,
+                                            ),
+                                    ),
+                                linkInteractionListener = {
+                                    if (shareDelegate.supportPlatformSharing()) {
+                                        shareDelegate.open(ShareData.Link("https://wesplit.app/terms/"))
+                                    } else {
+                                        uriHandler.openUri("https://wesplit.app/terms/")
+                                    }
+                                },
+                            ),
+                ) {
+                    append(terms)
+                }
             }
         }
 

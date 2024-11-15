@@ -124,32 +124,32 @@ fun AppTheme(content: @Composable () -> Unit) {
 
     AdaptiveTheme(
         material =
-        MaterialThemeSpec.Default(
-            colorScheme =
-            dynamicColorScheme(
-                seedColor = Color(0xFF48B04A),
-                isDark = darkTheme,
-                isAmoled = false,
-                style = PaletteStyle.Rainbow,
-                modifyColorScheme = { scheme ->
-                    if (darkTheme) {
-                        scheme.copy(
-                            surfaceContainerLowest = scheme.surfaceContainerHighest,
-                            surfaceContainerLow = scheme.surfaceContainerHigh,
-                            surfaceContainerHigh = scheme.surfaceContainerLow,
-                            surfaceContainerHighest = scheme.surfaceContainerLowest,
-                        )
-                    } else {
-                        scheme
-                    }
-                },
+            MaterialThemeSpec.Default(
+                colorScheme =
+                    dynamicColorScheme(
+                        seedColor = Color(0xFF48B04A),
+                        isDark = darkTheme,
+                        isAmoled = false,
+                        style = PaletteStyle.Rainbow,
+                        modifyColorScheme = { scheme ->
+                            if (darkTheme) {
+                                scheme.copy(
+                                    surfaceContainerLowest = scheme.surfaceContainerHighest,
+                                    surfaceContainerLow = scheme.surfaceContainerHigh,
+                                    surfaceContainerHigh = scheme.surfaceContainerLow,
+                                    surfaceContainerHighest = scheme.surfaceContainerLowest,
+                                )
+                            } else {
+                                scheme
+                            }
+                        },
+                    ),
+                typography = MaterialTypography(),
             ),
-            typography = MaterialTypography(),
-        ),
         cupertino =
-        CupertinoThemeSpec.Default(
-            colorScheme = cupertinoColorScheme,
-        ),
+            CupertinoThemeSpec.Default(
+                colorScheme = cupertinoColorScheme,
+            ),
         content = {
             val themeState =
                 ThemeState(
@@ -159,9 +159,10 @@ fun AppTheme(content: @Composable () -> Unit) {
                         when (action) {
                             is ThemeAction.ChangeColorMode -> {
                                 analyticsManager.track(
-                                    CHANGE_COLOR_EVENT, mapOf(
-                                        CHANGE_COLOR_PARAM to action.mode.toString()
-                                    )
+                                    CHANGE_COLOR_EVENT,
+                                    mapOf(
+                                        CHANGE_COLOR_PARAM to action.mode.toString(),
+                                    ),
                                 )
                                 colorMode = action.mode
                             }

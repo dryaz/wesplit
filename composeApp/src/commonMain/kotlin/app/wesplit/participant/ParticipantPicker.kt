@@ -81,6 +81,12 @@ import split.composeapp.generated.resources.create_new_contact
 import split.composeapp.generated.resources.grant_permission
 import split.composeapp.generated.resources.search_contact
 import split.composeapp.generated.resources.start_type_creat_contact
+import split.composeapp.generated.resources.tutorial_step_confirm_selection_description
+import split.composeapp.generated.resources.tutorial_step_confirm_selection_title
+import split.composeapp.generated.resources.tutorial_step_input_name_description
+import split.composeapp.generated.resources.tutorial_step_input_name_title
+import split.composeapp.generated.resources.tutorial_step_select_user_description
+import split.composeapp.generated.resources.tutorial_step_select_user_title
 import split.composeapp.generated.resources.user_already_in_group
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,8 +100,8 @@ internal fun ParticipantPicker(
     val inputNameTutorial =
         remember {
             TutorialStep(
-                title = "Type name, e.g. John",
-                description = "You could invite real people later. Now just need to define who you need in group",
+                title = Res.string.tutorial_step_input_name_title,
+                description = Res.string.tutorial_step_input_name_description,
                 onboardingStep = OnboardingStep.TYPE_PARTICIPANT_NAME,
                 helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
                 isModal = false,
@@ -106,19 +112,15 @@ internal fun ParticipantPicker(
         remember {
             listOf(
                 TutorialStep(
-                    title = "Select new user's name",
-                    description =
-                        "Add this user by name. Invite them afterwards if needed. " +
-                            "This user could already participate in expenses.",
+                    title = Res.string.tutorial_step_select_user_title,
+                    description = Res.string.tutorial_step_select_user_description,
                     onboardingStep = OnboardingStep.CREATE_NEW_USER_IN_GROUP,
                     helpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
                     isModal = false,
                 ),
                 TutorialStep(
-                    title = "Confirm your selection",
-                    description =
-                        "Don't worry, you could change participants anytime. " +
-                            "Let's create group first.",
+                    title = Res.string.tutorial_step_confirm_selection_title,
+                    description = Res.string.tutorial_step_confirm_selection_description,
                     onboardingStep = OnboardingStep.APPLY_CHANGES,
                     helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
                     isModal = false,

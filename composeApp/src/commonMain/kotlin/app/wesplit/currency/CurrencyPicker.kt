@@ -1,7 +1,6 @@
 package app.wesplit.currency
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,8 +34,12 @@ import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.currencySymbol
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Search
+import org.jetbrains.compose.resources.stringResource
+import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.not_found
+import split.composeapp.generated.resources.search_currency
+import split.composeapp.generated.resources.select_currency
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CurrencyPicker(
     currencies: CurrencyCodesCollection,
@@ -72,7 +75,7 @@ fun CurrencyPicker(
                         focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     ),
-                placeholder = { Text("Select currency") },
+                placeholder = { Text(stringResource(Res.string.select_currency)) },
                 value = query,
                 onValueChange = { newValue ->
                     if (newValue.length < 4) query = newValue
@@ -80,7 +83,7 @@ fun CurrencyPicker(
                 suffix = {
                     Icon(
                         imageVector = AdaptiveIcons.Outlined.Search,
-                        contentDescription = "Search for currency",
+                        contentDescription = stringResource(Res.string.search_currency),
                     )
                 },
             )
@@ -91,7 +94,7 @@ fun CurrencyPicker(
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(1f).minimumInteractiveComponentSize(),
-                    text = "'$query' not found",
+                    text = stringResource(Res.string.not_found, query),
                     textAlign = TextAlign.Center,
                 )
             }

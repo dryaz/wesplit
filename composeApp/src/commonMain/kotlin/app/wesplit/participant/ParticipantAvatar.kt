@@ -22,8 +22,10 @@ import com.seiko.imageloader.ui.AutoSizeBox
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.ic_user
+import split.composeapp.generated.resources.no_image_user
 
 @Composable
 fun ParticipantAvatar(
@@ -97,7 +99,7 @@ private fun EmptyParticipantAvatar(
         Image(
             modifier = Modifier.size(24.dp),
             painter = painter,
-            contentDescription = "No image for user ${participant.name}",
+            contentDescription = stringResource(Res.string.no_image_user, participant.name),
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
         )
     }

@@ -49,10 +49,20 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Email
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Refresh
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.data_syncing
+import split.composeapp.generated.resources.get_plus_instant_balances
 import split.composeapp.generated.resources.ic_flag
 import split.composeapp.generated.resources.ic_plus
+import split.composeapp.generated.resources.invite_user
+import split.composeapp.generated.resources.offline_balances_shown
+import split.composeapp.generated.resources.plus_badge
+import split.composeapp.generated.resources.recalculating_backend
+import split.composeapp.generated.resources.settle_balances
+import split.composeapp.generated.resources.sync_in_progress
+import split.composeapp.generated.resources.undistributed
 
 private const val BACKED_CALCULATION_CLICK = "plus_recalculate_click"
 
@@ -100,7 +110,7 @@ fun BalanceList(
                                     ) {
                                         Icon(
                                             AdaptiveIcons.Outlined.Email,
-                                            contentDescription = "Invite user",
+                                            contentDescription = stringResource(Res.string.invite_user),
                                         )
                                     }
                                 }
@@ -196,7 +206,7 @@ fun BalanceList(
                                 headlineContent = {
                                     Text(
                                         modifier = Modifier.fillMaxSize(1f),
-                                        text = "Settle balances",
+                                        text = stringResource(Res.string.settle_balances),
                                         textAlign = TextAlign.Center,
                                     )
                                 },
@@ -222,7 +232,7 @@ fun Invalid(onClick: () -> Unit) {
             ),
         headlineContent = {
             Text(
-                text = "Recalculating on backend",
+                text = stringResource(Res.string.recalculating_backend),
             )
         },
         leadingContent = {
@@ -232,12 +242,12 @@ fun Invalid(onClick: () -> Unit) {
             Image(
                 modifier = Modifier.height(24.dp),
                 painter = painterResource(Res.drawable.ic_plus),
-                contentDescription = "Plus badge",
+                contentDescription = stringResource(Res.string.plus_badge),
             )
         },
         supportingContent = {
             Text(
-                text = "Get Plus to enable instant balances",
+                text = stringResource(Res.string.get_plus_instant_balances),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline,
             )
@@ -254,25 +264,25 @@ fun LocalBalances() {
             ),
         headlineContent = {
             Text(
-                text = "Offline balances is shown",
+                text = stringResource(Res.string.offline_balances_shown),
             )
         },
         leadingContent = {
             Icon(
                 imageVector = AdaptiveIcons.Outlined.Refresh,
-                contentDescription = "Data is syncing",
+                contentDescription = stringResource(Res.string.data_syncing),
             )
         },
         trailingContent = {
             Image(
                 modifier = Modifier.height(24.dp),
                 painter = painterResource(Res.drawable.ic_plus),
-                contentDescription = "Plus badge",
+                contentDescription = stringResource(Res.string.plus_badge),
             )
         },
         supportingContent = {
             Text(
-                text = "Sync in progress",
+                text = stringResource(Res.string.sync_in_progress),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline,
             )
@@ -291,14 +301,14 @@ private fun Undistributed(balance: Balance) {
             ),
         headlineContent = {
             Text(
-                text = "Undistributed",
+                text = stringResource(Res.string.undistributed),
             )
         },
         leadingContent = {
             Icon(
                 modifier = Modifier.width(56.dp),
                 painter = painterResource(Res.drawable.ic_flag),
-                contentDescription = "Undistributed",
+                contentDescription = stringResource(Res.string.undistributed),
             )
         },
         supportingContent = {
@@ -318,5 +328,5 @@ private fun Undistributed(balance: Balance) {
 
 @Composable
 private fun SettledBalances() {
-    Text("Settled balances here")
+    Text(stringResource(Res.string.settle_balances))
 }

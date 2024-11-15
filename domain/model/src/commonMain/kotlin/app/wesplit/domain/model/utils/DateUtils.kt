@@ -53,22 +53,3 @@ fun calculateHoursUntil(futureInstant: Instant): Int {
     // Ensure the number of hours is not negative
     return max(hoursUntil, 0)
 }
-
-/**
- * Creates a validation string indicating how many days are left until the subscription expires.
- *
- * @param futureInstant The future Instant representing the expiration date.
- * @return A string in the format "Valid for X days".
- */
-fun createValidityDaysString(futureInstant: Instant?): String {
-    if (futureInstant == null) return "Valid subscription"
-
-    val days = calculateDaysUntil(futureInstant)
-
-    return if (days > 0) {
-        "Valid for $days day${if (days != 1) "s" else ""} more"
-    } else {
-        val hours = calculateHoursUntil(futureInstant)
-        "Valid for $hours hour${if (days != 1) "s" else ""} more"
-    }
-}

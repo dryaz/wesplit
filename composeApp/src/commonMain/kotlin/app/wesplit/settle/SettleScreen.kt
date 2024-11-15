@@ -60,9 +60,26 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.balances_explanation
+import split.composeapp.generated.resources.calculate_best_way_settle
+import split.composeapp.generated.resources.confirm_mark_all_settled
+import split.composeapp.generated.resources.confirm_no_wait
+import split.composeapp.generated.resources.confirm_yes_settle
+import split.composeapp.generated.resources.error
+import split.composeapp.generated.resources.fx_single_currency
+import split.composeapp.generated.resources.info_sign
+import split.composeapp.generated.resources.recalculate
+import split.composeapp.generated.resources.settle_all_balances
+import split.composeapp.generated.resources.settle_balances
+import split.composeapp.generated.resources.settled_all_expenses
+import split.composeapp.generated.resources.settled_message
 import split.composeapp.generated.resources.share_group
+import split.composeapp.generated.resources.share_link_copied
+import split.composeapp.generated.resources.suggest_split
+import split.composeapp.generated.resources.text_loading
 
 sealed interface SettleAction {
     data object Back : SettleAction
@@ -84,7 +101,7 @@ fun SettleScreen(
 
     fun showLinkCopiedSnackbar() {
         scope.launch {
-            snackbarHostState.showSnackbar("Sharable link copied!")
+            snackbarHostState.showSnackbar(getString(Res.string.share_link_copied))
         }
     }
 
@@ -98,10 +115,10 @@ fun SettleScreen(
             AdaptiveTopAppBar(title = {
                 Text(
                     text =
-                        when (val state = uiState.value) {
-                            is SettleViewModel.UiState.Data -> "Settle balances"
+                        when (uiState.value) {
+                            is SettleViewModel.UiState.Data -> stringResource(Res.string.settle_balances)
                             is SettleViewModel.UiState.Error -> "Can't fetch group info"
-                            SettleViewModel.UiState.Loading -> "Loading..."
+                            SettleViewModel.UiState.Loading -> stringResource(Res.string.text_loading)
                         },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -138,7 +155,7 @@ fun SettleScreen(
                         onAction(SettleAction.Back)
                     }
 
-                is SettleViewModel.UiState.Error -> Text("Error") // TODO: Error state
+                is SettleViewModel.UiState.Error -> Text(stringResource(Res.string.error)) // TODO: Error state
                 SettleViewModel.UiState.Loading ->
                     Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator()
@@ -183,15 +200,13 @@ private fun SettleContent(
         ) {
             Icon(
                 imageVector = AdaptiveIcons.Outlined.Info,
-                contentDescription = "Info sign",
+                contentDescription = stringResource(Res.string.info_sign),
                 tint = MaterialTheme.extraColorScheme.infoContainer,
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 modifier = Modifier.weight(1f),
-                text =
-                    "+X means that person need to be payed back. -Y means that person owse that amount. " +
-                        "Do repayment and then press the button below.",
+                text = stringResource(Res.string.balances_explanation),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -212,7 +227,7 @@ private fun SettleContent(
             shape = RoundedCornerShape(10.dp),
         ) {
             Text(
-                text = "We've settled!",
+                text = stringResource(Res.string.settled_message),
                 style =
                     MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.ExtraBold,
@@ -226,17 +241,17 @@ private fun SettleContent(
         AlertDialog(
             modifier = Modifier.widthIn(max = 450.dp),
             onDismissRequest = { settleDialogShown = false },
-            title = { Text("Settle all balances?") },
+            title = { Text(stringResource(Res.string.settle_all_balances)) },
             text = {
                 Text(
-                    text = "Are you sure that you want to\n mark all current expenses as settled?",
+                    text = stringResource(Res.string.confirm_mark_all_settled),
                     textAlign = TextAlign.Center,
                 )
             },
             icon = {
                 Icon(
                     AdaptiveIcons.Outlined.Done,
-                    contentDescription = "Settled all expenses",
+                    contentDescription = stringResource(Res.string.settled_all_expenses),
                 )
             },
             confirmButton = {
@@ -247,7 +262,7 @@ private fun SettleContent(
                     },
                 ) {
                     Text(
-                        text = "Yes, Settle",
+                        text = stringResource(Res.string.confirm_yes_settle),
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -259,7 +274,7 @@ private fun SettleContent(
                     },
                 ) {
                     Text(
-                        text = "No, Wait",
+                        text = stringResource(Res.string.confirm_no_wait),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
@@ -315,13 +330,13 @@ private fun FxBlock(
         headlineContent = {
             PlusProtected {
                 Text(
-                    text = "Recalculate",
+                    text = stringResource(Res.string.recalculate),
                 )
             }
         },
         supportingContent = {
             Text(
-                text = "FX to single currency",
+                text = stringResource(Res.string.fx_single_currency),
             )
         },
         colors =
@@ -363,13 +378,13 @@ private fun SuggestionsBlock(
         headlineContent = {
             PlusProtected {
                 Text(
-                    text = "Suggest split",
+                    text = stringResource(Res.string.suggest_split),
                 )
             }
         },
         supportingContent = {
             Text(
-                text = "Calculate best way to settle",
+                text = stringResource(Res.string.calculate_best_way_settle),
             )
         },
         colors =

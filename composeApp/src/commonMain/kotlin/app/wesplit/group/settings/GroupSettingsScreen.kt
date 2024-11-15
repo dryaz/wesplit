@@ -68,14 +68,29 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_user_to_group
+import split.composeapp.generated.resources.confirm_no_wait
+import split.composeapp.generated.resources.confirm_yes_join
+import split.composeapp.generated.resources.confirm_yes_leave
 import split.composeapp.generated.resources.create
+import split.composeapp.generated.resources.error
+import split.composeapp.generated.resources.forget_group
 import split.composeapp.generated.resources.group_name
 import split.composeapp.generated.resources.ic_user_add
+import split.composeapp.generated.resources.join_group
+import split.composeapp.generated.resources.join_group_as_new_participant
+import split.composeapp.generated.resources.join_group_as_user
+import split.composeapp.generated.resources.join_new_participant
+import split.composeapp.generated.resources.leave_group
+import split.composeapp.generated.resources.leave_group_confirmation
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_group
 import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.settings
+import split.composeapp.generated.resources.text_its_me
+import split.composeapp.generated.resources.title_leave_group
+import split.composeapp.generated.resources.tutorial_step_add_participant_description
+import split.composeapp.generated.resources.tutorial_step_add_participant_title
 
 sealed interface GroupSettingsAction {
     data object Back : GroupSettingsAction
@@ -91,8 +106,8 @@ private sealed interface GroupSettingTollbarAction {
 
 private val addParticipantTutorialStep =
     TutorialStep(
-        title = "Add participant",
-        description = "You could add new participant just by typing name. Your friend don't need even to know about Wesplit.",
+        title = Res.string.tutorial_step_add_participant_title,
+        description = Res.string.tutorial_step_add_participant_description,
         onboardingStep = OnboardingStep.ADD_NEW_USER_BUTTON,
         isModal = false,
         helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
@@ -133,7 +148,7 @@ fun GroupSettingsScreen(
         },
     ) { paddings ->
         when (val groupState = state.value.dataState) {
-            is GroupSettingsViewModel.DataState.Error -> Text("Error")
+            is GroupSettingsViewModel.DataState.Error -> Text(stringResource(Res.string.error))
             is GroupSettingsViewModel.DataState.Group ->
                 GroupSettingsView(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
@@ -160,7 +175,7 @@ fun GroupSettingsScreen(
                     viewModel.update(group)
                 }
             // TODO: Shimmer?
-            GroupSettingsViewModel.DataState.Loading -> Text("Loading")
+            GroupSettingsViewModel.DataState.Loading -> Text(stringResource(Res.string.loading))
         }
     }
 
@@ -295,7 +310,7 @@ private fun GroupSettingsView(
                                 OutlinedButton(
                                     onClick = { joinAsDialogShown = setOf(participant) },
                                 ) {
-                                    Text("It's me")
+                                    Text(stringResource(Res.string.text_its_me))
                                 }
                             }
                         } else if (isMeParticipating && !participant.isMe() &&
@@ -333,9 +348,7 @@ private fun GroupSettingsView(
                             contentColor = MaterialTheme.colorScheme.primary,
                         ),
                 ) {
-                    Text(
-                        "Join as new participant",
-                    )
+                    Text(stringResource(Res.string.join_new_participant))
                 }
             }
             OutlinedButton(
@@ -350,7 +363,7 @@ private fun GroupSettingsView(
                     ),
             ) {
                 Text(
-                    if (isMeParticipating) "Leave group" else "Forget group",
+                    if (isMeParticipating) stringResource(Res.string.leave_group) else stringResource(Res.string.forget_group),
                 )
             }
         }
@@ -360,14 +373,14 @@ private fun GroupSettingsView(
         AlertDialog(
             modifier = Modifier.widthIn(max = 450.dp),
             onDismissRequest = { joinAsDialogShown = null },
-            title = { Text("Join group?") },
+            title = { Text(stringResource(Res.string.join_group)) },
             text = {
                 Text(
                     text =
                         if (joinAsDialogShown.isNullOrEmpty()) {
-                            "Join ${group.title} as new participant?"
+                            stringResource(Res.string.join_group_as_new_participant, group.title)
                         } else {
-                            "Join ${group.title} as ${joinAsDialogShown?.first()?.name}"
+                            stringResource(Res.string.join_group_as_user, group.title, "${joinAsDialogShown?.first()?.name}")
                         },
                     textAlign = TextAlign.Center,
                 )
@@ -375,7 +388,7 @@ private fun GroupSettingsView(
             icon = {
                 Icon(
                     painter = painterResource(Res.drawable.ic_user_add),
-                    contentDescription = "Join group",
+                    contentDescription = stringResource(Res.string.join_group),
                 )
             },
             confirmButton = {
@@ -386,7 +399,7 @@ private fun GroupSettingsView(
                     },
                 ) {
                     Text(
-                        text = "Yes, Join",
+                        text = stringResource(Res.string.confirm_yes_join),
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
@@ -398,7 +411,7 @@ private fun GroupSettingsView(
                     },
                 ) {
                     Text(
-                        text = "No, Wait",
+                        text = stringResource(Res.string.confirm_no_wait),
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
@@ -434,18 +447,13 @@ private fun GroupSettingsView(
         AlertDialog(
             modifier = Modifier.widthIn(max = 450.dp),
             onDismissRequest = { leaveDialogShown = false },
-            title = { Text("Leave ${group.title}?") },
-            text = {
-                Text(
-                    "Your recorded expenses and balances will be kept in order not to mess-up balances." +
-                        "\n\nAre you sure you want to leave group?",
-                )
-            },
+            title = { Text(stringResource(Res.string.title_leave_group, group.title)) },
+            text = { Text(stringResource(Res.string.leave_group_confirmation)) },
             icon = {
                 Icon(
                     // TODO: Not 100% accurate icon
                     AdaptiveIcons.Outlined.ExitToApp,
-                    contentDescription = "Leave group",
+                    contentDescription = stringResource(Res.string.leave_group),
                 )
             },
             confirmButton = {
@@ -453,7 +461,7 @@ private fun GroupSettingsView(
                     onClick = { onLeave() },
                 ) {
                     Text(
-                        text = "Yes, Leave",
+                        text = stringResource(Res.string.confirm_yes_leave),
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -464,7 +472,7 @@ private fun GroupSettingsView(
                         leaveDialogShown = false
                     },
                 ) {
-                    Text("No, Wait")
+                    Text(stringResource(Res.string.confirm_no_wait))
                 }
             },
         )
