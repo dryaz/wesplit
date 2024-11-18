@@ -76,10 +76,10 @@ import split.composeapp.generated.resources.delete_account_from_wesplit
 import split.composeapp.generated.resources.go_to_privacy
 import split.composeapp.generated.resources.go_to_terms_conditions
 import split.composeapp.generated.resources.logout
+import split.composeapp.generated.resources.plus_feature_cats_descr_short
+import split.composeapp.generated.resources.plus_feature_cats_title
 import split.composeapp.generated.resources.plus_feature_currencies_descr_short
 import split.composeapp.generated.resources.plus_feature_currencies_title
-import split.composeapp.generated.resources.plus_feature_images_descr_short
-import split.composeapp.generated.resources.plus_feature_images_title
 import split.composeapp.generated.resources.plus_feature_more_descr
 import split.composeapp.generated.resources.plus_feature_more_title
 import split.composeapp.generated.resources.plus_feature_protect_descr_short
@@ -493,7 +493,7 @@ private fun FeaturesList(
         mapOf(
             Res.string.plus_feature_protect_title to Res.string.plus_feature_protect_descr_short,
             Res.string.plus_feature_currencies_title to Res.string.plus_feature_currencies_descr_short,
-            Res.string.plus_feature_images_title to Res.string.plus_feature_images_descr_short,
+            Res.string.plus_feature_cats_title to Res.string.plus_feature_cats_descr_short,
             Res.string.plus_feature_more_title to Res.string.plus_feature_more_descr,
         )
 

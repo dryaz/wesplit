@@ -150,6 +150,22 @@ enum class Category {
     // - Beauty
     @SerialName("42")
     Sport,
+
+    // Money
+    @SerialName("43")
+    MoneyTransfer,
+
+    // - Cash
+    @SerialName("44")
+    Cash,
+
+    // - BT
+    @SerialName("45")
+    BankTransfer,
+
+    // - Crypto
+    @SerialName("46")
+    Crypto,
 }
 
 val categories: Map<Category, List<Category>> =
@@ -211,6 +227,14 @@ val categories: Map<Category, List<Category>> =
                 Category.SportEvent,
                 Category.Hobby,
             ),
+        // Money transfer
+        Category.MoneyTransfer to
+            listOf(
+                Category.MoneyTransfer,
+                Category.Cash,
+                Category.BankTransfer,
+                Category.Crypto,
+            ),
         // Health and Beauty
         Category.HealthBeauty to
             listOf(
@@ -231,4 +255,5 @@ val freeCategories =
         Category.FoodDrink,
         Category.TransportTravel,
         Category.Shopping,
+        Category.MoneyTransfer,
     )

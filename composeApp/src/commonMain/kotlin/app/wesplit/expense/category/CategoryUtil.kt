@@ -8,13 +8,16 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.category_bank
 import split.composeapp.generated.resources.category_beauty
 import split.composeapp.generated.resources.category_books
 import split.composeapp.generated.resources.category_car
+import split.composeapp.generated.resources.category_cash
 import split.composeapp.generated.resources.category_cleaning
 import split.composeapp.generated.resources.category_clothes
 import split.composeapp.generated.resources.category_coffee
 import split.composeapp.generated.resources.category_concert
+import split.composeapp.generated.resources.category_crypto
 import split.composeapp.generated.resources.category_electricity
 import split.composeapp.generated.resources.category_entertainment
 import split.composeapp.generated.resources.category_fast_food
@@ -30,6 +33,7 @@ import split.composeapp.generated.resources.category_health_beauty
 import split.composeapp.generated.resources.category_hobby
 import split.composeapp.generated.resources.category_housing
 import split.composeapp.generated.resources.category_internet
+import split.composeapp.generated.resources.category_money
 import split.composeapp.generated.resources.category_movie
 import split.composeapp.generated.resources.category_none
 import split.composeapp.generated.resources.category_parking
@@ -51,13 +55,16 @@ import split.composeapp.generated.resources.category_transport_travel
 import split.composeapp.generated.resources.category_transportation
 import split.composeapp.generated.resources.category_utilities
 import split.composeapp.generated.resources.category_water
+import split.composeapp.generated.resources.ic_cat_bank
 import split.composeapp.generated.resources.ic_cat_beauty
 import split.composeapp.generated.resources.ic_cat_books
 import split.composeapp.generated.resources.ic_cat_car
+import split.composeapp.generated.resources.ic_cat_cash
 import split.composeapp.generated.resources.ic_cat_cleaning
 import split.composeapp.generated.resources.ic_cat_clothes
 import split.composeapp.generated.resources.ic_cat_coffee
 import split.composeapp.generated.resources.ic_cat_concert
+import split.composeapp.generated.resources.ic_cat_crypto
 import split.composeapp.generated.resources.ic_cat_electricity
 import split.composeapp.generated.resources.ic_cat_entertainment
 import split.composeapp.generated.resources.ic_cat_fastfood
@@ -72,6 +79,7 @@ import split.composeapp.generated.resources.ic_cat_health
 import split.composeapp.generated.resources.ic_cat_hobby
 import split.composeapp.generated.resources.ic_cat_housing
 import split.composeapp.generated.resources.ic_cat_internet
+import split.composeapp.generated.resources.ic_cat_money
 import split.composeapp.generated.resources.ic_cat_movie
 import split.composeapp.generated.resources.ic_cat_none
 import split.composeapp.generated.resources.ic_cat_parking
@@ -152,6 +160,10 @@ fun Category.uiTitle(): String =
             Category.Health -> Res.string.category_health
             Category.Beauty -> Res.string.category_beauty
             Category.Sport -> Res.string.category_sport
+            Category.MoneyTransfer -> Res.string.category_money
+            Category.Cash -> Res.string.category_cash
+            Category.BankTransfer -> Res.string.category_bank
+            Category.Crypto -> Res.string.category_crypto
         },
     )
 
@@ -201,4 +213,8 @@ fun Category.categoryIconRes(): DrawableResource =
         Category.Health -> Res.drawable.ic_cat_health
         Category.Beauty -> Res.drawable.ic_cat_beauty
         Category.Sport -> Res.drawable.ic_cat_sport
+        Category.MoneyTransfer -> Res.drawable.ic_cat_money
+        Category.Cash -> Res.drawable.ic_cat_cash
+        Category.BankTransfer -> Res.drawable.ic_cat_bank
+        Category.Crypto -> Res.drawable.ic_cat_crypto
     }

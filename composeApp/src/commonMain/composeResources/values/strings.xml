@@ -54,6 +54,9 @@
     <string name="share_link_copied">Sharable link copied!</string>
     <string name="plus_subs_title">Plus benefits</string>
     <!-- Plus features descriptions -->
+    <string name="plus_feature_cats_title">45+ expense categories</string>
+    <string name="plus_feature_cats_descr_short">More Categories, Better Control</string>
+    <string name="plus_feature_cats_descr_full">Unlock comprehensive tracking with Extended Categories. Access a wider range of categories to accurately monitor all your expenses and achieve better budget control.</string>
     <string name="plus_feature_protect_title">Protected expense</string>
     <string name="plus_feature_protect_descr_short">Ensure expense integrity</string>
     <string name="plus_feature_protect_descr_full">Keep critical costs under your control.\nPrevent unauthorized changes and maintain financial integrity effortlessly.</string>
@@ -292,4 +295,8 @@
     <string name="category_sport">Sport</string>
     <string name="expanded">Expanded</string>
     <string name="collapsed">Collapsed</string>
+    <string name="category_money">Money transfer</string>
+    <string name="category_cash">Cash</string>
+    <string name="category_bank">Bank</string>
+    <string name="category_crypto">Crypto</string>
 </resources>

@@ -54,6 +54,9 @@
     <string name="share_link_copied">Ссылка на группу скопирована!</string>
     <string name="plus_subs_title">Преимущества Plus</string>
     <!-- Plus features descriptions -->
+    <string name="plus_feature_cats_title">45+ категории расходов</string>
+    <string name="plus_feature_cats_descr_short">Больше категорий, лучший контроль</string>
+    <string name="plus_feature_cats_descr_full">Получите доступ к 45+ категориям для точного учета всех ваших расходов и лучшего контролянад тратами.</string>
     <string name="plus_feature_protect_title">Защита от редактирования</string>
     <string name="plus_feature_protect_descr_short">Надежность ваших записей</string>
     <string name="plus_feature_protect_descr_full">Держите важные расходы под контролем. Запретите изменения и легко следите за целостностью данных.</string>
@@ -292,4 +295,8 @@
     <string name="category_sport">Спорт</string>
     <string name="expanded">Развернуто</string>
     <string name="collapsed">Свернуто</string>
+    <string name="category_money">Перевод</string>
+    <string name="category_cash">Наличные</string>
+    <string name="category_bank">Через банк</string>
+    <string name="category_crypto">Криптовалюта</string>
 </resources>
