@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name">Wesplit</string>
-    <string name="app_version">v2.2.1+56</string>
     <string name="no_image_group_cd">Нет изображения для группы %1$s</string>
     <string name="login">Вход</string>
     <string name="logout">Выход</string>

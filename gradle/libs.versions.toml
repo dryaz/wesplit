@@ -1,11 +1,12 @@
 [versions]
+versionName = "2.3.0"
+android-versionCode = "57"
+
 filekitCompose = "0.8.7"
 inAppReview = "3.1.21"
 korgeCore = "5.1.0"
 multiplatformSettings = "1.2.0"
 permissions = "0.18.1"
-versionName = "2.2.1"
-android-versionCode = "56"
 
 agp = "8.5.2"
 coreGoogleShortcuts = "1.1.0"
