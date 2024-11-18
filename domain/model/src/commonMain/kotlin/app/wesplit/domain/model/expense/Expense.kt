@@ -14,7 +14,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlin.random.Random
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -46,7 +45,7 @@ data class Expense(
     @SerialName("lastUpdatedAt")
     val lastUpdated: BaseTimestamp = Timestamp.ServerTimestamp,
     @SerialName("cat")
-    val category: Category = Category.entries.get(Random.nextInt(Category.entries.size)),
+    val category: Category = Category.None,
     // TODO: Yet support only equal split in v1
 //    @SerialName("splitType")
 //    val splitType: SplitType = SplitType.EQUAL,

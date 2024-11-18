@@ -29,6 +29,7 @@ import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
+import app.wesplit.expense.category.CategorySelection
 import app.wesplit.routing.RightPane
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
@@ -49,6 +50,7 @@ import org.koin.core.component.KoinComponent
 
 private const val EXPENSE_COMMIT_COUNTER_KEY = "ex_com"
 private const val EXP_PROTECT_PAYWALL_SOURCE = "exp_protection"
+private const val EXP_CATEGORY_PAYWALL_SOURCE = "exp_category"
 
 private const val UPDATE_TITLE_EVENT = "exp_update_title"
 private const val UPDATE_DATE_EVENT = "exp_update_date"
@@ -68,6 +70,8 @@ sealed interface UpdateAction {
     data class TotalAmount(val value: Double, val currencyCode: String) : UpdateAction
 
     data class Date(val millis: Long) : UpdateAction
+
+    data class ChangeCategory(val selection: CategorySelection) : UpdateAction
 
     data class Settled(val isSettled: Boolean) : UpdateAction
 
@@ -338,6 +342,14 @@ class ExpenseDetailsViewModel(
                         }
                     } else {
                         onSubscriptionRequest(SETTLEMENT_CHANGE)
+                    }
+                }
+
+                is UpdateAction.ChangeCategory -> {
+                    if (accountRepository.get().value.isPlus() || action.selection.isUnlocked) {
+                        _state.update { data.copy(expense = expense.copy(category = action.selection.category)) }
+                    } else {
+                        onSubscriptionRequest(EXP_CATEGORY_PAYWALL_SOURCE)
                     }
                 }
             }

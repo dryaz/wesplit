@@ -290,4 +290,6 @@
     <string name="category_health">Health</string>
     <string name="category_beauty">Beauty</string>
     <string name="category_sport">Sport</string>
+    <string name="expanded">Expanded</string>
+    <string name="collapsed">Collapsed</string>
 </resources>

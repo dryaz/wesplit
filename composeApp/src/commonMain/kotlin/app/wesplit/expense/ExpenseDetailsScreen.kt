@@ -91,6 +91,8 @@ import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
+import app.wesplit.expense.category.ExpenseCategoryPicker
+import app.wesplit.expense.category.Icon
 import app.wesplit.filterDoubleInput
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
@@ -446,10 +448,10 @@ fun MarkAsSettled(onSettled: () -> Unit) {
             },
         colors =
             ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                headlineColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                leadingIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                supportingColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
+                containerColor = MaterialTheme.colorScheme.secondary,
+                headlineColor = MaterialTheme.colorScheme.onSecondary,
+                leadingIconColor = MaterialTheme.colorScheme.onSecondary,
+                supportingColor = MaterialTheme.colorScheme.onSecondary.copy(alpha = 0.75f),
             ),
         leadingContent = {
             Icon(
@@ -858,6 +860,7 @@ private fun ExpenseDetails(
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showCurrencyPicker by remember { mutableStateOf(false) }
+    var showCategoryPicker by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val tutorialControl = LocalTutorialControl.current
 
@@ -887,38 +890,51 @@ private fun ExpenseDetails(
         TutorialItem(
             onPositioned = { tutorialControl.onPositionRecieved(getStep(OnboardingStep.EXPENSE_TITLE), it) },
         ) { modifier ->
-            OutlinedTextField(
-                modifier = modifier.fillMaxWidth(1f).padding(horizontal = 16.dp).focusRequester(focusRequester),
-                singleLine = true,
-                enabled = data.expense.allowedToChange(),
-                value = data.expense.title,
-                isError = data.expense.title.isNullOrBlank(),
-                keyboardOptions =
-                    KeyboardOptions(
-                        imeAction = ImeAction.Next,
-                        keyboardType = KeyboardType.Text,
-                        capitalization = KeyboardCapitalization.Sentences,
-                    ),
-                supportingText = {
-                    if (data.expense.title.isNullOrBlank()) Text(stringResource(Res.string.title_should_be_filled))
-                },
-                onValueChange = { value -> onUpdated(UpdateAction.Title(value)) },
-                prefix = {
-                    Row {
-                        Icon(
-                            imageVector = AdaptiveIcons.Outlined.Create,
-                            contentDescription = stringResource(Res.string.expense_title),
+            Row(
+                modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(1f).padding(horizontal = 16.dp),
+            ) {
+                FilledTonalButton(
+                    modifier = Modifier.fillMaxHeight(0.8f),
+                    onClick = { showCategoryPicker = true },
+                    enabled = data.expense.allowedToChange(),
+                    shape = RoundedCornerShape(10.dp),
+                ) {
+                    data.expense.category.Icon()
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    modifier = modifier.fillMaxWidth(1f).focusRequester(focusRequester),
+                    singleLine = true,
+                    enabled = data.expense.allowedToChange(),
+                    value = data.expense.title,
+                    isError = data.expense.title.isNullOrBlank(),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            imeAction = ImeAction.Next,
+                            keyboardType = KeyboardType.Text,
+                            capitalization = KeyboardCapitalization.Sentences,
+                        ),
+                    supportingText = {
+                        if (data.expense.title.isNullOrBlank()) Text(stringResource(Res.string.title_should_be_filled))
+                    },
+                    onValueChange = { value -> onUpdated(UpdateAction.Title(value)) },
+                    prefix = {
+                        Row {
+                            Icon(
+                                imageVector = AdaptiveIcons.Outlined.Create,
+                                contentDescription = stringResource(Res.string.expense_title),
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                        }
+                    },
+                    placeholder = {
+                        Text(
+                            text = stringResource(Res.string.expense_title),
+                            style = MaterialTheme.typography.bodyMedium,
                         )
-                        Spacer(modifier = Modifier.width(16.dp))
-                    }
-                },
-                placeholder = {
-                    Text(
-                        text = stringResource(Res.string.expense_title),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                },
-            )
+                    },
+                )
+            }
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -1068,6 +1084,15 @@ private fun ExpenseDetails(
                 onDismiss = { showCurrencyPicker = false },
                 onConfirm = { currency ->
                     onUpdated(UpdateAction.TotalAmount(data.expense.totalAmount.value, currency))
+                },
+            )
+        }
+
+        if (showCategoryPicker) {
+            ExpenseCategoryPicker(
+                onDismiss = { showCategoryPicker = false },
+                onConfirm = { category ->
+                    onUpdated(UpdateAction.ChangeCategory(category))
                 },
             )
         }

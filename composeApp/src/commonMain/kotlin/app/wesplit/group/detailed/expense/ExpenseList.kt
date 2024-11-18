@@ -44,7 +44,7 @@ import app.wesplit.domain.model.expense.myAmount
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.isMe
-import app.wesplit.expense.categoryIconRes
+import app.wesplit.expense.category.categoryIconRes
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource

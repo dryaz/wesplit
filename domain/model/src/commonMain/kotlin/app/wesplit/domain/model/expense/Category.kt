@@ -154,8 +154,6 @@ enum class Category {
 
 val categories: Map<Category, List<Category>> =
     mapOf(
-        // Gifts
-        Category.None to emptyList(),
         // Housing
         Category.Housing to
             listOf(
@@ -195,8 +193,6 @@ val categories: Map<Category, List<Category>> =
                 Category.Tolls,
                 Category.Fee,
             ),
-        // Gifts
-        Category.Gifts to emptyList(),
         // Shopping
         Category.Shopping to
             listOf(
@@ -215,8 +211,6 @@ val categories: Map<Category, List<Category>> =
                 Category.SportEvent,
                 Category.Hobby,
             ),
-        // Sport
-        Category.Sport to emptyList(),
         // Health and Beauty
         Category.HealthBeauty to
             listOf(
@@ -224,4 +218,17 @@ val categories: Map<Category, List<Category>> =
                 Category.Health,
                 Category.Beauty,
             ),
+        // Sport
+        Category.Sport to listOf(Category.Sport),
+        // Gifts
+        Category.Gifts to listOf(Category.Gifts),
+    )
+
+val freeCategories =
+    setOf(
+        Category.None,
+        Category.Housing,
+        Category.FoodDrink,
+        Category.TransportTravel,
+        Category.Shopping,
     )

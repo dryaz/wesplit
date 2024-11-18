@@ -1,8 +1,11 @@
-package app.wesplit.expense
+package app.wesplit.expense.category
 
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import app.wesplit.domain.model.expense.Category
 import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.category_beauty
@@ -91,6 +94,16 @@ import split.composeapp.generated.resources.ic_cat_transport_travel
 import split.composeapp.generated.resources.ic_cat_utilities
 import split.composeapp.generated.resources.ic_cat_water
 import split.composeapp.generated.resources.ic_health_beauty
+
+@Composable
+fun Category.Title() = Text(this.uiTitle())
+
+@Composable
+fun Category.Icon() =
+    Icon(
+        painter = painterResource(this.categoryIconRes()),
+        contentDescription = this.uiTitle(),
+    )
 
 @Composable
 fun Category.uiTitle(): String =

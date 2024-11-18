@@ -269,7 +269,7 @@
     <string name="category_transport_travel">Транспорт и поездки</string>
     <string name="category_transportation">Транспорт</string>
     <string name="category_taxi">Такси</string>
-    <string name="category_flight">Рейс</string>
+    <string name="category_flight">Перелет</string>
     <string name="category_public">Общ. транспорт</string>
     <string name="category_car">Автомобиль</string>
     <string name="category_parking">Парковка</string>
@@ -290,4 +290,6 @@
     <string name="category_health">Здоровье</string>
     <string name="category_beauty">Красота</string>
     <string name="category_sport">Спорт</string>
+    <string name="expanded">Развернуто</string>
+    <string name="collapsed">Свернуто</string>
 </resources>
