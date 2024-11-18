@@ -44,6 +44,7 @@ import app.wesplit.domain.model.expense.myAmount
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.isMe
+import app.wesplit.expense.categoryIconRes
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
@@ -237,15 +238,19 @@ private fun ExpenseItem(
     ) {
         // Date
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            val dayOfMonth = localeDate.dayOfMonth.toString().padStart(2, '0')
+            val month = localeDate.monthNumber.toString().padStart(2, '0') // localeDate.month.name.substring(0, 3)
             Text(
-                text = localeDate.month.name.substring(0, 3),
+                text = "$dayOfMonth.$month",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
             )
-            Text(
-                text = localeDate.dayOfMonth.toString().padStart(2, '0'),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.outline,
+            Spacer(modifier = Modifier.height(4.dp))
+            Icon(
+                modifier = Modifier.size(32.dp),
+                painter = painterResource(expense.category.categoryIconRes()),
+                contentDescription = "Expense category is ${expense.category}",
+                tint = MaterialTheme.colorScheme.secondary,
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
