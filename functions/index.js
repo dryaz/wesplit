@@ -13,6 +13,152 @@ admin.initializeApp();
 const db = getFirestore();
 const auth = getAuth();
 
+// Import required modules
+const { onDocumentWritten } = require('firebase-functions/v2/firestore');
+
+const { defineSecret } = require('firebase-functions/params');
+const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
+
+// Define the category mapping
+const categoryMapping = {
+  0: "None",
+  1: "Housing",
+  2: "Utilities",
+  3: "Electricity",
+  4: "Internet",
+  5: "Water",
+  6: "Recycling",
+  7: "Garbage",
+  8: "Housing/Repair",
+  9: "Cleaning",
+  10: "Rent",
+  11: "Tax",
+  12: "Furnishing",
+  13: "Security",
+  14: "Food and Drink",
+  15: "Fast Food",
+  16: "Coffee",
+  17: "Restaurant",
+  18: "Groceries",
+  19: "Transport and Travel",
+  20: "Transportation",
+  21: "Taxi",
+  22: "Flight",
+  23: "Public",
+  24: "Car",
+  25: "Parking",
+  26: "Tolls",
+  27: "Fee",
+  28: "Gifts",
+  29: "Shopping",
+  30: "Technology",
+  31: "Clothes",
+  32: "Shoes",
+  33: "Entertainment",
+  34: "Movie",
+  35: "Concert",
+  36: "Books",
+  37: "Sport Event",
+  38: "Hobby",
+  39: "Health and Beauty",
+  40: "Health",
+  41: "Beauty",
+  42: "Sport",
+  43: "Money Transfer",
+  44: "Cash",
+  45: "Bank Transfer",
+  46: "Crypto",
+};
+
+// Define the function using Firebase Functions v2 syntax
+exports.assignCategoryOnExpenseWrite = onDocumentWritten(
+  {
+    document: 'groups/{groupId}/expenses/{expenseId}',
+    region: 'us-central1', // Specify your desired region
+    secrets: [OPENAI_API_KEY], // Include the secret
+  },
+  async (event) => {
+    const { groupId } = event.params;
+
+    const beforeData = event.data.before ? event.data.before.data() : null;
+    const afterData = event.data.after ? event.data.after.data() : null;
+
+    // If the document was deleted, exit
+    if (!afterData) {
+      console.log('Document was deleted, no action needed.');
+      return;
+    }
+
+    // Check if 'cat' field is -1
+    if (afterData.cat !== "-1") {
+      console.log("'cat' field is not -1, no action needed.");
+      return;
+    }
+
+    // Prevent infinite loops
+    if (beforeData && beforeData.cat === afterData.cat) {
+      console.log("'cat' field hasn't changed, no action needed.");
+      return;
+    }
+
+    const title = afterData.title;
+
+    try {
+      // Prepare messages for Chat Completion API
+      const messages = [
+        {
+          role: 'system',
+          content: `You are an assistant that assigns a category number to expenses based on their title.
+
+Here is a mapping of categories:
+
+${Object.entries(categoryMapping)
+  .map(([key, value]) => `${key}: ${value}`)
+  .join('\n')}
+
+Given an expense title, determine the closest category number from the mapping. If the title is unclear or does not match any category, respond with "0" (None). Provide only the category number as the answer.`,
+        },
+        {
+          role: 'user',
+          content: `Title: "${title}"\nCategory number:`,
+        },
+      ];
+
+      // Call OpenAI Chat Completion API
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-3.5-turbo', // Use 'gpt-4' or 'gpt-3.5-turbo' model
+          messages: messages,
+          max_tokens: 10,
+          temperature: 0,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${OPENAI_API_KEY.value()}`, // Use the secret value
+          },
+        }
+      );
+
+      const result = response.data.choices[0].message.content.trim();
+      console.log(`Title: ${title} | Get response from AI: ${result}`);
+      const category = parseInt(result, 10);
+
+      if (!isNaN(category)) {
+        // Update the 'cat' field in Firestore
+        await event.data.after.ref.update({ cat: category.toString() });
+        console.log(`Updated 'cat' to ${category} for expense: ${title}`);
+      } else {
+      await event.data.after.ref.update({ cat: "0" });
+        console.error("Failed to parse 'cat' from AI response:", result);
+      }
+    } catch (error) {
+      console.error('Error assigning category:', error.response?.data || error.message);
+    }
+  }
+);
+
 exports.generateGroupToken = onCall(async (request) => {
   const { groupId, publicToken } = request.data;
 

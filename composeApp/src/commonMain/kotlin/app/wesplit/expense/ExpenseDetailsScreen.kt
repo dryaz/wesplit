@@ -1090,6 +1090,7 @@ private fun ExpenseDetails(
 
         if (showCategoryPicker) {
             ExpenseCategoryPicker(
+                selectedCategory = data.expense.category,
                 onDismiss = { showCategoryPicker = false },
                 onConfirm = { category ->
                     onUpdated(UpdateAction.ChangeCategory(category))

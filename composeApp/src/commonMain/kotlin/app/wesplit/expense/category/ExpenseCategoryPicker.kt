@@ -8,14 +8,17 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -52,6 +55,7 @@ data class CategorySelection(
 @OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun ExpenseCategoryPicker(
+    selectedCategory: Category,
     onDismiss: () -> Unit,
     onConfirm: (CategorySelection) -> Unit,
 ) {
@@ -90,6 +94,7 @@ fun ExpenseCategoryPicker(
                             onDismiss()
                         },
                         analyticsManager = analyticsManager,
+                        selectedCategory = selectedCategory,
                     )
             }
         }
@@ -98,25 +103,58 @@ fun ExpenseCategoryPicker(
 
 @Composable
 private fun CategoryList(
+    selectedCategory: Category,
     data: ExpenseCategoryPickerViewModel.State.Data,
     analyticsManager: AnalyticsManager,
     onConfirm: (CategorySelection) -> Unit,
 ) {
-    val expanded = mutableStateOf<Set<Category>>(emptySet())
+    val expanded =
+        mutableStateOf<Set<Category>>(
+            setOf(
+                data.categories.entries.find { (_, value) ->
+                    value.contains(selectedCategory)
+                }?.key ?: selectedCategory,
+            ),
+        )
+
+    val listState = rememberLazyListState()
 
     LazyColumn(
         modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHigh),
+        state = listState,
     ) {
+        item(key = Category.Magic.name) {
+            ListItem(
+                modifier = Modifier.clickable { onConfirm(CategorySelection(Category.Magic, Category.Magic in data.unlocked)) },
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ),
+                headlineContent = { Category.Magic.Title() },
+                leadingContent = { Category.Magic.Icon() },
+                trailingContent = {
+                    if (Category.Magic !in data.unlocked) {
+                        Image(
+                            modifier = Modifier.height(18.dp),
+                            painter = painterResource(Res.drawable.ic_plus),
+                            contentDescription = "Plus badge",
+                        )
+                    }
+                },
+            )
+        }
+
         item(key = Category.None.name) {
             ListItem(
                 modifier = Modifier.clickable { onConfirm(CategorySelection(Category.None, true)) },
                 colors =
                     ListItemDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     ),
                 headlineContent = { Category.None.Title() },
                 leadingContent = { Category.None.Icon() },
             )
+            HorizontalDivider()
         }
 
         data.categories.forEach { entry ->
@@ -171,15 +209,23 @@ private fun CategoryList(
             }
 
             if (isExpanded) {
-                items(entry.value, key = { "${entry.key.name}:${it.name}" }) { category ->
+                itemsIndexed(entry.value, key = { index, category ->
+                    "${entry.key.name}:${category.name}"
+                }) { index, category ->
+                    if (index == 0) HorizontalDivider()
                     ListItem(
                         modifier =
                             Modifier.clickable {
                                 onConfirm(CategorySelection(category, category in data.unlocked))
-                            },
+                            }.animateItem(),
                         colors =
                             ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                containerColor =
+                                    if (category == selectedCategory) {
+                                        MaterialTheme.colorScheme.surfaceContainerHighest
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceContainerHigh
+                                    },
                             ),
                         headlineContent = { category.Title() },
                         leadingContent = { category.Icon() },
@@ -193,8 +239,24 @@ private fun CategoryList(
                             }
                         },
                     )
+                    if (index == entry.value.size - 1) HorizontalDivider()
                 }
             }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (selectedCategory != Category.Magic && selectedCategory != Category.None) {
+            var index = 2
+            for ((_, value) in data.categories) {
+                index++
+                val foundCatIndex = value.indexOf(selectedCategory)
+                if (foundCatIndex >= 0) {
+                    index += foundCatIndex
+                    break
+                }
+            }
+            listState.scrollToItem(index - 1)
         }
     }
 }

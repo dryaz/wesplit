@@ -33,6 +33,7 @@ import split.composeapp.generated.resources.category_health_beauty
 import split.composeapp.generated.resources.category_hobby
 import split.composeapp.generated.resources.category_housing
 import split.composeapp.generated.resources.category_internet
+import split.composeapp.generated.resources.category_magic
 import split.composeapp.generated.resources.category_money
 import split.composeapp.generated.resources.category_movie
 import split.composeapp.generated.resources.category_none
@@ -79,6 +80,7 @@ import split.composeapp.generated.resources.ic_cat_health
 import split.composeapp.generated.resources.ic_cat_hobby
 import split.composeapp.generated.resources.ic_cat_housing
 import split.composeapp.generated.resources.ic_cat_internet
+import split.composeapp.generated.resources.ic_cat_magic
 import split.composeapp.generated.resources.ic_cat_money
 import split.composeapp.generated.resources.ic_cat_movie
 import split.composeapp.generated.resources.ic_cat_none
@@ -164,6 +166,7 @@ fun Category.uiTitle(): String =
             Category.Cash -> Res.string.category_cash
             Category.BankTransfer -> Res.string.category_bank
             Category.Crypto -> Res.string.category_crypto
+            Category.Magic -> Res.string.category_magic
         },
     )
 
@@ -217,4 +220,5 @@ fun Category.categoryIconRes(): DrawableResource =
         Category.Cash -> Res.drawable.ic_cat_cash
         Category.BankTransfer -> Res.drawable.ic_cat_bank
         Category.Crypto -> Res.drawable.ic_cat_crypto
+        Category.Magic -> Res.drawable.ic_cat_magic
     }

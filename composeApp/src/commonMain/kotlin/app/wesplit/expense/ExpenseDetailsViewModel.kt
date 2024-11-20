@@ -19,6 +19,7 @@ import app.wesplit.domain.model.account.isPlus
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
+import app.wesplit.domain.model.expense.Category
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.ExpenseStatus
@@ -183,6 +184,7 @@ class ExpenseDetailsViewModel(
                         existingExpense ?: Expense(
                             id = null,
                             title = "",
+                            category = if (account.isPlus()) Category.Magic else Category.None,
                             payedBy = group.participants.find { it.isMe() } ?: group.participants.first(),
                             // TODO: Currency model/set not to have hardcoded USD, map to sybmol etc
                             totalAmount = Amount(0.0, currencyCode),

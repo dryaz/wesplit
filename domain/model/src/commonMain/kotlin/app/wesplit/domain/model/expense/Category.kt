@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Category {
+    @SerialName("-1")
+    Magic,
+
     @SerialName("0")
     None,
 
