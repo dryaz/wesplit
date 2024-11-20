@@ -1,6 +1,6 @@
 [versions]
-versionName = "2.3.0"
-android-versionCode = "57"
+versionName = "3.0.0"
+android-versionCode = "58"
 
 filekitCompose = "0.8.7"
 inAppReview = "3.1.21"
