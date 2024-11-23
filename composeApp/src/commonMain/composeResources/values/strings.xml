@@ -54,6 +54,7 @@ Add New expense to see stats here!</string>
   <string name="share_link_copied">Sharable link copied!</string>
   <string name="plus_subs_title">Plus benefits</string>
   <string name="plus_feature_cats_title">AI Expense Categorisation</string>
+  <string name="plus_feature_cats_cta">Subscribe to enable AI categorization</string>
   <string name="plus_feature_cats_descr_short">More Categories, Better Control</string>
   <string name="plus_feature_cats_descr_full">Unlock comprehensive tracking with auto categorisation. Access a wider range of categories to accurately monitor all your expenses and achieve better budget control.</string>
   <string name="plus_feature_protect_title">Protected expense</string>

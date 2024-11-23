@@ -1,9 +1,6 @@
 package app.wesplit.group.detailed.expense
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.snap
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -12,9 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -92,49 +89,43 @@ fun PieSampleView(expenses: List<Expense>) {
         }
     }
 
-    AnimatedVisibility(
-        visible = uiData.isNotEmpty(),
-        enter = fadeIn(),
-        exit = fadeOut(),
+    Row(
+        modifier = Modifier.fillMaxWidth(1f).wrapContentHeight().padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(1f).height(132.dp).padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        ChartLayout(
+            modifier = Modifier.width(100.dp),
         ) {
-            ChartLayout(
-                modifier = Modifier.width(100.dp),
-            ) {
-                PieChart(
-                    values = uiData.map { it.value.toFloat() },
-                    modifier = Modifier,
-                    slice = { i: Int ->
-                        DefaultSlice(
-                            color = if (i < colors.size - 1) colors[i] else Color.Red,
-                        )
-                    },
-                    holeSize = 0.65f,
-                    maxPieDiameter = 100.dp,
-                    labelConnector = {},
-                    pieAnimationSpec = snap(),
-                )
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            FlowRow(
-                modifier = Modifier.weight(1f).fillMaxHeight(0.95f),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
-            ) {
-                uiData.mapIndexed { index, uiCategory ->
-                    Text(
-                        modifier =
-                            Modifier.clip(RoundedCornerShape(20.dp)).background(colors[index])
-                                .padding(horizontal = 8.dp, vertical = 1.dp),
-                        text = uiCategory.category?.uiTitle() ?: stringResource(Res.string.other),
-                        color = MaterialTheme.extraColorScheme.onInfoContainer,
+            PieChart(
+                values = uiData.map { it.value.toFloat() },
+                modifier = Modifier,
+                slice = { i: Int ->
+                    DefaultSlice(
+                        color = if (i < colors.size - 1) colors[i] else Color.Red,
                     )
-                }
+                },
+                holeSize = 0.65f,
+                maxPieDiameter = 100.dp,
+                labelConnector = {},
+                pieAnimationSpec = snap(),
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        FlowRow(
+            modifier = Modifier.weight(1f).fillMaxHeight(0.95f),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+        ) {
+            uiData.mapIndexed { index, uiCategory ->
+                Text(
+                    modifier =
+                        Modifier.clip(RoundedCornerShape(20.dp)).background(colors[index])
+                            .padding(horizontal = 8.dp, vertical = 1.dp),
+                    text = uiCategory.category?.uiTitle() ?: stringResource(Res.string.other),
+                    color = MaterialTheme.extraColorScheme.onInfoContainer,
+                )
             }
         }
     }

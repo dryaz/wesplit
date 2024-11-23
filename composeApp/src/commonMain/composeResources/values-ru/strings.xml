@@ -53,6 +53,7 @@
   <string name="share_link_copied">Ссылка на группу скопирована!</string>
   <string name="plus_subs_title">Преимущества Plus</string>
   <string name="plus_feature_cats_title">ИИ определение категорий</string>
+  <string name="plus_feature_cats_cta">Подпишись, чтобы включить ИИ</string>
   <string name="plus_feature_cats_descr_short">Больше категорий, лучший контроль</string>
   <string name="plus_feature_cats_descr_full">Получите доступ к 45+ категориям с автоматическим определением для точного учета всех ваших расходов и лучшего контроля над тратами.</string>
   <string name="plus_feature_protect_title">Защита от редактирования</string>

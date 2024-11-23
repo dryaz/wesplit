@@ -10,9 +10,12 @@ import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.model.user.isPlus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,6 +30,7 @@ class ExpenseSectionViewModel(
     private val expenseRepository: ExpenseRepository,
     private val groupRepository: GroupRepository,
     private val analyticsManager: AnalyticsManager,
+    private val userRepository: UserRepository,
 ) : ViewModel(),
     KoinComponent {
     val dataState: StateFlow<State>
@@ -48,34 +52,41 @@ class ExpenseSectionViewModel(
 
             if (group == null) return@launch
 
-            expenseRepository.getByGroupId(groupId)
-                .catch {
-                    analyticsManager.log("ExpenseSectionViewModel - refresh()", LogLevel.WARNING)
-                    analyticsManager.log(it)
-                    _dataState.update { State.Error }
-                }
-                .collect { expensesResult ->
-                    if (expensesResult.isFailure) {
-                        _dataState.update {
-                            State.Error
-                        }
-                    } else if (expensesResult.getOrNull().isNullOrEmpty()) {
-                        _dataState.update {
-                            State.Empty
-                        }
-                    } else {
-                        _dataState.update {
-                            State.Expenses(
-                                group = group,
-                                groupedExpenses =
-                                    expensesResult.getOrThrow().groupBy {
-                                        val localDate = it.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
-                                        "${localDate.month} ${localDate.year}"
-                                    },
-                            )
-                        }
+            val expensesFlow =
+                expenseRepository.getByGroupId(groupId)
+                    .catch {
+                        analyticsManager.log("ExpenseSectionViewModel - refresh()", LogLevel.WARNING)
+                        analyticsManager.log(it)
+                        _dataState.update { State.Error }
+                    }
+
+            combine(expensesFlow, userRepository.get()) { expensesResult, account ->
+                println("SOME CHANGES RECEIVED!")
+                if (expensesResult.isFailure) {
+                    _dataState.update {
+                        State.Error
+                    }
+                } else if (expensesResult.getOrNull().isNullOrEmpty()) {
+                    _dataState.update {
+                        State.Empty
+                    }
+                } else {
+                    _dataState.update {
+                        val groupedExpenses =
+                            expensesResult.getOrThrow().groupBy {
+                                val localDate = it.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
+                                "${localDate.month} ${localDate.year}"
+                            }
+
+                        State.Expenses(
+                            banner = if (!account.isPlus() && groupedExpenses.isNotEmpty()) Banner.AI_CAT else Banner.NONE,
+                            group = group,
+                            groupedExpenses =
+                            groupedExpenses,
+                        )
                     }
                 }
+            }.collect {}
         }
     }
 
@@ -94,6 +105,12 @@ class ExpenseSectionViewModel(
         data class Expenses(
             val group: Group,
             val groupedExpenses: Map<String, List<Expense>>,
+            val banner: Banner,
         ) : State
+    }
+
+    enum class Banner {
+        NONE,
+        AI_CAT,
     }
 }

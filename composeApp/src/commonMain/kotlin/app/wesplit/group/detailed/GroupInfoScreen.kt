@@ -48,6 +48,7 @@ import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
+import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.group.detailed.balance.BalanceList
 import app.wesplit.group.detailed.expense.ExpenseAction
 import app.wesplit.group.detailed.expense.ExpenseSection
@@ -105,6 +106,8 @@ sealed interface GroupInfoAction {
     data class OpenExpenseDetails(val expense: Expense) : GroupInfoAction
 
     data class Settle(val group: Group) : GroupInfoAction
+
+    data class BannerClick(val banner: ExpenseSectionViewModel.Banner) : GroupInfoAction
 }
 
 private val addExpenseTutorialStep =
@@ -307,6 +310,7 @@ private fun GroupInfoContent(
     val expenseRepository: ExpenseRepository = koinInject()
     val groupRepository: GroupRepository = koinInject()
     val analyticsManager: AnalyticsManager = koinInject()
+    val userRepository: UserRepository = koinInject()
     val tutorialControl = LocalTutorialControl.current
 
     val windowSizeClass = calculateWindowSizeClass()
@@ -318,6 +322,7 @@ private fun GroupInfoContent(
                 expenseRepository = expenseRepository,
                 groupRepository = groupRepository,
                 analyticsManager = analyticsManager,
+                userRepository = userRepository,
             )
         }
 
@@ -389,6 +394,7 @@ private fun SplitView(
             ExpenseSection(expenseViewModel) { action ->
                 when (action) {
                     is ExpenseAction.OpenDetails -> onAction(GroupInfoAction.OpenExpenseDetails(action.expense))
+                    is ExpenseAction.BannerClick -> onAction(GroupInfoAction.BannerClick(action.banner))
                 }
             }
         }
@@ -449,6 +455,7 @@ private fun PaginationView(
                         ExpenseSection(expenseViewModel) { action ->
                             when (action) {
                                 is ExpenseAction.OpenDetails -> onAction(GroupInfoAction.OpenExpenseDetails(action.expense))
+                                is ExpenseAction.BannerClick -> onAction(GroupInfoAction.BannerClick(action.banner))
                             }
                         }
 

@@ -57,6 +57,7 @@ import app.wesplit.group.detailed.GroupInfoAction
 import app.wesplit.group.detailed.GroupInfoScreen
 import app.wesplit.group.detailed.GroupInfoViewModel
 import app.wesplit.group.detailed.NoGroupScreen
+import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.group.list.GroupListAction
 import app.wesplit.group.list.GroupListRoute
 import app.wesplit.group.list.GroupListViewModel
@@ -98,6 +99,7 @@ private const val SUBS_SOURCE = "source"
 private const val DOWNLOAD_APP_FOR_SUBS = "download_for_subs"
 
 private const val PROFILE_PAYWALL_SOURCE = "profile"
+private const val AI_CAT_BANNER_PAYWALL_SOURCE = "aiCatBanner"
 
 sealed class PaneNavigation(
     val route: String,
@@ -664,6 +666,14 @@ private fun Navigation(
                                             launchSingleTop = true
                                         },
                                 )
+
+                            is GroupInfoAction.BannerClick ->
+                                when (action.banner) {
+                                    ExpenseSectionViewModel.Banner.AI_CAT -> {
+                                        onSubscriptionRequest(AI_CAT_BANNER_PAYWALL_SOURCE)
+                                    }
+                                    ExpenseSectionViewModel.Banner.NONE -> {}
+                                }
 
                             is GroupInfoAction.Invite -> TODO("We support only sharing of the group yet")
                         }

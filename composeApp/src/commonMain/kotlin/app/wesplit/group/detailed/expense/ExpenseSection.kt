@@ -14,6 +14,8 @@ import split.composeapp.generated.resources.error
 
 sealed interface ExpenseAction {
     data class OpenDetails(val expense: Expense) : ExpenseAction
+
+    data class BannerClick(val banner: ExpenseSectionViewModel.Banner) : ExpenseAction
 }
 
 @Composable
@@ -24,7 +26,7 @@ fun ExpenseSection(
     val dataState = viewModel.dataState.collectAsState()
     when (val state = dataState.value) {
         ExpenseSectionViewModel.State.Empty -> EmptyExpenseSection(modifier = Modifier.fillMaxSize())
-        is ExpenseSectionViewModel.State.Expenses -> ExpenseList(state.group, state.groupedExpenses, onAction)
+        is ExpenseSectionViewModel.State.Expenses -> ExpenseList(state.group, state.groupedExpenses, state.banner, onAction)
         ExpenseSectionViewModel.State.Loading ->
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()
