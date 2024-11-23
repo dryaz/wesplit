@@ -53,10 +53,9 @@ Add New expense to see stats here!</string>
   <string name="edit_group">Edit group</string>
   <string name="share_link_copied">Sharable link copied!</string>
   <string name="plus_subs_title">Plus benefits</string>
-  <string name="plus_feature_cats_title">AI Expense Categorisation</string>
-  <string name="plus_feature_cats_cta">Subscribe to enable AI categorization</string>
+  <string name="plus_feature_cats_title">AI Expense Categorization</string>
   <string name="plus_feature_cats_descr_short">More Categories, Better Control</string>
-  <string name="plus_feature_cats_descr_full">Unlock comprehensive tracking with auto categorisation. Access a wider range of categories to accurately monitor all your expenses and achieve better budget control.</string>
+  <string name="plus_feature_cats_descr_full">Unlock comprehensive tracking with auto categorization. Access a wider range of categories to accurately monitor all your expenses and achieve better budget control.</string>
   <string name="plus_feature_protect_title">Protected expense</string>
   <string name="plus_feature_protect_descr_short">Ensure expense integrity</string>
   <string name="plus_feature_protect_descr_full">Keep critical costs under your control.
@@ -96,7 +95,7 @@ Prevent unauthorized changes and maintain financial integrity effortlessly.</str
   <string name="privacy_policy">Privacy policy</string>
   <string name="terms_conditions">Terms &amp; conditions</string>
   <string name="delete_account">Delete account</string>
-  <string name="confirm_delete_account">Are you sure that
+  <string name="confirm_delete_account">Are you sure that 
 you want to completely delete your account?</string>
   <string name="delete_account_confirmation">Delete Account?</string>
   <string name="delete_account_from_wesplit">Delete account from WeSplit</string>
@@ -112,7 +111,7 @@ you want to completely delete your account?</string>
   <string name="already_settled">Already settled</string>
   <string name="we_split_in">We split in</string>
   <string name="undistributed">Undistributed</string>
-  <string name="settle_balances">Settle balances</string>
+  <string name="settle_balances">Settle Up</string>
   <string name="get_plus_instant_balances">Get Plus to enable instant balances</string>
   <string name="recalculating_backend">Recalculating on backend</string>
   <string name="offline_balances_shown">Offline balances are shown</string>
@@ -305,4 +304,5 @@ Are you sure you want to leave the group?</string>
   <string name="category_crypto">Crypto</string>
   <string name="category_magic">AI: Generate</string>
   <string name="other">Other</string>
+  <string name="plus_feature_cats_cta">Subscribe to enable AI</string>
 </resources>
