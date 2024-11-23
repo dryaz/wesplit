@@ -179,7 +179,7 @@ Fügen Sie eine neue Ausgabe hinzu, um hier Statistiken zu sehen!</string>
   <string name="login_to_protect_expense">Melden Sie sich an, um diese Ausgabe zu schützen</string>
   <string name="not_allowed_to_update_expense">Sie dürfen diese Ausgabe nicht aktualisieren</string>
   <string name="delete_expense_title">%1$s löschen?</string>
-  <string name="confirm_delete_expense_message">Möchten Sie diese Ausgabe aus \'%1$s\' wirklich löschen?</string>
+  <string name="confirm_delete_expense_message">Möchten Sie diese Ausgabe aus '%1$s' wirklich löschen?</string>
   <string name="delete_expense">Ausgabe löschen</string>
   <string name="error">Fehler</string>
   <string name="tutorial_step_expense_title">Geben Sie den Ausgabentitel ein</string>

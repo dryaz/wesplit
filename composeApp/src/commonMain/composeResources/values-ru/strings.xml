@@ -99,7 +99,7 @@
   <string name="confirm_yes_delete">Да, удалить</string>
   <string name="confirm_no_wait">Нет, подождать</string>
   <string name="subscribe_plus">Подписаться на Plus</string>
-  <string name="not_found">\"%1$s\" не найдено</string>
+  <string name="not_found">"%1$s" не найдено</string>
   <string name="expense_title">Название траты</string>
   <string name="amount">Сумма</string>
   <string name="paid_by">Оплачено</string>
@@ -180,7 +180,7 @@
   <string name="login_to_protect_expense">Войдите, чтобы заблокировать эту трату</string>
   <string name="not_allowed_to_update_expense">Вам не разрешено обновлять эту запись</string>
   <string name="delete_expense_title">Удалить %1$s?</string>
-  <string name="confirm_delete_expense_message">Вы уверены, что хотите удалить эту запись из \'%1$s\'?</string>
+  <string name="confirm_delete_expense_message">Вы уверены, что хотите удалить эту запись из '%1$s'?</string>
   <string name="delete_expense">Удалить запись</string>
   <string name="error">Ошибка</string>
   <string name="tutorial_step_expense_title">Введите название трат</string>
