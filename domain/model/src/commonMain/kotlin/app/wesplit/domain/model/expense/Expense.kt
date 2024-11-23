@@ -46,6 +46,8 @@ data class Expense(
     val lastUpdated: BaseTimestamp = Timestamp.ServerTimestamp,
     @SerialName("cat")
     val category: Category = Category.None,
+    @Transient
+    val baseAmount: Amount = Amount(1.0, "USD"),
     // TODO: Yet support only equal split in v1
 //    @SerialName("splitType")
 //    val splitType: SplitType = SplitType.EQUAL,

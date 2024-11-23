@@ -52,9 +52,9 @@
   <string name="edit_group">Редактировать группу</string>
   <string name="share_link_copied">Ссылка на группу скопирована!</string>
   <string name="plus_subs_title">Преимущества Plus</string>
-  <string name="plus_feature_cats_title">45+ категории расходов</string>
+  <string name="plus_feature_cats_title">ИИ определение категорий</string>
   <string name="plus_feature_cats_descr_short">Больше категорий, лучший контроль</string>
-  <string name="plus_feature_cats_descr_full">Получите доступ к 45+ категориям для точного учета всех ваших расходов и лучшего контроля над тратами.</string>
+  <string name="plus_feature_cats_descr_full">Получите доступ к 45+ категориям с автоматическим определением для точного учета всех ваших расходов и лучшего контроля над тратами.</string>
   <string name="plus_feature_protect_title">Защита от редактирования</string>
   <string name="plus_feature_protect_descr_short">Надежность ваших записей</string>
   <string name="plus_feature_protect_descr_full">Держите важные расходы под контролем. Запретите изменения и легко следите за целостностью данных.</string>
@@ -300,4 +300,5 @@
   <string name="category_bank">Через банк</string>
   <string name="category_crypto">Криптовалюта</string>
   <string name="category_magic">ИИ: Генерировать</string>
+  <string name="other">Другое</string>
 </resources>

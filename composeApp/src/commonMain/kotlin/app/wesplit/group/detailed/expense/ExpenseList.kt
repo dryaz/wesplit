@@ -193,6 +193,11 @@ fun ExpenseList(
                 )
             }
         }
+
+        item {
+            PieSampleView(dataUnderFilters.flatMap { it.value })
+        }
+
         dataUnderFilters.forEach { entry ->
             stickyHeader {
                 Text(

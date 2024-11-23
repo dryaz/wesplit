@@ -1,4 +1,5 @@
 [versions]
+koalaplotCore = "0.7.0"
 versionName = "3.0.0"
 android-versionCode = "58"
 
@@ -64,6 +65,7 @@ androidx-core-google-shortcuts = { module = "androidx.core:core-google-shortcuts
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 deeplink = { module = "com.motorro.keeplink:deeplink", version.ref = "deeplink" }
 filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekitCompose" }
+koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koalaplotCore" }
 korge-core = { module = "com.soywiz.korge:korge-core", version.ref = "korgeCore" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
 permissions = { module = "dev.icerock.moko:permissions", version.ref = "permissions" }

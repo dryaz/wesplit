@@ -491,9 +491,9 @@ private fun FeaturesList(
 
     val featuresMap =
         mapOf(
+            Res.string.plus_feature_cats_title to Res.string.plus_feature_cats_descr_short,
             Res.string.plus_feature_protect_title to Res.string.plus_feature_protect_descr_short,
             Res.string.plus_feature_currencies_title to Res.string.plus_feature_currencies_descr_short,
-            Res.string.plus_feature_cats_title to Res.string.plus_feature_cats_descr_short,
             Res.string.plus_feature_more_title to Res.string.plus_feature_more_descr,
         )
 

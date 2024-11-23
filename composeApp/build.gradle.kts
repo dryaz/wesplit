@@ -139,6 +139,8 @@ kotlin {
 
                 implementation(libs.filekit.compose)
                 implementation(libs.korge.core)
+
+                implementation(libs.koalaplot.core)
             }
 
             desktopMain.dependencies {

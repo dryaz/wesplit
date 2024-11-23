@@ -4,6 +4,9 @@ import app.wesplit.Permission
 import app.wesplit.PermissionsDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
+import app.wesplit.domain.model.currency.Amount
+import app.wesplit.domain.model.currency.CurrencyRepository
+import app.wesplit.domain.model.currency.FxState
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.ExpenseStatus
@@ -20,6 +23,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
@@ -47,6 +51,7 @@ class ExpenseFirebaseRepository(
     private val userRepository: UserRepository,
     private val analyticsManager: AnalyticsManager,
     private val permissionsDelegate: PermissionsDelegate,
+    private val currencyRepository: CurrencyRepository,
 ) : ExpenseRepository {
     // TODO: Check if firebase get local balances or maybe need to cache expenses by group id in order
     //  not to fetch this multiple times, e.g. for showing trxs and for computing balances.
@@ -59,10 +64,15 @@ class ExpenseFirebaseRepository(
                 // TODO: Exception to failuer result. Group could be not existing, security rules could fail etc.
                 // TODO: Sort by creation date directly on response
                 withContext(coroutineDispatcher) {
+                    val fxValue = currencyRepository.getFxRates().first { it != FxState.Loading }
+                    println(fxValue)
+                    val fxRates = (fxValue as? FxState.Data)?.fxRates?.rates ?: emptyMap()
                     val expenses =
                         it.documents.map {
-                            it.data(Expense.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
+                            val data = it.data(Expense.serializer(), ServerTimestampBehavior.ESTIMATE)
+                            data.copy(
                                 id = it.id,
+                                baseAmount = Amount(data.totalAmount.value / (fxRates.get(data.totalAmount.currencyCode) ?: 1.0), "USD"),
                             )
                         }
 
