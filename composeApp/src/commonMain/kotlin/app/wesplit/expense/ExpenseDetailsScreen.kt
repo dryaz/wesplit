@@ -79,7 +79,6 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.currency.CurrencyPicker
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.FutureFeature
-import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.SplitType
@@ -90,12 +89,14 @@ import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
+import app.wesplit.domain.model.user.isAuthorized
 import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
 import app.wesplit.expense.category.ExpenseCategoryPicker
 import app.wesplit.expense.category.Icon
 import app.wesplit.filterDoubleInput
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.PlusProtected
 import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
@@ -491,7 +492,7 @@ private fun ProtectionBlock(
             { onUpdated(UpdateAction.Protect(it)) }
         }
     val clickabeModifier =
-        if (data.expense.allowedToChange() && data.account is Account.Authorized) {
+        if (data.expense.allowedToChange() && data.user.isAuthorized()) {
             Modifier.clickable { protectCallback(!data.expense.isProtected()) }
         } else {
             Modifier
@@ -522,7 +523,7 @@ private fun ProtectionBlock(
             Text(
                 text =
                     if (data.expense.allowedToChange()) {
-                        if (data.account is Account.Authorized) {
+                        if (data.user.isAuthorized()) {
                             stringResource(Res.string.only_you_can_update_expense)
                         } else {
                             stringResource(Res.string.login_to_protect_expense)
@@ -537,7 +538,7 @@ private fun ProtectionBlock(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
             ),
         trailingContent = {
-            if (data.expense.allowedToChange() && data.account is Account.Authorized) {
+            if (data.expense.allowedToChange() && data.user.isAuthorized()) {
                 Switch(
                     checked = data.expense.isProtected(),
                     enabled = data.expense.allowedToChange(),
@@ -937,6 +938,16 @@ private fun ExpenseDetails(
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
+        AnimatedVisibility(
+            modifier = Modifier.padding(bottom = 16.dp),
+            visible = data.banner != null,
+        ) {
+            data.banner?.let {
+                FeatureBanner(it) {
+                    onUpdated(UpdateAction.BannerClick(it))
+                }
+            }
+        }
         Row(
             modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(1f).padding(horizontal = 16.dp),
         ) {

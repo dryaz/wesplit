@@ -322,7 +322,6 @@ internal fun ParticipantPicker(
     LaunchedEffect(sheetState) {
         snapshotFlow { sheetState.currentValue }
             .collect { value ->
-                println("Value of sheet is $value")
                 if (value == SheetValue.Expanded) {
                     tutorialControl.stepRequest(listOf(inputNameTutorial))
                 }

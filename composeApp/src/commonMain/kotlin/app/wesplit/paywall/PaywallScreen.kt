@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -116,6 +117,7 @@ import split.composeapp.generated.resources.web_billing_in_progress
 import split.composeapp.generated.resources.week_plus
 import split.composeapp.generated.resources.what_you_get_with
 import split.composeapp.generated.resources.year_plus
+import kotlin.random.Random
 
 sealed interface PaywallAction {
     data object Back : PaywallAction
@@ -278,133 +280,49 @@ fun PaywallScreen(
         mutableStateOf<Subscription?>(null)
     }
 
+    var isOnTopShow: Boolean by remember {
+        mutableStateOf(
+            Random.nextFloat() < 0.25f,
+        )
+    }
+
     LaunchedEffect(productState) {
         selected = (productState as? PaywallViewModel.State.Data)?.products?.sortedBy { it.first.monthlyPrice.value }?.get(0)?.first
     }
 
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         Spacer(modifier = Modifier.height(4.dp))
-        Row {
-            when (productState) {
-                is PaywallViewModel.State.Data -> {
-                    selected?.let {
-                        PricingSelection(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                            subscriptions = productState.products,
-                            selected = it,
-                        ) {
-                            selected = it
-                        }
-                    }
-                }
 
-                PaywallViewModel.State.Error -> {
-                    ListItem(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)),
-                        colors =
-                            ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,
-                                headlineColor = MaterialTheme.colorScheme.onErrorContainer,
-                                leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
-                                supportingColor = MaterialTheme.colorScheme.onErrorContainer,
-                            ),
-                        headlineContent = { Text(stringResource(Res.string.error_fetching_plans)) },
-                        supportingContent = { Text(stringResource(Res.string.error_encountered_problems)) },
-                        leadingContent = {
-                            Icon(
-                                imageVector = AdaptiveIcons.Outlined.Info,
-                                contentDescription = stringResource(Res.string.error_encountered_problems),
-                            )
-                        },
-                    )
-                }
+        if (isOnTopShow) {
+            BillingData(productState, selected, onAction) {
+                selected = it
+            }
 
-                PaywallViewModel.State.Loading -> {
-                    ListItem(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)),
-                        colors =
-                            ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                            ),
-                        headlineContent = { Text(stringResource(Res.string.text_loading)) },
-                        supportingContent = { Text(stringResource(Res.string.fetch_available_plans)) },
-                        leadingContent = { CircularProgressIndicator() },
-                    )
-                }
-
-                PaywallViewModel.State.BillingNotSupported -> {
-                    ListItem(
-                        modifier =
-                            Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
-                                onAction(PaywallAction.DownloadMobile)
-                            },
-                        colors =
-                            ListItemDefaults.colors(
-                                containerColor = MaterialTheme.extraColorScheme.infoContainer,
-                                headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                                leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                                supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                            ),
-                        headlineContent = { Text(stringResource(Res.string.web_billing_in_progress)) },
-                        supportingContent = { Text(stringResource(Res.string.subscribe_via_mobile_app)) },
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_mobile_app),
-                                contentDescription = stringResource(Res.string.get_mobile_app),
-                            )
-                        },
-                    )
-                }
-
-                PaywallViewModel.State.AlreadySubscribed -> {
-                    ListItem(
-                        modifier =
-                            Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
-                                onAction(PaywallAction.DownloadMobile)
-                            },
-                        colors =
-                            ListItemDefaults.colors(
-                                containerColor = MaterialTheme.extraColorScheme.infoContainer,
-                                headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                                leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                                supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                            ),
-                        headlineContent = { Text(stringResource(Res.string.plus_active)) },
-                        supportingContent = { Text(stringResource(Res.string.available_in_mobile_app)) },
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_mobile_app),
-                                contentDescription = stringResource(Res.string.download_mobile_app),
-                            )
-                        },
-                    )
+            selected?.let {
+                SubscriptionButton(
+                    selected = it,
+                    isPendingPurchase = isPendingPurchase,
+                ) {
+                    onSubscribe(it)
                 }
             }
-        }
 
-        selected?.let {
-            SubscriptionButton(
-                selected = it,
-                isPendingPurchase = isPendingPurchase,
+            Box(
+                modifier = Modifier.fillMaxWidth(1f).padding(16.dp),
             ) {
-                onSubscribe(it)
+                PlusProtected(
+                    modifier = Modifier.align(Alignment.Center),
+                ) {
+                    Text(
+                        modifier = Modifier,
+                        text = stringResource(Res.string.what_you_get_with),
+                        style = MaterialTheme.typography.headlineSmall,
+                        textAlign = TextAlign.Center,
+                    )
+                }
             }
         }
 
-        Box(
-            modifier = Modifier.fillMaxWidth(1f).padding(16.dp),
-        ) {
-            PlusProtected(
-                modifier = Modifier.align(Alignment.Center),
-            ) {
-                Text(
-                    modifier = Modifier,
-                    text = stringResource(Res.string.what_you_get_with),
-                    style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center,
-                )
-            }
-        }
         FlowRow(
             modifier = Modifier.fillMaxWidth(1f).padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -420,6 +338,7 @@ fun PaywallScreen(
                         modifier = Modifier.widthIn(max = 360.dp),
                     ) {
                         Image(
+                            modifier = Modifier.fillMaxWidth(1f).aspectRatio(9f / 5f),
                             painter = painterResource(feature.image),
                             contentDescription = stringResource(feature.title),
                         )
@@ -461,6 +380,12 @@ fun PaywallScreen(
             }
         }
 
+        if (!isOnTopShow) {
+            BillingData(productState, selected, onAction) {
+                selected = it
+            }
+        }
+
         selected?.let {
             SubscriptionButton(
                 selected = it,
@@ -469,6 +394,110 @@ fun PaywallScreen(
                 onSubscribe(it)
             }
             Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun BillingData(
+    productState: PaywallViewModel.State,
+    selected: Subscription?,
+    onAction: (PaywallAction) -> Unit,
+    onSelect: (Subscription) -> Unit,
+) {
+    when (productState) {
+        is PaywallViewModel.State.Data -> {
+            selected?.let {
+                PricingSelection(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    subscriptions = productState.products,
+                    selected = it,
+                ) {
+                    onSelect(it)
+                }
+            }
+        }
+
+        PaywallViewModel.State.Error -> {
+            ListItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)),
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        headlineColor = MaterialTheme.colorScheme.onErrorContainer,
+                        leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                        supportingColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
+                headlineContent = { Text(stringResource(Res.string.error_fetching_plans)) },
+                supportingContent = { Text(stringResource(Res.string.error_encountered_problems)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = AdaptiveIcons.Outlined.Info,
+                        contentDescription = stringResource(Res.string.error_encountered_problems),
+                    )
+                },
+            )
+        }
+
+        PaywallViewModel.State.Loading -> {
+            ListItem(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)),
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    ),
+                headlineContent = { Text(stringResource(Res.string.text_loading)) },
+                supportingContent = { Text(stringResource(Res.string.fetch_available_plans)) },
+                leadingContent = { CircularProgressIndicator() },
+            )
+        }
+
+        PaywallViewModel.State.BillingNotSupported -> {
+            ListItem(
+                modifier =
+                    Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
+                        onAction(PaywallAction.DownloadMobile)
+                    },
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                        headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                        leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                        supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                    ),
+                headlineContent = { Text(stringResource(Res.string.web_billing_in_progress)) },
+                supportingContent = { Text(stringResource(Res.string.subscribe_via_mobile_app)) },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_mobile_app),
+                        contentDescription = stringResource(Res.string.get_mobile_app),
+                    )
+                },
+            )
+        }
+
+        PaywallViewModel.State.AlreadySubscribed -> {
+            ListItem(
+                modifier =
+                    Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
+                        onAction(PaywallAction.DownloadMobile)
+                    },
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                        headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                        leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                        supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                    ),
+                headlineContent = { Text(stringResource(Res.string.plus_active)) },
+                supportingContent = { Text(stringResource(Res.string.available_in_mobile_app)) },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_mobile_app),
+                        contentDescription = stringResource(Res.string.download_mobile_app),
+                    )
+                },
+            )
         }
     }
 }

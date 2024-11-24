@@ -12,6 +12,7 @@ import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.domain.model.user.isPlus
+import app.wesplit.ui.Banner
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -61,7 +62,6 @@ class ExpenseSectionViewModel(
                     }
 
             combine(expensesFlow, userRepository.get()) { expensesResult, account ->
-                println("SOME CHANGES RECEIVED!")
                 if (expensesResult.isFailure) {
                     _dataState.update {
                         State.Error
@@ -79,7 +79,7 @@ class ExpenseSectionViewModel(
                             }
 
                         State.Expenses(
-                            banner = if (!account.isPlus() && groupedExpenses.isNotEmpty()) Banner.AI_CAT else Banner.NONE,
+                            banner = if (!account.isPlus() && groupedExpenses.isNotEmpty()) Banner.AI_CAT else null,
                             group = group,
                             groupedExpenses =
                             groupedExpenses,
@@ -105,12 +105,7 @@ class ExpenseSectionViewModel(
         data class Expenses(
             val group: Group,
             val groupedExpenses: Map<String, List<Expense>>,
-            val banner: Banner,
+            val banner: Banner?,
         ) : State
-    }
-
-    enum class Banner {
-        NONE,
-        AI_CAT,
     }
 }

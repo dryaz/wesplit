@@ -6,8 +6,10 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
+import app.wesplit.domain.model.account.isPlus
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.ui.Banner
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +50,10 @@ class GroupListViewModel(
                         if (groups.isEmpty()) {
                             State.Empty
                         } else {
-                            State.Groups(groups)
+                            State.Groups(
+                                groups = groups,
+                                banner = if (accountRepository.get().value.isPlus() && groups.size > 0) null else Banner.IMG_GROUP,
+                            )
                         }
                     }
                 }
@@ -60,6 +65,7 @@ class GroupListViewModel(
 
         data class Groups(
             val groups: List<Group>,
+            val banner: Banner?,
         ) : State
     }
 }

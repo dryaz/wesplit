@@ -14,14 +14,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     FirebaseApp.configure()
     
     UNUserNotificationCenter.current().delegate = self
-
-    // Request notification permissions
-    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-        if granted {
-            DispatchQueue.main.async {
-                application.registerForRemoteNotifications()
-            }
-        }
+    
+    DispatchQueue.main.async {
+        application.registerForRemoteNotifications()
     }
     
     if let userActDic = launchOptions?[.userActivityDictionary] as? [String: Any],

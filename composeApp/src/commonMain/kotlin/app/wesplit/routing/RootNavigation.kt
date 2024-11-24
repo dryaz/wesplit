@@ -57,7 +57,6 @@ import app.wesplit.group.detailed.GroupInfoAction
 import app.wesplit.group.detailed.GroupInfoScreen
 import app.wesplit.group.detailed.GroupInfoViewModel
 import app.wesplit.group.detailed.NoGroupScreen
-import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.group.list.GroupListAction
 import app.wesplit.group.list.GroupListRoute
 import app.wesplit.group.list.GroupListViewModel
@@ -487,6 +486,7 @@ private fun Navigation(
                                     }
 
                                     GroupListAction.OpenMenu -> coroutineScope.launch { drawerState.open() }
+                                    is GroupListAction.BannerClick -> onSubscriptionRequest(action.banner.name)
                                 }
                             }
                         }
@@ -667,13 +667,7 @@ private fun Navigation(
                                         },
                                 )
 
-                            is GroupInfoAction.BannerClick ->
-                                when (action.banner) {
-                                    ExpenseSectionViewModel.Banner.AI_CAT -> {
-                                        onSubscriptionRequest(AI_CAT_BANNER_PAYWALL_SOURCE)
-                                    }
-                                    ExpenseSectionViewModel.Banner.NONE -> {}
-                                }
+                            is GroupInfoAction.BannerClick -> onSubscriptionRequest(action.banner.name)
 
                             is GroupInfoAction.Invite -> TODO("We support only sharing of the group yet")
                         }
@@ -898,7 +892,7 @@ private fun Navigation(
                                 shortcutDelegate,
                                 settings,
                                 appReview,
-                                accountRepository,
+                                userRepository,
                                 onSubscriptionRequest,
                             )
                         }

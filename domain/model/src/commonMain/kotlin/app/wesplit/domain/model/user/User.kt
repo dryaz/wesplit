@@ -144,6 +144,8 @@ fun User.participant(): Participant =
 
 fun User?.isPlus() = this?.let { plan == Plan.PLUS && !isSubscriptionExpired() } ?: false
 
+fun User?.isAuthorized() = this?.let { !authIds.isNullOrEmpty() } ?: false
+
 fun User.email() = (contacts.find { it is Contact.Email } as? Contact.Email)?.email
 
 fun User.planValidTill() = planExpiration?.let { Instant.fromEpochSeconds(it.seconds, it.nanoseconds.toLong()) }
@@ -151,14 +153,11 @@ fun User.planValidTill() = planExpiration?.let { Instant.fromEpochSeconds(it.sec
 // Function to compare planExpiration with current time
 private fun User.isSubscriptionExpired(): Boolean {
     // Check if planExpiration is not null
-    println(planExpiration)
     if (planExpiration != null) {
         // Convert Firestore Timestamp to kotlinx.datetime.Instant
         val expirationInstant: Instant = Instant.fromEpochSeconds(planExpiration.seconds, planExpiration.nanoseconds.toLong())
-        println("expInstant $expirationInstant")
         // Get the current instant
         val currentInstant: Instant = Clock.System.now()
-        println("currentInstant $currentInstant")
 
         // Compare the two Instants
         return expirationInstant < currentInstant

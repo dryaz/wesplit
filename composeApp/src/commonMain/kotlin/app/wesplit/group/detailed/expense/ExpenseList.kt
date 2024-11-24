@@ -25,8 +25,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,18 +47,16 @@ import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.expense.category.categoryIconRes
-import app.wesplit.theme.extraColorScheme
+import app.wesplit.ui.Banner
+import app.wesplit.ui.FeatureBanner
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
-import split.composeapp.generated.resources.category_magic
 import split.composeapp.generated.resources.empty_transaction_description
 import split.composeapp.generated.resources.empty_transactions_cd
-import split.composeapp.generated.resources.ic_cat_magic
 import split.composeapp.generated.resources.ic_flag
-import split.composeapp.generated.resources.ic_plus
 import split.composeapp.generated.resources.img_search_empty
 import split.composeapp.generated.resources.non_distr_cd
 import split.composeapp.generated.resources.not_participating
@@ -71,9 +67,6 @@ import split.composeapp.generated.resources.paid_by_me
 import split.composeapp.generated.resources.paid_by_person
 import split.composeapp.generated.resources.paid_by_you
 import split.composeapp.generated.resources.personal_expense
-import split.composeapp.generated.resources.plus_badge
-import split.composeapp.generated.resources.plus_feature_cats_cta
-import split.composeapp.generated.resources.plus_feature_cats_title
 import split.composeapp.generated.resources.settled
 import split.composeapp.generated.resources.with_me
 import split.composeapp.generated.resources.you_borrowed
@@ -92,7 +85,7 @@ enum class FilterType {
 fun ExpenseList(
     group: Group,
     expenses: Map<String, List<Expense>>,
-    banner: ExpenseSectionViewModel.Banner,
+    banner: Banner?,
     onAction: (ExpenseAction) -> Unit,
 ) {
     val filters = remember { mutableStateListOf<FilterType>(FilterType.NOT_SETTLED) }
@@ -130,7 +123,7 @@ fun ExpenseList(
         }
 
     val bannerUnderFilter by remember(dataUnderFilters, banner) {
-        derivedStateOf { if (dataUnderFilters.isEmpty()) ExpenseSectionViewModel.Banner.NONE else banner }
+        derivedStateOf { if (dataUnderFilters.isEmpty()) null else banner }
     }
 
     AnimatedVisibility(
@@ -215,49 +208,11 @@ fun ExpenseList(
         }
 
         item {
-            AnimatedVisibility(visible = bannerUnderFilter != ExpenseSectionViewModel.Banner.NONE) {
-                when (bannerUnderFilter) {
-                    ExpenseSectionViewModel.Banner.AI_CAT -> {
-                        ListItem(
-                            modifier =
-                                Modifier.clickable {
-                                    onAction(ExpenseAction.BannerClick(bannerUnderFilter))
-                                },
-                            headlineContent = {
-                                Text(stringResource(Res.string.plus_feature_cats_title))
-                            },
-                            supportingContent = {
-                                Text(
-                                    text = stringResource(Res.string.plus_feature_cats_cta),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                            },
-                            colors =
-                                ListItemDefaults.colors(
-                                    containerColor = MaterialTheme.extraColorScheme.infoContainer,
-                                    supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                                    leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                                    headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                                ),
-                            leadingContent = {
-                                Column {
-                                    Icon(
-                                        modifier = Modifier.width(56.dp),
-                                        painter = painterResource(Res.drawable.ic_cat_magic),
-                                        contentDescription = stringResource(Res.string.category_magic),
-                                    )
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Image(
-                                        modifier = Modifier.height(16.dp),
-                                        painter = painterResource(Res.drawable.ic_plus),
-                                        contentDescription = stringResource(Res.string.plus_badge),
-                                    )
-                                }
-                            },
-                        )
+            AnimatedVisibility(visible = bannerUnderFilter != null) {
+                bannerUnderFilter?.let {
+                    FeatureBanner(it) {
+                        onAction(ExpenseAction.BannerClick(it))
                     }
-
-                    ExpenseSectionViewModel.Banner.NONE -> Unit
                 }
             }
         }

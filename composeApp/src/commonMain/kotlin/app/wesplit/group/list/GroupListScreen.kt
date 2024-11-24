@@ -40,6 +40,8 @@ import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.group.GroupImage
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.Banner
+import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
@@ -67,6 +69,8 @@ sealed interface GroupListAction {
     data object OpenMenu : GroupListAction
 
     data class LoginWith(val login: Login) : GroupListAction
+
+    data class BannerClick(val banner: Banner) : GroupListAction
 }
 
 @Composable
@@ -164,6 +168,7 @@ fun GroupListScreen(
                 GroupList(
                     modifier = Modifier.padding(paddings),
                     groups = dataState.groups,
+                    banner = dataState.banner,
                     onAction = { onAction(it) },
                 )
         }
@@ -231,6 +236,7 @@ private fun EmptyGroupAuthorized(
 private fun GroupList(
     modifier: Modifier = Modifier,
     groups: List<Group>,
+    banner: Banner?,
     onAction: (GroupListAction) -> Unit,
 ) {
     val lazyColumnListState = rememberLazyListState()
@@ -241,34 +247,57 @@ private fun GroupList(
             modifier = Modifier.weight(1f),
             state = lazyColumnListState,
         ) {
-            items(items = groups, key = { it.id }) { group ->
-                ListItem(
-                    colors =
-                        ListItemDefaults.colors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                        ),
-                    modifier =
-                        Modifier.clickable {
-                            onAction(GroupListAction.Select(group))
-                        },
-                    // TODO: Define View for group item
-                    headlineContent = {
-                        Text(
-                            text = "${group.uiTitle()}",
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
-                    supportingContent = { Text(stringResource(Res.string.users_count, group.participants.size)) },
-                    leadingContent = {
-                        GroupImage(
-                            imageUrl = group.imageUrl,
-                            groupTitle = group.uiTitle(),
-                        )
-                    },
-                )
+            items(items = groups.take(2), key = { it.id }) { group ->
+                GroupItem(onAction, group)
                 HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+            }
+
+            banner?.let { adBanner ->
+                item {
+                    FeatureBanner(adBanner) {
+                        onAction(GroupListAction.BannerClick(adBanner))
+                    }
+                }
+            }
+
+            if (groups.size > 2) {
+                items(items = groups.takeLast(groups.size - 2), key = { it.id }) { group ->
+                    GroupItem(onAction, group)
+                    HorizontalDivider(modifier = Modifier.padding(start = 64.dp))
+                }
             }
         }
     }
+}
+
+@Composable
+private fun GroupItem(
+    onAction: (GroupListAction) -> Unit,
+    group: Group,
+) {
+    ListItem(
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ),
+        modifier =
+            Modifier.clickable {
+                onAction(GroupListAction.Select(group))
+            },
+        // TODO: Define View for group item
+        headlineContent = {
+            Text(
+                text = "${group.uiTitle()}",
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
+        supportingContent = { Text(stringResource(Res.string.users_count, group.participants.size)) },
+        leadingContent = {
+            GroupImage(
+                imageUrl = group.imageUrl,
+                groupTitle = group.uiTitle(),
+            )
+        },
+    )
 }

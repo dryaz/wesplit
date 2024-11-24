@@ -65,7 +65,6 @@ class ExpenseFirebaseRepository(
                 // TODO: Sort by creation date directly on response
                 withContext(coroutineDispatcher) {
                     val fxValue = currencyRepository.getFxRates().first { it != FxState.Loading }
-                    println(fxValue)
                     val fxRates = (fxValue as? FxState.Data)?.fxRates?.rates ?: emptyMap()
                     val expenses =
                         it.documents.map {

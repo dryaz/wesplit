@@ -55,6 +55,7 @@ import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.Banner
 import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
@@ -107,7 +108,7 @@ sealed interface GroupInfoAction {
 
     data class Settle(val group: Group) : GroupInfoAction
 
-    data class BannerClick(val banner: ExpenseSectionViewModel.Banner) : GroupInfoAction
+    data class BannerClick(val banner: Banner) : GroupInfoAction
 }
 
 private val addExpenseTutorialStep =

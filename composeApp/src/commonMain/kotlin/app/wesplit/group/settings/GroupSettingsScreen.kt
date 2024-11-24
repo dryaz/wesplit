@@ -429,7 +429,6 @@ private fun GroupSettingsView(
                         } else {
                             group.participants + user
                         }
-                    println(newParticipants)
                     onUpdated(group.copy(participants = newParticipants))
                 }
             }

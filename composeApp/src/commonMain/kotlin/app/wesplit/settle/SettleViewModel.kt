@@ -243,7 +243,6 @@ class SettleViewModel(
                 }
                 .distinctUntilChanged()
                 .flatMapLatest {
-                    println("Account is $it and groupId is $groupId")
                     when (it) {
                         Account.Unknown,
                         Account.Anonymous,

@@ -200,8 +200,8 @@ fun BalanceList(
                                     ),
                                 colors =
                                     ListItemDefaults.colors(
-                                        containerColor = MaterialTheme.colorScheme.secondary,
-                                        headlineColor = MaterialTheme.colorScheme.onSecondary,
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        headlineColor = MaterialTheme.colorScheme.onPrimary,
                                     ),
                                 headlineContent = {
                                     Text(

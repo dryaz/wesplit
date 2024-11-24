@@ -13,9 +13,6 @@ import app.wesplit.domain.model.REVIEW_RESULT
 import app.wesplit.domain.model.REVIEW_SOURCE
 import app.wesplit.domain.model.REVIEW_TYPE
 import app.wesplit.domain.model.ReviewType
-import app.wesplit.domain.model.account.Account
-import app.wesplit.domain.model.account.AccountRepository
-import app.wesplit.domain.model.account.isPlus
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
@@ -30,8 +27,12 @@ import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
+import app.wesplit.domain.model.user.User
+import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.model.user.isPlus
 import app.wesplit.expense.category.CategorySelection
 import app.wesplit.routing.RightPane
+import app.wesplit.ui.Banner
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
 import dev.gitlive.firebase.Firebase
@@ -84,6 +85,8 @@ sealed interface UpdateAction {
 
     data class Protect(val isProtected: Boolean) : UpdateAction
 
+    data class BannerClick(val banner: Banner) : UpdateAction
+
     sealed interface Split : UpdateAction {
         abstract val participant: Participant
         abstract val value: Any
@@ -105,7 +108,7 @@ class ExpenseDetailsViewModel(
     private val shortcutDelegate: ShortcutDelegate,
     private val settings: Settings,
     private val appReviewManager: AppReviewManager,
-    private val accountRepository: AccountRepository,
+    private val userRepository: UserRepository,
     private val onSubscriptionRequest: (String) -> Unit,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support add expense inside group
@@ -149,14 +152,14 @@ class ExpenseDetailsViewModel(
                 }
 
             val currencyFlow = currencyRepository.getAvailableCurrencyCodes()
-            val accountFlow = accountRepository.get()
+            val userFlow = userRepository.get()
 
             combine(
                 groupRepository.get(groupId),
                 expenseFlow,
                 currencyFlow,
-                accountFlow,
-            ) { groupResult, expenseResult, currencies, account ->
+                userFlow,
+            ) { groupResult, expenseResult, currencies, user ->
                 if (groupResult.isFailure || expenseResult.isFailure) {
                     groupResult.exceptionOrNull()?.let {
                         analyticsManager.log(it)
@@ -184,7 +187,7 @@ class ExpenseDetailsViewModel(
                         existingExpense ?: Expense(
                             id = null,
                             title = "",
-                            category = if (account.isPlus()) Category.Magic else Category.None,
+                            category = if (user.isPlus()) Category.Magic else Category.None,
                             payedBy = group.participants.find { it.isMe() } ?: group.participants.first(),
                             // TODO: Currency model/set not to have hardcoded USD, map to sybmol etc
                             totalAmount = Amount(0.0, currencyCode),
@@ -211,7 +214,8 @@ class ExpenseDetailsViewModel(
                         isComplete = isComplete(expense),
                         splitOptions = expense.getInitialSplitOptions(extraParticipants),
                         availableCurrencies = currencies,
-                        account = account,
+                        user = user,
+                        banner = if (!user.isPlus()) Banner.AI_CAT else null,
                     )
                 }
             }
@@ -315,7 +319,7 @@ class ExpenseDetailsViewModel(
                 }
 
                 is UpdateAction.Protect -> {
-                    if (accountRepository.get().value.isPlus()) {
+                    if (userRepository.get().value.isPlus()) {
                         analyticsManager.track(UPDATE_PROTECTION)
                         val protectionList =
                             if (action.isProtected) {
@@ -332,7 +336,7 @@ class ExpenseDetailsViewModel(
                 }
 
                 is UpdateAction.Settled -> {
-                    if (accountRepository.get().value.isPlus() || !action.isSettled) {
+                    if (userRepository.get().value.isPlus() || !action.isSettled) {
                         analyticsManager.track(SETTLEMENT_CHANGE, mapOf(SETTLEMENT_PARAM to action.isSettled.toString()))
                         _state.update {
                             data.copy(
@@ -348,12 +352,14 @@ class ExpenseDetailsViewModel(
                 }
 
                 is UpdateAction.ChangeCategory -> {
-                    if (accountRepository.get().value.isPlus() || action.selection.isUnlocked) {
+                    if (userRepository.get().value.isPlus() || action.selection.isUnlocked) {
                         _state.update { data.copy(expense = expense.copy(category = action.selection.category)) }
                     } else {
                         onSubscriptionRequest(EXP_CATEGORY_PAYWALL_SOURCE)
                     }
                 }
+
+                is UpdateAction.BannerClick -> onSubscriptionRequest(action.banner.name)
             }
         } ?: {
             // TODO: Show error on UI
@@ -388,10 +394,11 @@ class ExpenseDetailsViewModel(
         data class Data(
             val group: Group,
             val expense: Expense,
-            val account: Account,
+            val user: User?,
             val isComplete: Boolean,
             val splitOptions: SplitOptions,
             val availableCurrencies: CurrencyCodesCollection,
+            val banner: Banner?,
         ) : State {
             data class SplitOptions(
                 val selectedSplitType: SplitType,
