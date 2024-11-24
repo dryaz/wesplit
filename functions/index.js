@@ -128,7 +128,7 @@ Given an expense title, determine the closest category number from the mapping. 
       const response = await axios.post(
         'https://api.openai.com/v1/chat/completions',
         {
-          model: 'gpt-3.5-turbo', // Use 'gpt-4' or 'gpt-3.5-turbo' model
+          model: 'gpt-4o-mini', // Use 'gpt-4' or 'gpt-3.5-turbo' or 'gpt-4o-mini' model
           messages: messages,
           max_tokens: 10,
           temperature: 0,
