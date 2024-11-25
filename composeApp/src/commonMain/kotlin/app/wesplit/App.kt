@@ -32,6 +32,9 @@ import org.koin.dsl.koinApplication
 
 private const val CAMPAIGN_EVENT = "campaign_hit"
 
+private const val DEEPLINK_EVENT = "deeplink_open"
+private const val DEEPLINK_URL_PARAM = "url"
+
 @Composable
 @Preview
 fun App(
@@ -70,6 +73,7 @@ fun App(
 
         LaunchedEffect(deeplink.value) {
             val linkValue = deeplink.value
+
             val link = DeeplinkParsers.PROD.parse(linkValue) ?: DeeplinkParsers.LOCALHOST_8080.parse(linkValue)
             link?.let { link ->
                 if (link.utm.getSearch().isNotEmpty()) {
@@ -81,6 +85,10 @@ fun App(
             }
 
             link?.let {
+                analyticsManager.track(DEEPLINK_EVENT, mapOf(
+                    DEEPLINK_URL_PARAM to linkValue
+                ))
+
                 when (val action = link.action) {
                     is DeeplinkAction.Group.Details -> {
                         secondPaneNavController.navigate(
