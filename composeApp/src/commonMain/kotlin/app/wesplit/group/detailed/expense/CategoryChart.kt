@@ -72,9 +72,9 @@ fun PieSampleView(expenses: List<Expense>) {
         }
 
     val colors =
-        remember(data) {
-            if (data.isNotEmpty()) {
-                generateHueColorPalette(uiData.size)
+        remember(uiData) {
+            if (uiData.isNotEmpty()) {
+                generateHueColorPalette(uiData.size, 0.65f, 0.5f)
             } else {
                 listOf(Color.Red)
             }
@@ -92,7 +92,7 @@ fun PieSampleView(expenses: List<Expense>) {
                 modifier = Modifier,
                 slice = { i: Int ->
                     DefaultSlice(
-                        color = if (i < colors.size - 1) colors[i] else Color.Red,
+                        color = if (i < colors.size) colors[i] else Color.Cyan,
                     )
                 },
                 holeSize = 0.65f,

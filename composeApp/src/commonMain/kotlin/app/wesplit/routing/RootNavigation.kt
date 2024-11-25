@@ -498,6 +498,7 @@ private fun Navigation(
                         viewModel {
                             GroupListViewModel(
                                 accountRepository,
+                                userRepository,
                                 groupRepository,
                                 ioDispatcher,
                                 analyticsManager,
