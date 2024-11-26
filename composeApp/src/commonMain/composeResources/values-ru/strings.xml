@@ -302,4 +302,5 @@
   <string name="category_magic">ИИ: Генерировать</string>
   <string name="other">Другое</string>
   <string name="plus_feature_cats_cta">Подпишись, чтобы включить ИИ</string>
+  <string name="quick_add">Быстрое добавление</string>
 </resources>

@@ -27,7 +27,17 @@ fun ExpenseSection(
     val dataState = viewModel.dataState.collectAsState()
     when (val state = dataState.value) {
         ExpenseSectionViewModel.State.Empty -> EmptyExpenseSection(modifier = Modifier.fillMaxSize())
-        is ExpenseSectionViewModel.State.Expenses -> ExpenseList(state.group, state.groupedExpenses, state.banner, onAction)
+        is ExpenseSectionViewModel.State.Expenses ->
+            ExpenseList(state.group, state.groupedExpenses, state.banner, onAction) { listAction ->
+                when (listAction) {
+                    is ExpenseListAction.QuickAdd ->
+                        viewModel.quickAdd(
+                            listAction.title,
+                            listAction.amount,
+                        )
+                }
+            }
+
         ExpenseSectionViewModel.State.Loading ->
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()

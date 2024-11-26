@@ -301,4 +301,5 @@ Möchten Sie die Gruppe wirklich verlassen?</string>
   <string name="category_magic">AI: Erzeugen</string>
   <string name="other">Andere</string>
   <string name="plus_feature_cats_cta">Abonnieren, um die AI zu aktivieren</string>
+  <string name="quick_add">Schnell Ausgaben hinzufügen</string>
 </resources>

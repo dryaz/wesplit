@@ -305,4 +305,5 @@ Are you sure you want to leave the group?</string>
   <string name="category_magic">AI: Generate</string>
   <string name="other">Other</string>
   <string name="plus_feature_cats_cta">Subscribe to enable AI</string>
+  <string name="quick_add">Quick Add an Expense</string>
 </resources>

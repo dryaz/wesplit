@@ -16,6 +16,7 @@ import split.composeapp.generated.resources.ic_plus
 @Composable
 fun PlusProtected(
     modifier: Modifier = Modifier,
+    isVisible: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     Row(
@@ -23,11 +24,13 @@ fun PlusProtected(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         content()
-        Spacer(modifier = Modifier.width(8.dp))
-        Image(
-            modifier = Modifier.height(16.dp),
-            painter = painterResource(Res.drawable.ic_plus),
-            contentDescription = "Plus badge",
-        )
+        if (isVisible) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Image(
+                modifier = Modifier.height(16.dp),
+                painter = painterResource(Res.drawable.ic_plus),
+                contentDescription = "Plus badge",
+            )
+        }
     }
 }

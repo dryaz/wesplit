@@ -38,6 +38,7 @@ import split.composeapp.generated.resources.plus_feature_images_title
 enum class Banner {
     AI_CAT,
     IMG_GROUP,
+    QUICK_ADD,
 }
 
 @Composable
@@ -45,6 +46,7 @@ fun Banner.title() =
     when (this) {
         Banner.AI_CAT -> stringResource(Res.string.plus_feature_cats_title)
         Banner.IMG_GROUP -> stringResource(Res.string.plus_feature_images_title)
+        Banner.QUICK_ADD -> TODO("Yet not showing this type of banner")
     }
 
 @Composable
@@ -52,6 +54,7 @@ fun Banner.cta() =
     when (this) {
         Banner.AI_CAT -> stringResource(Res.string.plus_feature_cats_cta)
         Banner.IMG_GROUP -> stringResource(Res.string.plus_feature_images_descr_short)
+        Banner.QUICK_ADD -> TODO("Yet not showing this type of banner")
     }
 
 @Composable
@@ -83,6 +86,8 @@ fun Banner.icon() =
                     contentDescription = stringResource(Res.string.add_group_image),
                 )
             }
+
+        Banner.QUICK_ADD -> TODO("Yet not showing this type of banner")
     }
 
 @Composable

@@ -85,9 +85,12 @@ fun App(
             }
 
             link?.let {
-                analyticsManager.track(DEEPLINK_EVENT, mapOf(
-                    DEEPLINK_URL_PARAM to linkValue
-                ))
+                analyticsManager.track(
+                    DEEPLINK_EVENT,
+                    mapOf(
+                        DEEPLINK_URL_PARAM to linkValue,
+                    ),
+                )
 
                 when (val action = link.action) {
                     is DeeplinkAction.Group.Details -> {

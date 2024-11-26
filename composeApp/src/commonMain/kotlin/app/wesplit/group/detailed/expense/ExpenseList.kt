@@ -23,22 +23,35 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.currency.Amount
+import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseStatus
@@ -49,13 +62,19 @@ import app.wesplit.domain.model.group.isMe
 import app.wesplit.expense.category.categoryIconRes
 import app.wesplit.ui.Banner
 import app.wesplit.ui.FeatureBanner
+import app.wesplit.ui.PlusProtected
+import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_expense_to_group
+import split.composeapp.generated.resources.amount
 import split.composeapp.generated.resources.empty_transaction_description
 import split.composeapp.generated.resources.empty_transactions_cd
+import split.composeapp.generated.resources.expense_title
 import split.composeapp.generated.resources.ic_flag
 import split.composeapp.generated.resources.img_search_empty
 import split.composeapp.generated.resources.non_distr_cd
@@ -67,6 +86,7 @@ import split.composeapp.generated.resources.paid_by_me
 import split.composeapp.generated.resources.paid_by_person
 import split.composeapp.generated.resources.paid_by_you
 import split.composeapp.generated.resources.personal_expense
+import split.composeapp.generated.resources.quick_add
 import split.composeapp.generated.resources.settled
 import split.composeapp.generated.resources.with_me
 import split.composeapp.generated.resources.you_borrowed
@@ -80,6 +100,13 @@ enum class FilterType {
     PAYED_ME,
 }
 
+sealed interface ExpenseListAction {
+    data class QuickAdd(
+        val title: String,
+        val amount: Amount,
+    ) : ExpenseListAction
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExpenseList(
@@ -87,6 +114,7 @@ fun ExpenseList(
     expenses: Map<String, List<Expense>>,
     banner: Banner?,
     onAction: (ExpenseAction) -> Unit,
+    onListAction: (ExpenseListAction) -> Unit,
 ) {
     val filters = remember { mutableStateListOf<FilterType>(FilterType.NOT_SETTLED) }
     // TODO: Maybe move to VM when do pagination etc.
@@ -203,18 +231,43 @@ fun ExpenseList(
             }
         }
 
-        item {
-            PieSampleView(dataUnderFilters.flatMap { it.value })
+        if (dataUnderFilters.isNotEmpty()) {
+            item {
+                PieSampleView(dataUnderFilters.flatMap { it.value })
+            }
         }
 
         item {
-            AnimatedVisibility(visible = bannerUnderFilter != null) {
-                bannerUnderFilter?.let {
-                    FeatureBanner(it) {
-                        onAction(ExpenseAction.BannerClick(it))
-                    }
+            bannerUnderFilter?.let {
+                FeatureBanner(it) {
+                    onAction(ExpenseAction.BannerClick(it))
                 }
             }
+        }
+
+        item {
+            Column {
+                PlusProtected(
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                    isVisible = false,
+                ) {
+                    Text(
+                        modifier =
+                            Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow),
+                        text = stringResource(Res.string.quick_add),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+
+                QuickAdd(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    currencyCode = expenses.values.first().first().totalAmount.currencyCode,
+                ) { title, amount ->
+                    onListAction(ExpenseListAction.QuickAdd(title, amount))
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
         }
 
         dataUnderFilters.forEach { entry ->
@@ -240,6 +293,108 @@ fun ExpenseList(
         }
         item {
             Spacer(modifier = Modifier.height(80.dp))
+        }
+    }
+}
+
+@Composable
+private fun QuickAdd(
+    modifier: Modifier = Modifier,
+    currencyCode: String,
+    onAdd: (String, Amount) -> Unit,
+) {
+    var title by remember { mutableStateOf("") }
+    var amount by remember { mutableStateOf("") }
+    val titleRequester = remember { FocusRequester() }
+    var highlightError by remember { mutableStateOf(false) }
+
+    val commitHandler: () -> Unit =
+        remember(currencyCode) {
+            {
+                highlightError = amount.toDoubleOrNull() == null || title.isNullOrBlank()
+                if (!highlightError) {
+                    onAdd(
+                        title,
+                        Amount(
+                            value = amount.toDoubleOrNull() ?: 0.0,
+                            currencyCode = currencyCode,
+                        ),
+                    )
+                    title = ""
+                    amount = ""
+                    titleRequester.requestFocus()
+                }
+            }
+        }
+
+    Row(
+        modifier = modifier.fillMaxWidth(1f),
+    ) {
+        TextField(
+            modifier = Modifier.weight(3f).focusRequester(titleRequester),
+            value = title,
+            isError = highlightError && title.isNullOrBlank(),
+            onValueChange = { title = it },
+            label = { Text(stringResource(Res.string.expense_title)) },
+            colors =
+                TextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+            singleLine = true,
+            keyboardOptions =
+                KeyboardOptions(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Text,
+                    capitalization = KeyboardCapitalization.Sentences,
+                ),
+            maxLines = 1,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        TextField(
+            modifier = Modifier.weight(2f),
+            value = amount,
+            isError = highlightError && amount.toDoubleOrNull() == null,
+            onValueChange = { value ->
+                if (value.isNullOrBlank()) {
+                    amount = ""
+                } else {
+                    val doubleValue = value.toDoubleOrNull()
+                    val filtered = if (doubleValue != null) value else amount
+                    amount = filtered
+                }
+            },
+            label = { Text(stringResource(Res.string.amount) + " (${currencyCode.currencySymbol()})") },
+            colors =
+                TextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal,
+                    imeAction = ImeAction.Done,
+                ),
+            keyboardActions =
+                KeyboardActions {
+                    commitHandler()
+                },
+            singleLine = true,
+            maxLines = 1,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        FloatingActionButton(
+            modifier = Modifier,
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            onClick = {
+                commitHandler()
+            },
+        ) {
+            Icon(
+                AdaptiveIcons.Outlined.Add,
+                contentDescription = stringResource(Res.string.add_expense_to_group),
+            )
         }
     }
 }

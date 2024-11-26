@@ -100,6 +100,8 @@ private const val DOWNLOAD_APP_FOR_SUBS = "download_for_subs"
 private const val PROFILE_PAYWALL_SOURCE = "profile"
 private const val AI_CAT_BANNER_PAYWALL_SOURCE = "aiCatBanner"
 
+private const val ADD_EXPENSE_FROM_GROUP_INFO_EVENT = "expense_from_group"
+
 sealed class PaneNavigation(
     val route: String,
 ) {
@@ -357,6 +359,7 @@ private fun Navigation(
     val onSubscriptionRequest: (String) -> Unit =
         remember {
             {
+                analyticsManager.setParam(it, "true")
                 analyticsManager.track(
                     SUBS_EVENT,
                     mapOf(
@@ -630,6 +633,7 @@ private fun Navigation(
                             }
 
                             is GroupInfoAction.AddExpense -> {
+                                analyticsManager.track(ADD_EXPENSE_FROM_GROUP_INFO_EVENT)
                                 secondPaneNavController.navigate(
                                     RightPane.ExpenseDetails.destination(action.group.id),
                                     navOptions =

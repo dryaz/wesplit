@@ -289,6 +289,7 @@ class ExpenseDetailsViewModel(
                     (_state.value as? State.Data)?.expense?.let { exp ->
                         viewModelScope.launch {
                             val commitedExpenses = settings.get<Int>(EXPENSE_COMMIT_COUNTER_KEY) ?: 0
+                            analyticsManager.setParam(EXPENSE_COMMIT_COUNTER_KEY, "${commitedExpenses + 1}")
                             settings.putInt(EXPENSE_COMMIT_COUNTER_KEY, commitedExpenses + 1)
                             expenseRepository.commit(groupId, exp)
                             if ((commitedExpenses + 1) % 5 == 0) {
