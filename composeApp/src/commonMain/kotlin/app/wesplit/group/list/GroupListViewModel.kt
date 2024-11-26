@@ -55,7 +55,7 @@ class GroupListViewModel(
                         } else {
                             State.Groups(
                                 groups = groups,
-                                banner = if (user.isPlus() && groups.size > 0) null else Banner.IMG_GROUP,
+                                banner = if ((user?.isPlus() ?: true) && groups.size > 0) null else Banner.IMG_GROUP,
                             )
                         }
                     }
