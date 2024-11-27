@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -66,6 +67,7 @@ internal fun QuickAdd(
 ) {
     val titleFocusRequester = remember { FocusRequester() }
     val amountFocusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     var title by remember(value) { mutableStateOf(value.title) }
     var amount by remember(value) { mutableStateOf(value.amount?.toString() ?: "") }
@@ -88,6 +90,7 @@ internal fun QuickAdd(
 
     LaunchedEffect(value) {
         if (value.amount == null && value.title.isNullOrBlank()) {
+            focusManager.clearFocus(true)
             titleFocusRequester.freeFocus()
             amountFocusRequester.freeFocus()
         }
