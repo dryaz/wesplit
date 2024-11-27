@@ -50,6 +50,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.currency.format
@@ -69,6 +70,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.amount
@@ -93,6 +95,9 @@ import split.composeapp.generated.resources.you_borrowed
 import split.composeapp.generated.resources.you_lent
 import split.composeapp.generated.resources.your_share
 
+private const val FILTER_CLICK_EVENT = "filter_click"
+private const val FILTER_CLICK_PARAM = "filter"
+
 enum class FilterType {
     NOT_SETTLED,
     NOT_SPLIT,
@@ -116,6 +121,7 @@ fun ExpenseList(
     onAction: (ExpenseAction) -> Unit,
     onListAction: (ExpenseListAction) -> Unit,
 ) {
+    val analyticsManager: AnalyticsManager = koinInject()
     val filters = remember { mutableStateListOf<FilterType>(FilterType.NOT_SETTLED) }
     // TODO: Maybe move to VM when do pagination etc.
     val dataUnderFilters =
@@ -169,9 +175,11 @@ fun ExpenseList(
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp).horizontalScroll(rememberScrollState()),
             ) {
+                // TODO: Extract filterchip to func 
                 FilterChip(
                     selected = filters.contains(FilterType.NOT_SETTLED),
                     onClick = {
+                        analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to FilterType.NOT_SETTLED.name))
                         if (filters.contains(
                                 FilterType.NOT_SETTLED,
                             )
@@ -187,6 +195,7 @@ fun ExpenseList(
                 FilterChip(
                     selected = filters.contains(FilterType.NOT_SPLIT),
                     onClick = {
+                        analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to FilterType.NOT_SPLIT.name))
                         if (filters.contains(
                                 FilterType.NOT_SPLIT,
                             )
@@ -202,6 +211,7 @@ fun ExpenseList(
                 FilterChip(
                     selected = filters.contains(FilterType.WITH_ME),
                     onClick = {
+                        analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to FilterType.WITH_ME.name))
                         if (filters.contains(
                                 FilterType.WITH_ME,
                             )
@@ -217,6 +227,7 @@ fun ExpenseList(
                 FilterChip(
                     selected = filters.contains(FilterType.PAYED_ME),
                     onClick = {
+                        analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to FilterType.PAYED_ME.name))
                         if (filters.contains(
                                 FilterType.PAYED_ME,
                             )
