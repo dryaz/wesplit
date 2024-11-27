@@ -335,7 +335,13 @@ private fun QuickAdd(
             value = title,
             isError = highlightError && title.isNullOrBlank(),
             onValueChange = { title = it },
-            label = { Text(stringResource(Res.string.expense_title)) },
+            label = {
+                Text(
+                    text = stringResource(Res.string.expense_title),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             colors =
                 TextFieldDefaults.colors(
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
@@ -364,7 +370,13 @@ private fun QuickAdd(
                     amount = filtered
                 }
             },
-            label = { Text(stringResource(Res.string.amount) + " (${currencyCode.currencySymbol()})") },
+            label = {
+                Text(
+                    text = stringResource(Res.string.amount) + " (${currencyCode.currencySymbol()})",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             colors =
                 TextFieldDefaults.colors(
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
