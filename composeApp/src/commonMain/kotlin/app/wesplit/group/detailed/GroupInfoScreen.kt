@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Group
@@ -53,6 +55,9 @@ import app.wesplit.group.detailed.balance.BalanceList
 import app.wesplit.group.detailed.expense.ExpenseAction
 import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
+import app.wesplit.group.detailed.expense.QuickAddAction
+import app.wesplit.group.detailed.expense.QuickAddErrorState
+import app.wesplit.group.detailed.expense.QuickAddValue
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.Banner
@@ -62,6 +67,7 @@ import app.wesplit.ui.tutorial.TutorialItem
 import app.wesplit.ui.tutorial.TutorialStep
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
@@ -169,6 +175,8 @@ fun GroupInfoScreen(
 
     val tutorialControl = LocalTutorialControl.current
 
+    var quickAddInRowCounter by remember { mutableStateOf(0) }
+
     val isMeParticipating =
         remember(data.value) {
             (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.participants?.any { it.isMe() } ?: false
@@ -184,6 +192,33 @@ fun GroupInfoScreen(
         tutorialControl.stepRequest(listOf(addExpenseTutorialStep))
     }
 
+    var quickAddData: QuickAddValue? by remember { mutableStateOf(null) }
+    var quickAddError: QuickAddErrorState by remember { mutableStateOf(QuickAddErrorState.NONE) }
+
+    val quickAddCommitCallback = {
+        if (quickAddData?.title.isNullOrBlank()) {
+            quickAddError = QuickAddErrorState.TITLE
+        } else if ((quickAddData?.amount ?: 0.0) == 0.0) {
+            quickAddError = QuickAddErrorState.AMOUNT
+        } else {
+            quickAddData?.let { data ->
+                data.amount?.let { amount ->
+                    viewModel.quickAdd(
+                        title = data.title,
+                        amount =
+                            Amount(
+                                value = amount,
+                                currencyCode = data.currencyCode,
+                            ),
+                        inRow = quickAddInRowCounter++,
+                    )
+                    quickAddError = QuickAddErrorState.NONE
+                    quickAddData = null
+                }
+            }
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -197,12 +232,16 @@ fun GroupInfoScreen(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         onClick = {
-                            tutorialControl.onNext()
-                            onAction(GroupInfoAction.AddExpense(group))
+                            if (quickAddData != null) {
+                                quickAddCommitCallback()
+                            } else {
+                                tutorialControl.onNext()
+                                onAction(GroupInfoAction.AddExpense(group))
+                            }
                         },
                     ) {
                         Icon(
-                            AdaptiveIcons.Outlined.Add,
+                            imageVector = if (quickAddData != null) AdaptiveIcons.Outlined.Done else AdaptiveIcons.Outlined.Add,
                             contentDescription = stringResource(Res.string.add_expense_to_group),
                         )
                     }
@@ -290,7 +329,19 @@ fun GroupInfoScreen(
                 }
 
             when (val state = data.value) {
-                is GroupInfoViewModel.State.GroupInfo -> GroupInfoContent(state.group, actionCallback)
+                is GroupInfoViewModel.State.GroupInfo ->
+                    GroupInfoContent(
+                        group = state.group,
+                        onAction = actionCallback,
+                        quickAddData = quickAddData,
+                        quickAddError = quickAddError,
+                    ) { action ->
+                        when (action) {
+                            is QuickAddAction.Change -> quickAddData = action.value
+                            QuickAddAction.Commit -> quickAddCommitCallback()
+                        }
+                    }
+
                 GroupInfoViewModel.State.Loading ->
                     Box(modifier = Modifier.fillMaxSize()) {
                         CircularProgressIndicator()
@@ -307,6 +358,9 @@ fun GroupInfoScreen(
 private fun GroupInfoContent(
     group: Group,
     onAction: (GroupInfoAction) -> Unit,
+    quickAddData: QuickAddValue?,
+    quickAddError: QuickAddErrorState,
+    onQuickAddAction: (QuickAddAction) -> Unit,
 ) {
     val expenseRepository: ExpenseRepository = koinInject()
     val groupRepository: GroupRepository = koinInject()
@@ -351,9 +405,23 @@ private fun GroupInfoContent(
         if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded &&
             windowSizeClass.heightSizeClass != WindowHeightSizeClass.Compact
         ) {
-            SplitView(expenseViewModel, group, actionInterceptor)
+            SplitView(
+                expenseViewModel = expenseViewModel,
+                group = group,
+                quickAddData = quickAddData,
+                quickAddError = quickAddError,
+                onQuickAddAction = onQuickAddAction,
+                onAction = actionInterceptor,
+            )
         } else {
-            PaginationView(expenseViewModel, group, actionInterceptor)
+            PaginationView(
+                expenseViewModel = expenseViewModel,
+                group = group,
+                quickAddData = quickAddData,
+                quickAddError = quickAddError,
+                onQuickAddValueChange = onQuickAddAction,
+                onAction = actionInterceptor,
+            )
         }
     }
 
@@ -368,6 +436,9 @@ private fun GroupInfoContent(
 private fun SplitView(
     expenseViewModel: ExpenseSectionViewModel,
     group: Group,
+    quickAddData: QuickAddValue?,
+    quickAddError: QuickAddErrorState,
+    onQuickAddAction: (QuickAddAction) -> Unit,
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val tutorialControl = LocalTutorialControl.current
@@ -392,7 +463,12 @@ private fun SplitView(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.TopCenter,
         ) {
-            ExpenseSection(expenseViewModel) { action ->
+            ExpenseSection(
+                viewModel = expenseViewModel,
+                quickAddData = quickAddData,
+                quickAddError = quickAddError,
+                onQuickAddValueChange = onQuickAddAction,
+            ) { action ->
                 when (action) {
                     is ExpenseAction.OpenDetails -> onAction(GroupInfoAction.OpenExpenseDetails(action.expense))
                     is ExpenseAction.BannerClick -> onAction(GroupInfoAction.BannerClick(action.banner))
@@ -417,6 +493,9 @@ private fun SplitView(
 private fun PaginationView(
     expenseViewModel: ExpenseSectionViewModel,
     group: Group,
+    quickAddData: QuickAddValue?,
+    quickAddError: QuickAddErrorState,
+    onQuickAddValueChange: (QuickAddAction) -> Unit,
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
@@ -453,7 +532,12 @@ private fun PaginationView(
             ) {
                 when (index) {
                     0 ->
-                        ExpenseSection(expenseViewModel) { action ->
+                        ExpenseSection(
+                            viewModel = expenseViewModel,
+                            quickAddData = quickAddData,
+                            quickAddError = quickAddError,
+                            onQuickAddValueChange = onQuickAddValueChange,
+                        ) { action ->
                             when (action) {
                                 is ExpenseAction.OpenDetails -> onAction(GroupInfoAction.OpenExpenseDetails(action.expense))
                                 is ExpenseAction.BannerClick -> onAction(GroupInfoAction.BannerClick(action.banner))

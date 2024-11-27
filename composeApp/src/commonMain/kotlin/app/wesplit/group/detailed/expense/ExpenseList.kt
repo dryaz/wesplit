@@ -23,36 +23,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.Amount
-import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseStatus
@@ -64,19 +51,14 @@ import app.wesplit.expense.category.categoryIconRes
 import app.wesplit.ui.Banner
 import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.PlusProtected
-import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
-import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
-import split.composeapp.generated.resources.add_expense_to_group
-import split.composeapp.generated.resources.amount
 import split.composeapp.generated.resources.empty_transaction_description
 import split.composeapp.generated.resources.empty_transactions_cd
-import split.composeapp.generated.resources.expense_title
 import split.composeapp.generated.resources.ic_flag
 import split.composeapp.generated.resources.img_search_empty
 import split.composeapp.generated.resources.non_distr_cd
@@ -118,8 +100,10 @@ fun ExpenseList(
     group: Group,
     expenses: Map<String, List<Expense>>,
     banner: Banner?,
+    quickAddData: QuickAddValue?,
+    quickAddError: QuickAddErrorState,
+    onQuckAddAction: (QuickAddAction) -> Unit,
     onAction: (ExpenseAction) -> Unit,
-    onListAction: (ExpenseListAction) -> Unit,
 ) {
     val analyticsManager: AnalyticsManager = koinInject()
     val filters = remember { mutableStateListOf<FilterType>(FilterType.NOT_SETTLED) }
@@ -175,7 +159,7 @@ fun ExpenseList(
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp).horizontalScroll(rememberScrollState()),
             ) {
-                // TODO: Extract filterchip to func 
+                // TODO: Extract filterchip to func
                 FilterChip(
                     selected = filters.contains(FilterType.NOT_SETTLED),
                     onClick = {
@@ -273,10 +257,15 @@ fun ExpenseList(
 
                 QuickAdd(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    currencyCode = expenses.values.first().first().totalAmount.currencyCode,
-                ) { title, amount ->
-                    onListAction(ExpenseListAction.QuickAdd(title, amount))
-                }
+                    value =
+                        quickAddData ?: QuickAddValue(
+                            title = "",
+                            currencyCode = expenses.values.first().first().totalAmount.currencyCode,
+                            amount = null,
+                        ),
+                    error = quickAddError,
+                    onAction = onQuckAddAction,
+                )
             }
             Spacer(modifier = Modifier.height(4.dp))
         }
@@ -304,120 +293,6 @@ fun ExpenseList(
         }
         item {
             Spacer(modifier = Modifier.height(80.dp))
-        }
-    }
-}
-
-@Composable
-private fun QuickAdd(
-    modifier: Modifier = Modifier,
-    currencyCode: String,
-    onAdd: (String, Amount) -> Unit,
-) {
-    var title by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    val titleRequester = remember { FocusRequester() }
-    var highlightError by remember { mutableStateOf(false) }
-
-    val commitHandler: () -> Unit =
-        remember(currencyCode) {
-            {
-                highlightError = amount.toDoubleOrNull() == null || title.isNullOrBlank()
-                if (!highlightError) {
-                    onAdd(
-                        title,
-                        Amount(
-                            value = amount.toDoubleOrNull() ?: 0.0,
-                            currencyCode = currencyCode,
-                        ),
-                    )
-                    title = ""
-                    amount = ""
-                    titleRequester.requestFocus()
-                }
-            }
-        }
-
-    Row(
-        modifier = modifier.fillMaxWidth(1f),
-    ) {
-        TextField(
-            modifier = Modifier.weight(3f).focusRequester(titleRequester),
-            value = title,
-            isError = highlightError && title.isNullOrBlank(),
-            onValueChange = { title = it },
-            label = {
-                Text(
-                    text = stringResource(Res.string.expense_title),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-            colors =
-                TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
-            singleLine = true,
-            keyboardOptions =
-                KeyboardOptions(
-                    imeAction = ImeAction.Next,
-                    keyboardType = KeyboardType.Text,
-                    capitalization = KeyboardCapitalization.Sentences,
-                ),
-            maxLines = 1,
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        TextField(
-            modifier = Modifier.weight(2f),
-            value = amount,
-            isError = highlightError && amount.toDoubleOrNull() == null,
-            onValueChange = { value ->
-                if (value.isNullOrBlank()) {
-                    amount = ""
-                } else {
-                    val doubleValue = value.toDoubleOrNull()
-                    val filtered = if (doubleValue != null) value else amount
-                    amount = filtered
-                }
-            },
-            label = {
-                Text(
-                    text = stringResource(Res.string.amount) + " (${currencyCode.currencySymbol()})",
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-            colors =
-                TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
-            keyboardOptions =
-                KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                    imeAction = ImeAction.Done,
-                ),
-            keyboardActions =
-                KeyboardActions {
-                    commitHandler()
-                },
-            singleLine = true,
-            maxLines = 1,
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        FloatingActionButton(
-            modifier = Modifier,
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            onClick = {
-                commitHandler()
-            },
-        ) {
-            Icon(
-                AdaptiveIcons.Outlined.Add,
-                contentDescription = stringResource(Res.string.add_expense_to_group),
-            )
         }
     }
 }

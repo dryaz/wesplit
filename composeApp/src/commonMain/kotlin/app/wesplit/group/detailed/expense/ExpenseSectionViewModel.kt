@@ -5,22 +5,14 @@ import androidx.lifecycle.viewModelScope
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.LogLevel
-import app.wesplit.domain.model.currency.Amount
-import app.wesplit.domain.model.expense.Category
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
-import app.wesplit.domain.model.expense.ExpenseType
-import app.wesplit.domain.model.expense.Share
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
-import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.domain.model.user.isPlus
 import app.wesplit.ui.Banner
-import dev.gitlive.firebase.firestore.Timestamp
-import dev.gitlive.firebase.firestore.fromMilliseconds
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -28,14 +20,11 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
 
 private const val PAGE_SIZE = 30
-
-private const val QUICK_ADD_ACTION = "quick_add_expense"
 
 class ExpenseSectionViewModel(
     private val groupId: String,
@@ -104,43 +93,6 @@ class ExpenseSectionViewModel(
     @FutureFeature
     fun loadNextPage() {
         TODO("Implement")
-    }
-
-    fun quickAdd(
-        title: String,
-        amount: Amount,
-    ) {
-        analyticsManager.track(QUICK_ADD_ACTION)
-        val group = (dataState.value as? State.Expenses)?.group
-        if (group == null) return
-
-        val userShare = if (group.participants.size != 0) amount.value / group.participants.size else amount.value
-
-        viewModelScope.launch(NonCancellable) {
-            val expense =
-                Expense(
-                    id = null,
-                    title = title,
-                    totalAmount = amount,
-                    category = Category.Magic,
-                    payedBy = group.participants.find { it.isMe() } ?: group.participants.first(),
-                    expenseType = ExpenseType.EXPENSE,
-                    undistributedAmount = null,
-                    date = Timestamp.fromMilliseconds(Clock.System.now().toEpochMilliseconds().toDouble()),
-                    shares =
-                        group.participants.map { participant ->
-                            Share(
-                                participant = participant,
-                                amount = Amount(userShare, amount.currencyCode),
-                            )
-                        }.toSet(),
-                )
-
-            expenseRepository.commit(
-                groupId = groupId,
-                expense = expense,
-            )
-        }
     }
 
     sealed interface State {

@@ -22,21 +22,25 @@ sealed interface ExpenseAction {
 @Composable
 fun ExpenseSection(
     viewModel: ExpenseSectionViewModel,
+    quickAddData: QuickAddValue?,
+    quickAddError: QuickAddErrorState,
+    onQuickAddValueChange: (QuickAddAction) -> Unit,
     onAction: (ExpenseAction) -> Unit,
 ) {
+    // TODO: Maybe move categories, filters and quick add in here to leave expense list for list only
     val dataState = viewModel.dataState.collectAsState()
     when (val state = dataState.value) {
         ExpenseSectionViewModel.State.Empty -> EmptyExpenseSection(modifier = Modifier.fillMaxSize())
         is ExpenseSectionViewModel.State.Expenses ->
-            ExpenseList(state.group, state.groupedExpenses, state.banner, onAction) { listAction ->
-                when (listAction) {
-                    is ExpenseListAction.QuickAdd ->
-                        viewModel.quickAdd(
-                            listAction.title,
-                            listAction.amount,
-                        )
-                }
-            }
+            ExpenseList(
+                group = state.group,
+                expenses = state.groupedExpenses,
+                banner = state.banner,
+                quickAddData = quickAddData,
+                quickAddError = quickAddError,
+                onQuckAddAction = onQuickAddValueChange,
+                onAction = onAction,
+            )
 
         ExpenseSectionViewModel.State.Loading ->
             Box(modifier = Modifier.fillMaxSize()) {
