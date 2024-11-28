@@ -60,7 +60,7 @@ data class QuickAddValue(
     val amount: Double? = null,
 )
 
-fun QuickAddValue.isEmpty(): Boolean = title.isNullOrBlank() && amount == 0.0
+fun QuickAddValue.isEmpty(): Boolean = title.isNullOrBlank() && (amount ?: 0.0) == 0.0
 
 sealed interface QuickAddAction {
     data object Commit : QuickAddAction
