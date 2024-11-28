@@ -14,6 +14,7 @@ import app.wesplit.data.firebase.firebaseDataModule
 import app.wesplit.domain.di.domainModule
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
+import app.wesplit.domain.model.feature.FeatureRepository
 import app.wesplit.routing.DeeplinkAction
 import app.wesplit.routing.DeeplinkParsers
 import app.wesplit.routing.LeftPane
@@ -51,6 +52,7 @@ fun App(
     ) {
         val deepLinkHandler: DeepLinkHandler = koinInject()
         val analyticsManager: AnalyticsManager = koinInject()
+        val featureRepository: FeatureRepository = koinInject()
 
         val deeplink = deepLinkHandler.deeplink.collectAsState()
 
@@ -69,6 +71,10 @@ fun App(
             ) { menuItem ->
                 selectedMenuItem = menuItem
             }
+        }
+
+        LaunchedEffect(Unit) {
+            featureRepository.refresh()
         }
 
         LaunchedEffect(deeplink.value) {

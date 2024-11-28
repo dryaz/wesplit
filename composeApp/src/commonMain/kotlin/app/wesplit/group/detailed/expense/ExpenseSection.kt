@@ -22,8 +22,7 @@ sealed interface ExpenseAction {
 @Composable
 fun ExpenseSection(
     viewModel: ExpenseSectionViewModel,
-    quickAddData: QuickAddValue?,
-    quickAddError: QuickAddErrorState,
+    quickAddState: QuickAddState,
     onQuickAddValueChange: (QuickAddAction) -> Unit,
     onAction: (ExpenseAction) -> Unit,
 ) {
@@ -36,8 +35,7 @@ fun ExpenseSection(
                 group = state.group,
                 expenses = state.groupedExpenses,
                 banner = state.banner,
-                quickAddData = quickAddData,
-                quickAddError = quickAddError,
+                quickAddState = quickAddState,
                 onQuckAddAction = onQuickAddValueChange,
                 onAction = onAction,
             )

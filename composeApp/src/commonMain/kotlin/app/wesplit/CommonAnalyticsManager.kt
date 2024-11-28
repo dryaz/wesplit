@@ -19,11 +19,4 @@ abstract class CommonAnalyticsManager : AnalyticsManager {
     override fun setUserId(userId: String) {
         Firebase.analytics.setUserId(userId)
     }
-
-    override fun setParam(
-        key: String,
-        value: String,
-    ) {
-        Firebase.analytics.setUserProperty(key, value)
-    }
 }

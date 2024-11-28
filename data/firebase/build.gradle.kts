@@ -65,6 +65,7 @@ kotlin {
                 implementation(libs.firebase.common.firestore)
                 implementation(libs.firebase.common.functions)
                 implementation(libs.firebase.common.messaging)
+                implementation(libs.firebase.common.config)
 
                 implementation(libs.kotlinx.datetime)
 

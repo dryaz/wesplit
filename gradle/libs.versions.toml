@@ -131,6 +131,7 @@ firebase-common-crashlytics = { module = "dev.gitlive:firebase-crashlytics", ver
 firebase-common-installations = { module = "dev.gitlive:firebase-installations", version.ref = "firebase" }
 firebase-common-storage = { module = "dev.gitlive:firebase-storage", version.ref = "firebase" }
 firebase-common-messaging = { module = "dev.gitlive:firebase-messaging", version.ref = "firebase" }
+firebase-common-config = { module = "dev.gitlive:firebase-config", version.ref = "firebase" }
 
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 

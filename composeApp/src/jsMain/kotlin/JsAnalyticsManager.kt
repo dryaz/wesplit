@@ -26,4 +26,11 @@ class JsAnalyticsManager : CommonAnalyticsManager() {
             println("$tag | $logLevel | $msg")
         }
     }
+
+    override fun setParam(
+        key: String,
+        value: String,
+    ) {
+        // println("$key : $value")
+    }
 }

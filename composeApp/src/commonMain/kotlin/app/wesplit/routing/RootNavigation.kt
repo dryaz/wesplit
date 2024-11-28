@@ -46,6 +46,7 @@ import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.feature.FeatureRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.paywall.PaywallRepository
 import app.wesplit.domain.model.user.UserRepository
@@ -348,6 +349,7 @@ private fun Navigation(
     val userRepository: UserRepository = koinInject()
     val expenseRepository: ExpenseRepository = koinInject()
     val balanceLocalCalculationUseCase: BalanceLocalCalculationUseCase = koinInject()
+    val featureRepository: FeatureRepository = koinInject()
     val currencyRepository: CurrencyRepository = koinInject()
     val balanceFxCalculationUseCase: BalanceFxCalculationUseCase = koinInject()
     val settleSuggestionUseCase: SettleSuggestionUseCase = koinInject()
@@ -603,6 +605,7 @@ private fun Navigation(
                                 analyticsManager,
                                 expenseRepository,
                                 balanceLocalCalculationUseCase,
+                                featureRepository,
                             )
                         }
                     GroupInfoScreen(

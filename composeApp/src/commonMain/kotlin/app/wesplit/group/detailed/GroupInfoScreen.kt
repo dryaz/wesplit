@@ -44,6 +44,7 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.feature.FeatureAvailability
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
@@ -57,7 +58,9 @@ import app.wesplit.group.detailed.expense.ExpenseSection
 import app.wesplit.group.detailed.expense.ExpenseSectionViewModel
 import app.wesplit.group.detailed.expense.QuickAddAction
 import app.wesplit.group.detailed.expense.QuickAddErrorState
+import app.wesplit.group.detailed.expense.QuickAddState
 import app.wesplit.group.detailed.expense.QuickAddValue
+import app.wesplit.group.detailed.expense.isEmpty
 import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.Banner
@@ -192,28 +195,29 @@ fun GroupInfoScreen(
         tutorialControl.stepRequest(listOf(addExpenseTutorialStep))
     }
 
-    var quickAddData: QuickAddValue? by remember { mutableStateOf(null) }
+    var quickAddData: QuickAddValue by remember { mutableStateOf(QuickAddValue()) }
+
     var quickAddError: QuickAddErrorState by remember { mutableStateOf(QuickAddErrorState.NONE) }
 
     val quickAddCommitCallback = {
-        if (quickAddData?.title.isNullOrBlank()) {
+        if (quickAddData.title.isNullOrBlank()) {
             quickAddError = QuickAddErrorState.TITLE
-        } else if ((quickAddData?.amount ?: 0.0) == 0.0) {
+        } else if ((quickAddData.amount ?: 0.0) == 0.0) {
             quickAddError = QuickAddErrorState.AMOUNT
         } else {
-            quickAddData?.let { data ->
-                data.amount?.let { amount ->
+            quickAddData.amount?.let { amount ->
+                quickAddData.currencyCode?.let { currency ->
                     viewModel.quickAdd(
-                        title = data.title,
+                        title = quickAddData.title,
                         amount =
                             Amount(
                                 value = amount,
-                                currencyCode = data.currencyCode,
+                                currencyCode = currency,
                             ),
                         inRow = quickAddInRowCounter++,
                     )
                     quickAddError = QuickAddErrorState.NONE
-                    quickAddData = null
+                    quickAddData = QuickAddValue()
                 }
             }
         }
@@ -232,7 +236,7 @@ fun GroupInfoScreen(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         onClick = {
-                            if (quickAddData != null) {
+                            if (!quickAddData.isEmpty()) {
                                 quickAddCommitCallback()
                             } else {
                                 tutorialControl.onNext()
@@ -241,7 +245,7 @@ fun GroupInfoScreen(
                         },
                     ) {
                         Icon(
-                            imageVector = if (quickAddData != null) AdaptiveIcons.Outlined.Done else AdaptiveIcons.Outlined.Add,
+                            imageVector = if (!quickAddData.isEmpty()) AdaptiveIcons.Outlined.Done else AdaptiveIcons.Outlined.Add,
                             contentDescription = stringResource(Res.string.add_expense_to_group),
                         )
                     }
@@ -333,12 +337,21 @@ fun GroupInfoScreen(
                     GroupInfoContent(
                         group = state.group,
                         onAction = actionCallback,
-                        quickAddData = quickAddData,
-                        quickAddError = quickAddError,
+                        quickAddState =
+                            when (state.quickAddFeature) {
+                                FeatureAvailability.HIDE -> QuickAddState.Hidden
+                                FeatureAvailability.PAYWAL -> QuickAddState.Paywall
+                                FeatureAvailability.AVAIL ->
+                                    QuickAddState.Data(
+                                        value = quickAddData,
+                                        error = quickAddError,
+                                    )
+                            },
                     ) { action ->
                         when (action) {
-                            is QuickAddAction.Change -> quickAddData = action.value
+                            is QuickAddAction.Change -> quickAddData = action.value ?: QuickAddValue()
                             QuickAddAction.Commit -> quickAddCommitCallback()
+                            QuickAddAction.RequestPaywall -> onAction(GroupInfoAction.BannerClick(Banner.QUICK_ADD))
                         }
                     }
 
@@ -358,8 +371,7 @@ fun GroupInfoScreen(
 private fun GroupInfoContent(
     group: Group,
     onAction: (GroupInfoAction) -> Unit,
-    quickAddData: QuickAddValue?,
-    quickAddError: QuickAddErrorState,
+    quickAddState: QuickAddState,
     onQuickAddAction: (QuickAddAction) -> Unit,
 ) {
     val expenseRepository: ExpenseRepository = koinInject()
@@ -408,8 +420,7 @@ private fun GroupInfoContent(
             SplitView(
                 expenseViewModel = expenseViewModel,
                 group = group,
-                quickAddData = quickAddData,
-                quickAddError = quickAddError,
+                quickAddState = quickAddState,
                 onQuickAddAction = onQuickAddAction,
                 onAction = actionInterceptor,
             )
@@ -417,8 +428,7 @@ private fun GroupInfoContent(
             PaginationView(
                 expenseViewModel = expenseViewModel,
                 group = group,
-                quickAddData = quickAddData,
-                quickAddError = quickAddError,
+                quickAddState = quickAddState,
                 onQuickAddValueChange = onQuickAddAction,
                 onAction = actionInterceptor,
             )
@@ -436,8 +446,7 @@ private fun GroupInfoContent(
 private fun SplitView(
     expenseViewModel: ExpenseSectionViewModel,
     group: Group,
-    quickAddData: QuickAddValue?,
-    quickAddError: QuickAddErrorState,
+    quickAddState: QuickAddState,
     onQuickAddAction: (QuickAddAction) -> Unit,
     onAction: (GroupInfoAction) -> Unit,
 ) {
@@ -465,8 +474,7 @@ private fun SplitView(
         ) {
             ExpenseSection(
                 viewModel = expenseViewModel,
-                quickAddData = quickAddData,
-                quickAddError = quickAddError,
+                quickAddState = quickAddState,
                 onQuickAddValueChange = onQuickAddAction,
             ) { action ->
                 when (action) {
@@ -493,8 +501,7 @@ private fun SplitView(
 private fun PaginationView(
     expenseViewModel: ExpenseSectionViewModel,
     group: Group,
-    quickAddData: QuickAddValue?,
-    quickAddError: QuickAddErrorState,
+    quickAddState: QuickAddState,
     onQuickAddValueChange: (QuickAddAction) -> Unit,
     onAction: (GroupInfoAction) -> Unit,
 ) {
@@ -534,8 +541,7 @@ private fun PaginationView(
                     0 ->
                         ExpenseSection(
                             viewModel = expenseViewModel,
-                            quickAddData = quickAddData,
-                            quickAddError = quickAddError,
+                            quickAddState = quickAddState,
                             onQuickAddValueChange = onQuickAddValueChange,
                         ) { action ->
                             when (action) {

@@ -3,6 +3,7 @@ package app.wesplit
 import android.util.Log
 import app.wesplit.domain.model.LogLevel
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.crashlytics.crashlytics
 
 class AndroidAnalyticsManager : CommonAnalyticsManager() {
@@ -52,5 +53,12 @@ class AndroidAnalyticsManager : CommonAnalyticsManager() {
         }
 
         Firebase.crashlytics.log(event)
+    }
+
+    override fun setParam(
+        key: String,
+        value: String,
+    ) {
+        Firebase.analytics.setUserProperty(key, value)
     }
 }

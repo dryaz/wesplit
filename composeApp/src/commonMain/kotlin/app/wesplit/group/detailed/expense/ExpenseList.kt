@@ -100,8 +100,7 @@ fun ExpenseList(
     group: Group,
     expenses: Map<String, List<Expense>>,
     banner: Banner?,
-    quickAddData: QuickAddValue?,
-    quickAddError: QuickAddErrorState,
+    quickAddState: QuickAddState,
     onQuckAddAction: (QuickAddAction) -> Unit,
     onAction: (ExpenseAction) -> Unit,
 ) {
@@ -240,34 +239,45 @@ fun ExpenseList(
             }
         }
 
-        item {
-            Column {
-                PlusProtected(
-                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
-                    isVisible = false,
-                ) {
-                    Text(
-                        modifier =
-                            Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow),
-                        text = stringResource(Res.string.quick_add),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.outline,
+        if (quickAddState !is QuickAddState.Hidden) {
+            item {
+                Column {
+                    PlusProtected(
+                        modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                        isVisible = quickAddState is QuickAddState.Paywall,
+                    ) {
+                        Text(
+                            modifier =
+                                Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow),
+                            text = stringResource(Res.string.quick_add),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+
+                    QuickAdd(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        state =
+                            when (quickAddState) {
+                                is QuickAddState.Data ->
+                                    if (quickAddState.value.currencyCode == null) {
+                                        quickAddState.copy(
+                                            value =
+                                                quickAddState.value.copy(
+                                                    currencyCode = expenses.values.first().first().totalAmount.currencyCode,
+                                                ),
+                                        )
+                                    } else {
+                                        quickAddState
+                                    }
+
+                                else -> quickAddState
+                            },
+                        onAction = onQuckAddAction,
                     )
                 }
-
-                QuickAdd(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    value =
-                        quickAddData ?: QuickAddValue(
-                            title = "",
-                            currencyCode = expenses.values.first().first().totalAmount.currencyCode,
-                            amount = null,
-                        ),
-                    error = quickAddError,
-                    onAction = onQuckAddAction,
-                )
+                Spacer(modifier = Modifier.height(4.dp))
             }
-            Spacer(modifier = Modifier.height(4.dp))
         }
 
         dataUnderFilters.forEach { entry ->

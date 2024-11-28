@@ -17,6 +17,9 @@ import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.ExpenseType
 import app.wesplit.domain.model.expense.Share
+import app.wesplit.domain.model.feature.Feature
+import app.wesplit.domain.model.feature.FeatureAvailability
+import app.wesplit.domain.model.feature.FeatureRepository
 import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.BalanceStatus
 import app.wesplit.domain.model.group.Group
@@ -32,6 +35,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -53,6 +57,7 @@ class GroupInfoViewModel(
     private val analyticsManager: AnalyticsManager,
     private val expenseRepository: ExpenseRepository,
     private val balanceLocalCalculationUseCase: BalanceLocalCalculationUseCase,
+    private val featureRepository: FeatureRepository,
 ) : ViewModel(), KoinComponent {
     val dataState: StateFlow<State>
         get() = _dataState
@@ -96,20 +101,26 @@ class GroupInfoViewModel(
                     is Account.Authorized,
                     Account.Restricted,
                     ->
-                        groupRepository.get(groupId, token).mapLatest { groupResult ->
-                            val exception = groupResult.exceptionOrNull()
-                            when (exception) {
-                                is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)
-                                is NullPointerException -> State.Error(State.Error.Type.NOT_EXISTS)
-                                else ->
-                                    if (exception != null) {
-                                        State.Error(State.Error.Type.FETCH_ERROR)
-                                    } else {
-                                        val group = groupResult.getOrThrow().recalculateBalance(isPlus = account.isPlus())
-                                        State.GroupInfo(group)
-                                    }
+                        groupRepository
+                            .get(groupId, token)
+                            .combine(featureRepository.get(Feature.QUICK_ADD)) { groupResult, quickAddFeature ->
+                                groupResult to quickAddFeature
                             }
-                        }
+                            .mapLatest { groupFeaturePair ->
+                                val groupResult = groupFeaturePair.first
+                                val exception = groupResult.exceptionOrNull()
+                                when (exception) {
+                                    is UnauthorizeAcceessException -> State.Error(State.Error.Type.UNAUTHORIZED)
+                                    is NullPointerException -> State.Error(State.Error.Type.NOT_EXISTS)
+                                    else ->
+                                        if (exception != null) {
+                                            State.Error(State.Error.Type.FETCH_ERROR)
+                                        } else {
+                                            val group = groupResult.getOrThrow().recalculateBalance(isPlus = account.isPlus())
+                                            State.GroupInfo(group, groupFeaturePair.second)
+                                        }
+                                }
+                            }
                 }
             }.catch {
                 analyticsManager.log("GroupInfoViewModel - refresh()", LogLevel.WARNING)
@@ -225,6 +236,7 @@ class GroupInfoViewModel(
 
         data class GroupInfo(
             val group: Group,
+            val quickAddFeature: FeatureAvailability,
         ) : State
     }
 }
