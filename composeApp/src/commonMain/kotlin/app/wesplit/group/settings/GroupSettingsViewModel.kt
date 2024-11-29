@@ -45,6 +45,8 @@ import org.koin.core.component.KoinComponent
 
 private const val IMAGE_CHANGE_PAYWALL_SOURCE = "image_change"
 
+private const val IMAGE_CHANGE_ATTEMPT = "image_change_attempt"
+
 class GroupSettingsViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
@@ -189,6 +191,7 @@ class GroupSettingsViewModel(
 
     fun updateImage() {
         if (accountRepository.get().value.isPlus()) {
+            analyticsManager.track(IMAGE_CHANGE_ATTEMPT)
             viewModelScope.launch {
                 val file =
                     FileKit.pickFile(
