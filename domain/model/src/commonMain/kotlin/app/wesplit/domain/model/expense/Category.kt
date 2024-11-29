@@ -258,5 +258,4 @@ val freeCategories =
         Category.FoodDrink,
         Category.TransportTravel,
         Category.Shopping,
-        Category.MoneyTransfer,
     )

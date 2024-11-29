@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.format
+import app.wesplit.domain.model.expense.Category
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseStatus
 import app.wesplit.domain.model.expense.myAmount
@@ -80,7 +81,13 @@ import split.composeapp.generated.resources.your_share
 private const val FILTER_CLICK_EVENT = "filter_click"
 private const val FILTER_CLICK_PARAM = "filter"
 
-enum class FilterType {
+sealed interface Filter {
+    data class QuickFilter(val filterType: QuickFilterType) : Filter
+
+    data class CategoryFilter(val category: Category) : Filter
+}
+
+enum class QuickFilterType {
     NOT_SETTLED,
     NOT_SPLIT,
     WITH_ME,
@@ -105,29 +112,26 @@ fun ExpenseList(
     onAction: (ExpenseAction) -> Unit,
 ) {
     val analyticsManager: AnalyticsManager = koinInject()
-    val filters = remember { mutableStateListOf<FilterType>(FilterType.NOT_SETTLED) }
+    val filters = remember { mutableStateListOf<Filter>(Filter.QuickFilter(QuickFilterType.NOT_SETTLED)) }
     // TODO: Maybe move to VM when do pagination etc.
     val dataUnderFilters =
         remember(expenses, filters.size) {
-            val notSplit = filters.contains(FilterType.NOT_SPLIT)
-            val withMe = filters.contains(FilterType.WITH_ME)
-            val payedByMe = filters.contains(FilterType.PAYED_ME)
-            val notSettled = filters.contains(FilterType.NOT_SETTLED)
             expenses.mapNotNull {
                 val expensesUnderFilter =
                     it.value.filter {
                         var result = true
-                        if (notSplit) {
-                            result = (it.undistributedAmount?.value ?: 0.0) != 0.0
-                        }
-                        if (withMe) {
-                            result = result && it.myAmount().value != 0.0
-                        }
-                        if (payedByMe) {
-                            result = result && it.payedBy.isMe()
-                        }
-                        if (notSettled) {
-                            result = result && it.status != ExpenseStatus.SETTLED
+                        filters.forEach { filter ->
+                            result = result &&
+                                when (filter) {
+                                    is Filter.CategoryFilter -> it.category == filter.category
+                                    is Filter.QuickFilter ->
+                                        when (filter.filterType) {
+                                            QuickFilterType.NOT_SETTLED -> it.status != ExpenseStatus.SETTLED
+                                            QuickFilterType.NOT_SPLIT -> (it.undistributedAmount?.value ?: 0.0) != 0.0
+                                            QuickFilterType.WITH_ME -> it.myAmount().value != 0.0
+                                            QuickFilterType.PAYED_ME -> it.payedBy.isMe()
+                                        }
+                                }
                         }
                         result
                     }
@@ -158,76 +162,52 @@ fun ExpenseList(
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp).horizontalScroll(rememberScrollState()),
             ) {
-                // TODO: Extract filterchip to func
-                FilterChip(
-                    selected = filters.contains(FilterType.NOT_SETTLED),
-                    onClick = {
-                        analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to FilterType.NOT_SETTLED.name))
-                        if (filters.contains(
-                                FilterType.NOT_SETTLED,
+                QuickFilterType.entries.mapIndexed { index, type ->
+                    FilterChip(
+                        selected = filters.containsFilter(type),
+                        onClick = {
+                            if (filters.containsFilter(type)) {
+                                filters.removeFilter(type)
+                            } else {
+                                analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to type.name))
+                                filters.addFilter(type)
+                            }
+                        },
+                        label = {
+                            Text(
+                                stringResource(
+                                    when (type) {
+                                        QuickFilterType.NOT_SETTLED -> Res.string.not_settled
+                                        QuickFilterType.NOT_SPLIT -> Res.string.not_split
+                                        QuickFilterType.WITH_ME -> Res.string.with_me
+                                        QuickFilterType.PAYED_ME -> Res.string.paid_by_me
+                                    },
+                                ),
                             )
-                        ) {
-                            filters.remove(FilterType.NOT_SETTLED)
-                        } else {
-                            filters.add(FilterType.NOT_SETTLED)
-                        }
-                    },
-                    label = { Text(stringResource(Res.string.not_settled)) },
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                FilterChip(
-                    selected = filters.contains(FilterType.NOT_SPLIT),
-                    onClick = {
-                        analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to FilterType.NOT_SPLIT.name))
-                        if (filters.contains(
-                                FilterType.NOT_SPLIT,
-                            )
-                        ) {
-                            filters.remove(FilterType.NOT_SPLIT)
-                        } else {
-                            filters.add(FilterType.NOT_SPLIT)
-                        }
-                    },
-                    label = { Text(stringResource(Res.string.not_split)) },
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                FilterChip(
-                    selected = filters.contains(FilterType.WITH_ME),
-                    onClick = {
-                        analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to FilterType.WITH_ME.name))
-                        if (filters.contains(
-                                FilterType.WITH_ME,
-                            )
-                        ) {
-                            filters.remove(FilterType.WITH_ME)
-                        } else {
-                            filters.add(FilterType.WITH_ME)
-                        }
-                    },
-                    label = { Text(stringResource(Res.string.with_me)) },
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                FilterChip(
-                    selected = filters.contains(FilterType.PAYED_ME),
-                    onClick = {
-                        analyticsManager.track(FILTER_CLICK_EVENT, mapOf(FILTER_CLICK_PARAM to FilterType.PAYED_ME.name))
-                        if (filters.contains(
-                                FilterType.PAYED_ME,
-                            )
-                        ) {
-                            filters.remove(FilterType.PAYED_ME)
-                        } else {
-                            filters.add(FilterType.PAYED_ME)
-                        }
-                    },
-                    label = { Text(stringResource(Res.string.paid_by_me)) },
-                )
+                        },
+                    )
+
+                    if (index < QuickFilterType.entries.size - 1) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                }
             }
         }
 
-        if (dataUnderFilters.isNotEmpty()) {
+        val catFilters = filters.mapNotNull { (it as? Filter.CategoryFilter)?.category }
+
+        if (dataUnderFilters.isNotEmpty() || catFilters.isNotEmpty()) {
             item {
-                PieSampleView(dataUnderFilters.flatMap { it.value })
+                PieSampleView(
+                    expenses = dataUnderFilters.flatMap { it.value },
+                    selectedCategories = catFilters,
+                ) { category, isSelected ->
+                    if (isSelected) {
+                        filters.addFilter(category)
+                    } else {
+                        filters.removeFilter(category)
+                    }
+                }
             }
         }
 
@@ -477,3 +457,18 @@ internal fun EmptyExpenseSection(modifier: Modifier = Modifier) {
         )
     }
 }
+
+private fun Collection<Filter>.containsFilter(filterType: QuickFilterType) =
+    this.any { it is Filter.QuickFilter && it.filterType == filterType }
+
+private fun MutableCollection<Filter>.removeFilter(filterType: QuickFilterType) =
+    this.removeAll { it is Filter.QuickFilter && it.filterType == filterType }
+
+private fun MutableCollection<Filter>.addFilter(filterType: QuickFilterType) = this.add(Filter.QuickFilter(filterType))
+
+private fun Collection<Filter>.containsFilter(category: Category) = this.any { it is Filter.CategoryFilter && it.category == category }
+
+private fun MutableCollection<Filter>.removeFilter(category: Category) =
+    this.removeAll { it is Filter.CategoryFilter && it.category == category }
+
+private fun MutableCollection<Filter>.addFilter(category: Category) = this.add(Filter.CategoryFilter(category))
