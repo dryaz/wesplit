@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -22,9 +21,7 @@ import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
-import split.composeapp.generated.resources.add_group_image
 import split.composeapp.generated.resources.ic_group
-import split.composeapp.generated.resources.ic_plus_round
 import split.composeapp.generated.resources.no_image_user
 
 @OptIn(ExperimentalAdaptiveApi::class)
@@ -34,6 +31,21 @@ fun GroupImage(
     imageUrl: String?,
     groupTitle: String,
     isLoading: Boolean = false,
+    placeholder: @Composable () -> Unit = {
+        Box(
+            modifier =
+                Modifier.size(52.dp).clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLow),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(Res.drawable.ic_group),
+                contentDescription = stringResource(Res.string.no_image_user, groupTitle),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+            )
+        }
+    },
     onClick: (() -> Unit)? = null,
 ) {
     AutoSizeBox(
@@ -60,33 +72,8 @@ fun GroupImage(
                 }
 
                 is ImageAction.Failure -> {
-                    Box(
-                        modifier =
-                            Modifier.size(52.dp).clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceContainerLow),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Image(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(Res.drawable.ic_group),
-                            contentDescription = stringResource(Res.string.no_image_user, groupTitle),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                        )
-                    }
+                    placeholder()
                 }
-            }
-        }
-
-        onClick?.let {
-            Box(
-                modifier = Modifier.fillMaxSize(1f),
-                contentAlignment = Alignment.TopEnd,
-            ) {
-                Image(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(Res.drawable.ic_plus_round),
-                    contentDescription = stringResource(Res.string.add_group_image),
-                )
             }
         }
     }

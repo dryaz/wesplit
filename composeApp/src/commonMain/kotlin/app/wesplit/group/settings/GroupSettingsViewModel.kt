@@ -45,8 +45,6 @@ import org.koin.core.component.KoinComponent
 
 private const val IMAGE_CHANGE_PAYWALL_SOURCE = "image_change"
 
-private const val IMAGE_CHANGE_ATTEMPT = "image_change_attempt"
-
 class GroupSettingsViewModel(
     savedStateHandle: SavedStateHandle,
     private val groupRepository: GroupRepository,
@@ -99,7 +97,13 @@ class GroupSettingsViewModel(
     fun commit() =
         with(dataState.value as DataState.Group) {
             viewModelScope.launch {
-                groupRepository.commit(id, title, participants, imageUrl)
+                groupRepository.commit(
+                    id = id,
+                    title = title,
+                    participants = participants,
+                    imageUrl = imageUrl,
+                    imageDescription = imageDescription ?: "",
+                )
             }
         }
 
@@ -132,7 +136,13 @@ class GroupSettingsViewModel(
                         }
                     }
 
-                groupRepository.commit(id, title, newParticipants.toSet(), imageUrl)
+                groupRepository.commit(
+                    id = id,
+                    title = title,
+                    participants = newParticipants.toSet(),
+                    imageUrl = imageUrl,
+                    imageDescription = imageDescription ?: "",
+                )
             }
         }
     }
@@ -169,6 +179,7 @@ class GroupSettingsViewModel(
                                                 title = this.title,
                                                 participants = this.participants,
                                                 imageUrl = this.imageUrl,
+                                                imageDescription = this.imageDescription,
                                             )
                                         }
                                     }
@@ -187,11 +198,11 @@ class GroupSettingsViewModel(
                     (accountRepository.get().value as? Account.Authorized)?.participant(),
                 ).filterNotNull().toSet(),
             imageUrl = null,
+            imageDescription = null,
         )
 
     fun updateImage() {
         if (accountRepository.get().value.isPlus()) {
-            analyticsManager.track(IMAGE_CHANGE_ATTEMPT)
             viewModelScope.launch {
                 val file =
                     FileKit.pickFile(
@@ -245,10 +256,10 @@ class GroupSettingsViewModel(
         }
 
         data class Group(
-            // TODO: Support image
             val id: String?,
             val title: String,
             val imageUrl: String?,
+            val imageDescription: String?,
             val participants: Set<Participant>,
         ) : DataState
     }

@@ -31,6 +31,7 @@ interface GroupRepository {
     suspend fun commit(
         id: String?,
         title: String,
+        imageDescription: String,
         participants: Set<Participant>,
         imageUrl: String?,
     )

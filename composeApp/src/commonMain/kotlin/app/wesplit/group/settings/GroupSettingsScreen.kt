@@ -1,6 +1,7 @@
 package app.wesplit.group.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,9 +12,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -43,10 +46,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
@@ -66,7 +73,9 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.ExitToApp
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_group_image
 import split.composeapp.generated.resources.add_user_to_group
 import split.composeapp.generated.resources.confirm_no_wait
 import split.composeapp.generated.resources.confirm_yes_join
@@ -75,7 +84,9 @@ import split.composeapp.generated.resources.create
 import split.composeapp.generated.resources.error
 import split.composeapp.generated.resources.forget_group
 import split.composeapp.generated.resources.group_name
+import split.composeapp.generated.resources.ic_add_image
 import split.composeapp.generated.resources.ic_user_add
+import split.composeapp.generated.resources.image_description_ai
 import split.composeapp.generated.resources.join_group
 import split.composeapp.generated.resources.join_group_as_new_participant
 import split.composeapp.generated.resources.join_group_as_user
@@ -91,6 +102,8 @@ import split.composeapp.generated.resources.text_its_me
 import split.composeapp.generated.resources.title_leave_group
 import split.composeapp.generated.resources.tutorial_step_add_participant_description
 import split.composeapp.generated.resources.tutorial_step_add_participant_title
+
+private const val IMAGE_CLICK = "image_click_settings"
 
 sealed interface GroupSettingsAction {
     data object Back : GroupSettingsAction
@@ -154,7 +167,6 @@ fun GroupSettingsScreen(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
                     account = state.value.account,
                     group = groupState,
-                    isImageProcessing = state.value.isImageProcessing,
                     onDone = {
                         viewModel.commit()
                         onAction(GroupSettingsAction.Back)
@@ -168,9 +180,6 @@ fun GroupSettingsScreen(
                         onAction(GroupSettingsAction.Back)
                     },
                     tutorialControl = tutorialControl,
-                    onImageChange = {
-                        viewModel.updateImage()
-                    },
                 ) { group ->
                     viewModel.update(group)
                 }
@@ -196,14 +205,14 @@ private fun GroupSettingsView(
     modifier: Modifier = Modifier,
     group: GroupSettingsViewModel.DataState.Group,
     account: Account,
-    isImageProcessing: Boolean,
     tutorialControl: TutorialControl,
     onDone: () -> Unit,
     onJoin: (Participant?) -> Unit,
     onLeave: () -> Unit,
-    onImageChange: () -> Unit,
     onUpdated: (GroupSettingsViewModel.DataState.Group) -> Unit,
 ) {
+    val analyticsManager: AnalyticsManager = koinInject()
+    val focusRequester: FocusRequester = remember { FocusRequester() }
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
     var joinAsDialogShown by remember { mutableStateOf<Set<Participant>?>(null) }
@@ -233,11 +242,30 @@ private fun GroupSettingsView(
                 GroupImage(
                     modifier = Modifier.padding(top = 8.dp),
                     imageUrl = group.imageUrl,
-                    isLoading = isImageProcessing,
                     groupTitle = group.title,
+                    placeholder = {
+                        Box(
+                            modifier =
+                                Modifier.size(52.dp).clip(RoundedCornerShape(15.dp))
+                                    .border(
+                                        width = 2.dp,
+                                        color = MaterialTheme.colorScheme.outline,
+                                        shape = RoundedCornerShape(15.dp),
+                                    ),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(Res.drawable.ic_add_image),
+                                contentDescription = stringResource(Res.string.add_group_image),
+                            )
+                        }
+                    },
                 ) {
-                    onImageChange()
+                    analyticsManager.track(IMAGE_CLICK)
+                    focusRequester.requestFocus()
                 }
+
                 Spacer(modifier = Modifier.width(16.dp))
                 OutlinedTextField(
                     modifier = Modifier.weight(1f),
@@ -260,6 +288,31 @@ private fun GroupSettingsView(
                         },
                 )
             }
+
+            OutlinedTextField(
+                modifier =
+                    Modifier
+                        .fillMaxWidth(1f)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp)
+                        .focusRequester(focusRequester),
+                value = group.imageDescription ?: "",
+                onValueChange = { onUpdated(group.copy(imageDescription = it)) },
+                label = {
+                    Text(stringResource(Res.string.image_description_ai))
+                },
+                singleLine = true,
+                maxLines = 1,
+                keyboardOptions =
+                    KeyboardOptions(
+                        imeAction = ImeAction.Next,
+                        capitalization = KeyboardCapitalization.Sentences,
+                    ),
+                keyboardActions =
+                    KeyboardActions {
+                        onDone()
+                    },
+            )
         }
 
         Card(
@@ -488,7 +541,6 @@ private fun TopAppBareByState(
     onAction: (GroupSettingsAction) -> Unit,
     onToolbarAction: (GroupSettingTollbarAction) -> Unit,
 ) {
-    val tutorialControl = LocalTutorialControl.current
     AdaptiveTopAppBar(
         title = {
             Text(

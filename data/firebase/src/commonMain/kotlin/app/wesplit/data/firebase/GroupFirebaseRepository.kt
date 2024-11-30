@@ -118,6 +118,7 @@ class GroupFirebaseRepository(
     override suspend fun commit(
         id: String?,
         title: String,
+        imageDescription: String,
         participants: Set<Participant>,
         imageUrl: String?,
     ): Unit =
@@ -158,6 +159,7 @@ class GroupFirebaseRepository(
                         tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + publicToken,
                         publicToken = publicToken,
                         imageUrl = imageUrl,
+                        imageDescription = imageDescription,
                     )
                 Firebase.firestore.collection(GROUP_COLLECTION).add(
                     strategy = Group.serializer(),
@@ -189,6 +191,7 @@ class GroupFirebaseRepository(
                                 tokens = participants.flatMap { it.user?.authIds ?: emptyList() } + existingGroup.publicToken,
                                 publicToken = existingGroup.publicToken,
                                 imageUrl = imageUrl,
+                                imageDescription = imageDescription,
                             ),
                     )
                 } else {

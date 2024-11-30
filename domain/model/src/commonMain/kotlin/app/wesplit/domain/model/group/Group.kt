@@ -16,6 +16,8 @@ data class Group(
     val id: String = "",
     @SerialName("title")
     val title: String,
+    @SerialName("imageDescription")
+    val imageDescription: String?,
     @SerialName("participants")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val participants: Set<Participant> = emptySet(),

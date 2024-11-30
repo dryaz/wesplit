@@ -306,4 +306,5 @@ Are you sure you want to leave the group?</string>
   <string name="other">Other</string>
   <string name="plus_feature_cats_cta">Subscribe to enable AI</string>
   <string name="quick_add">Quick Add an Expense</string>
+  <string name="image_description_ai">Description for AI Image</string>
 </resources>
