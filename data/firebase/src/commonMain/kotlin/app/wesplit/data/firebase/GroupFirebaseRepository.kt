@@ -160,6 +160,7 @@ class GroupFirebaseRepository(
                         publicToken = publicToken,
                         imageUrl = imageUrl,
                         imageDescription = imageDescription,
+                        isImageGen = imageDescription.isNotBlank(),
                     )
                 Firebase.firestore.collection(GROUP_COLLECTION).add(
                     strategy = Group.serializer(),
@@ -192,6 +193,7 @@ class GroupFirebaseRepository(
                                 publicToken = existingGroup.publicToken,
                                 imageUrl = imageUrl,
                                 imageDescription = imageDescription,
+                                isImageGen = existingGroup.imageDescription != imageDescription,
                             ),
                     )
                 } else {

@@ -59,12 +59,13 @@ exports.handleImageGeneration = onDocumentWritten(
       const imageQuality = config.getString('image_quality') || "hd";
       const imageModel = config.getString('image_model') || "dall-e-3";
       const imageStyle = config.getString('image_style') || "vivid";
+      const imagePromptTemplate = config.getString('image_prompt') || "Generate a square flat vector-style icon about \"{description}\". The icon should look visually appealing and recognizable even at 128x128 resolution. No borders, paddings, or text.";
 
       console.log(`Generating image for group: ${groupId} | ${imageModel}, ${imageQuality}, ${imageResolution}, ${imageStyle}`);
 
       // Step 1: Craft the prompt
-      const prompt = `Generate a square flat vector-style icon about "${newImageDescription}" for a whatsapp or telegram group.
-      The icon should look visually appealing and recognizable even at 128x128 resolution. No text.`;
+      const prompt = imagePromptTemplate.replace("{description}", newImageDescription);
+
 
       // Step 2: Generate image via OpenAI API
       const openaiResponse = await axios.post(
@@ -116,6 +117,7 @@ exports.handleImageGeneration = onDocumentWritten(
       // Step 4: Update Firestore with the new image URL
       await event.data.after.ref.update({
         imageUrl: publicUrl,
+        isImageGen: false,
       });
 
       console.log(`Updated Firestore document for group: ${groupId}`);

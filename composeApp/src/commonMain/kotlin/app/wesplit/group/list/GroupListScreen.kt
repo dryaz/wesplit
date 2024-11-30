@@ -297,6 +297,8 @@ private fun GroupItem(
             GroupImage(
                 imageUrl = group.imageUrl,
                 groupTitle = group.uiTitle(),
+                // TODO: Improvement: image generating - some magic anim
+                isLoading = group.isImageGen,
             )
         },
     )

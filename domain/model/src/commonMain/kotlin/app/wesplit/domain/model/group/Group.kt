@@ -18,6 +18,8 @@ data class Group(
     val title: String,
     @SerialName("imageDescription")
     val imageDescription: String?,
+    @SerialName("isImageGen")
+    val isImageGen: Boolean = false,
     @SerialName("participants")
     @EncodeDefault(EncodeDefault.Mode.NEVER)
     val participants: Set<Participant> = emptySet(),
