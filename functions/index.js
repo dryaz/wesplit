@@ -10,7 +10,9 @@ const crypto = require("crypto");
 
 const { v4: uuidv4 } = require("uuid");
 
-admin.initializeApp();
+const { getRemoteConfig } = require("firebase-admin/remote-config");
+
+const firebaseApp = admin.initializeApp();
 
 const db = getFirestore();
 const auth = getAuth();
@@ -50,15 +52,19 @@ exports.handleImageGeneration = onDocumentWritten(
 
     try {
       // Fetch the image resolution from Remote Config
-      const remoteConfig = await admin.remoteConfig().getTemplate();
-      const imageResolution = remoteConfig.parameters.image_res?.defaultValue?.value || "1024x1024";
+      const template = await getRemoteConfig(firebaseApp).getServerTemplate();
+      const config = template.evaluate()
 
-      console.log(`Generating image for group: ${groupId} with resolution: ${imageResolution}`);
+      const imageResolution = config.getString('image_res') || "1024x1024";
+      const imageQuality = config.getString('image_quality') || "hd";
+      const imageModel = config.getString('image_model') || "dall-e-3";
+      const imageStyle = config.getString('image_style') || "vivid";
+
+      console.log(`Generating image for group: ${groupId} | ${imageModel}, ${imageQuality}, ${imageResolution}, ${imageStyle}`);
 
       // Step 1: Craft the prompt
-      const prompt = `Generate a square vector-style image about "${newImageDescription}" for a whatsapp or telegram group.
-      The image should look visually appealing and recognizable even at 128x128 resolution. No text.
-      Ensure it has a clean and professional vector graphic style.`;
+      const prompt = `Generate a square flat vector-style icon about "${newImageDescription}" for a whatsapp or telegram group.
+      The icon should look visually appealing and recognizable even at 128x128 resolution. No text.`;
 
       // Step 2: Generate image via OpenAI API
       const openaiResponse = await axios.post(
@@ -66,9 +72,10 @@ exports.handleImageGeneration = onDocumentWritten(
         {
           prompt: prompt,
           n: 1,
-          model: 'dall-e-3',
-          quality: 'hd',
-          size: imageResolution, // Minimum resolution to reduce cost
+          model: imageModel,
+          quality: imageQuality,
+          size: imageResolution,
+          style: imageStyle,
         },
         {
           headers: {
