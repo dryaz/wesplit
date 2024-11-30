@@ -8,6 +8,8 @@ const { getAuth } = require("firebase-admin/auth");
 const { HttpsError } = require("firebase-functions/v2");
 const crypto = require("crypto");
 
+const { v4: uuidv4 } = require("uuid");
+
 admin.initializeApp();
 
 const db = getFirestore();
@@ -18,6 +20,103 @@ const { onDocumentWritten } = require('firebase-functions/v2/firestore');
 
 const { defineSecret } = require('firebase-functions/params');
 const OPENAI_API_KEY = defineSecret('OPENAI_API_KEY');
+
+const STORAGE_BUCKET = "wesplit-bill.appspot.com"; // Your Firebase Storage bucket name
+
+exports.handleImageGeneration = onDocumentWritten(
+  {
+    document: "groups/{groupId}",
+    region: "us-central1", // Adjust region as needed
+    secrets: [OPENAI_API_KEY], // Include the secret
+  },
+  async (event) => {
+    const beforeData = event.data.before ? event.data.before.data() : null;
+    const afterData = event.data.after ? event.data.after.data() : null;
+    const groupId = event.params.groupId;
+
+    if (!afterData) {
+      // Document deleted, do nothing
+      return;
+    }
+
+    // Check if imageDescription has changed
+    const newImageDescription = afterData.imageDescription;
+    const oldImageDescription = beforeData ? beforeData.imageDescription : null;
+
+    if (newImageDescription === oldImageDescription || !newImageDescription) {
+      // No change in imageDescription or no description provided
+      return;
+    }
+
+    try {
+      // Fetch the image resolution from Remote Config
+      const remoteConfig = await admin.remoteConfig().getTemplate();
+      const imageResolution = remoteConfig.parameters.image_res?.defaultValue?.value || "1024x1024";
+
+      console.log(`Generating image for group: ${groupId} with resolution: ${imageResolution}`);
+
+      // Step 1: Craft the prompt
+      const prompt = `Generate a square vector-style image about "${newImageDescription}" for a whatsapp or telegram group.
+      The image should look visually appealing and recognizable even at 128x128 resolution. No text.
+      Ensure it has a clean and professional vector graphic style.`;
+
+      // Step 2: Generate image via OpenAI API
+      const openaiResponse = await axios.post(
+        "https://api.openai.com/v1/images/generations",
+        {
+          prompt: prompt,
+          n: 1,
+          model: 'dall-e-3',
+          quality: 'hd',
+          size: imageResolution, // Minimum resolution to reduce cost
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${OPENAI_API_KEY.value()}`, // Use the secret value
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const imageUrl = openaiResponse.data.data[0].url;
+
+      // Step 2: Download the generated image
+      const imageResponse = await axios.get(imageUrl, { responseType: "arraybuffer" });
+      const imageBuffer = Buffer.from(imageResponse.data, "binary");
+
+      // Step 3: Upload image to Firebase Storage
+      const timestamp = Date.now();
+      const fileName = `${groupId}/${timestamp}.png`;
+      const bucket = admin.storage().bucket(STORAGE_BUCKET);
+      const file = bucket.file(fileName);
+
+      const downloadToken = uuidv4(); // Generate a unique token for accessing the file
+
+      await file.save(imageBuffer, {
+        metadata: {
+          contentType: "image/png",
+          metadata: {
+            firebaseStorageDownloadTokens: downloadToken, // Attach the token
+          },
+        },
+      });
+
+      // Construct the URL in the desired format
+      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${STORAGE_BUCKET}/o/${encodeURIComponent(fileName)}?alt=media&token=${downloadToken}`;
+
+      console.log(`Image uploaded successfully: ${publicUrl}`);
+
+      // Step 4: Update Firestore with the new image URL
+      await event.data.after.ref.update({
+        imageUrl: publicUrl,
+      });
+
+      console.log(`Updated Firestore document for group: ${groupId}`);
+    } catch (error) {
+      console.error(`Error generating or uploading image for group: ${groupId}`, error);
+    }
+  }
+);
 
 // Define the category mapping
 const categoryMapping = {

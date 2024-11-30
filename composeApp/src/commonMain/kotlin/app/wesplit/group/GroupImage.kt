@@ -5,7 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -34,7 +34,7 @@ fun GroupImage(
     placeholder: @Composable () -> Unit = {
         Box(
             modifier =
-                Modifier.size(52.dp).clip(CircleShape)
+                Modifier.size(52.dp).clip(RoundedCornerShape(15.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerLow),
             contentAlignment = Alignment.Center,
         ) {
@@ -62,7 +62,7 @@ fun GroupImage(
                 is ImageAction.Success -> {
                     Image(
                         rememberImageSuccessPainter(action),
-                        modifier = Modifier.size(52.dp).clip(CircleShape),
+                        modifier = Modifier.size(52.dp).clip(RoundedCornerShape(15.dp)),
                         contentDescription = groupTitle,
                     )
                 }
