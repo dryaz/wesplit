@@ -21,7 +21,7 @@ class FeatureFirebaseRepository(
     val userRepository: UserRepository,
     val analyticsManager: AnalyticsManager,
 ) : FeatureRepository {
-    override suspend fun get(feature: Feature): Flow<FeatureAvailability> =
+    override fun get(feature: Feature): Flow<FeatureAvailability> =
         userRepository.get().map { user ->
             val isPlus = user.isPlus()
             val availability = Firebase.remoteConfig.get<Long>(feature.configName).toFeatureAvail()

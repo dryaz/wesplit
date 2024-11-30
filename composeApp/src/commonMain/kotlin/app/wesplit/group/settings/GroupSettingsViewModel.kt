@@ -7,24 +7,15 @@ import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
 import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
-import app.wesplit.domain.model.account.isPlus
 import app.wesplit.domain.model.account.participant
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
+import app.wesplit.domain.model.feature.Feature
+import app.wesplit.domain.model.feature.FeatureAvailability
+import app.wesplit.domain.model.feature.FeatureRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.routing.RightPane
-import app.wesplit.utils.resizeImage
-import app.wesplit.utils.toPlatformData
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.storage.storage
-import io.github.vinceglb.filekit.core.FileKit
-import io.github.vinceglb.filekit.core.PickerMode
-import io.github.vinceglb.filekit.core.PickerType
-import io.github.vinceglb.filekit.core.extension
-import korlibs.image.format.JPEGInfo
-import korlibs.image.format.PNG
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -34,13 +25,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
 import org.koin.core.component.KoinComponent
 
 private const val IMAGE_CHANGE_PAYWALL_SOURCE = "image_change"
@@ -51,6 +39,7 @@ class GroupSettingsViewModel(
     private val accountRepository: AccountRepository,
     private val analyticsManager: AnalyticsManager,
     private val ioDispatcher: CoroutineDispatcher,
+    private val featureRepository: FeatureRepository,
     private val onSubscribeRequest: (String) -> Unit,
 ) : ViewModel(), KoinComponent {
     // TODO: savedStateHandle should be used to support same settings screen for existing group.
@@ -69,7 +58,6 @@ class GroupSettingsViewModel(
     private val _event = Channel<Event>(Channel.BUFFERED)
 
     private val dataState = MutableStateFlow<DataState>(DataState.Loading)
-    private val imageProcessing = MutableStateFlow(false)
     private var loadJob: Job? = null
 
     init {
@@ -81,8 +69,13 @@ class GroupSettingsViewModel(
     }
 
     val state: StateFlow<UiState> =
-        combine(dataState, accountRepository.get(), imageProcessing) { data, account, imageProcessing ->
-            UiState(data, account, imageProcessing)
+        combine(
+            dataState,
+            accountRepository.get(),
+            featureRepository.get(Feature.IMAGE_GEN),
+        ) { data, account, imageGenFeature ->
+            println("ImageGen feature: ${imageGenFeature.name}")
+            UiState(data, account, imageGenFeature)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
@@ -90,7 +83,7 @@ class GroupSettingsViewModel(
                 UiState(
                     DataState.Loading,
                     Account.Unknown,
-                    false,
+                    FeatureAvailability.AVAIL,
                 ),
         )
 
@@ -201,47 +194,10 @@ class GroupSettingsViewModel(
             imageDescription = null,
         )
 
-    fun updateImage() {
-        if (accountRepository.get().value.isPlus()) {
-            viewModelScope.launch {
-                val file =
-                    FileKit.pickFile(
-                        type = PickerType.File((JPEGInfo.extensions + PNG.extensions).toList()),
-                        mode = PickerMode.Single,
-                        title = "Pick an image for group",
-                    )
-                file?.let { pickedFile ->
-                    imageProcessing.update { true }
-                    withContext(ioDispatcher) {
-                        try {
-                            val fileName = groupId ?: "${Clock.System.now().epochSeconds}"
-                            val ref = Firebase.storage.reference.child("$fileName.${pickedFile.extension}")
-                            val fileContent = pickedFile.readBytes().resizeImage(pickedFile.name, 300, 300).toPlatformData()
-                            ref.putData(fileContent)
-                            val groupUrl = ref.getDownloadUrl()
-                            withContext(Dispatchers.Main) {
-                                imageProcessing.update { false }
-                                dataState.getAndUpdate {
-                                    if (it is DataState.Group) it.copy(imageUrl = groupUrl) else it
-                                }
-                            }
-                        } catch (e: Throwable) {
-                            analyticsManager.log(e)
-                            _event.send(Event.Error("Invalid image, try PNG"))
-                            imageProcessing.update { false }
-                        }
-                    }
-                }
-            }
-        } else {
-            onSubscribeRequest(IMAGE_CHANGE_PAYWALL_SOURCE)
-        }
-    }
-
     data class UiState(
         val dataState: DataState,
         val account: Account,
-        val isImageProcessing: Boolean,
+        val imageGenAvailability: FeatureAvailability,
     )
 
     sealed interface DataState {

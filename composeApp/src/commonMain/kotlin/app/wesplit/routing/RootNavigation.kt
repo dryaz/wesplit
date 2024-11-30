@@ -99,7 +99,7 @@ private const val SUBS_SOURCE = "source"
 private const val DOWNLOAD_APP_FOR_SUBS = "download_for_subs"
 
 private const val PROFILE_PAYWALL_SOURCE = "profile"
-private const val AI_CAT_BANNER_PAYWALL_SOURCE = "aiCatBanner"
+private const val AI_GROUP_IMAGE_PAYWALL_SOURCE = "ai_group_image"
 
 private const val ADD_EXPENSE_FROM_GROUP_INFO_EVENT = "expense_from_group"
 
@@ -767,6 +767,7 @@ private fun Navigation(
                                 accountRepository,
                                 analyticsManager,
                                 ioDispatcher,
+                                featureRepository,
                                 onSubscriptionRequest,
                             )
                         }
@@ -788,6 +789,10 @@ private fun Navigation(
                                             )
                                         },
                                 )
+
+                            GroupSettingsAction.PaywallForAi -> {
+                                onSubscriptionRequest(AI_GROUP_IMAGE_PAYWALL_SOURCE)
+                            }
                         }
                     }
                 }
@@ -822,6 +827,7 @@ private fun Navigation(
                                 accountRepository,
                                 analyticsManager,
                                 ioDispatcher,
+                                featureRepository,
                                 onSubscriptionRequest,
                             )
                         }
@@ -843,6 +849,10 @@ private fun Navigation(
                                             )
                                         },
                                 )
+
+                            GroupSettingsAction.PaywallForAi -> {
+                                onSubscriptionRequest(AI_GROUP_IMAGE_PAYWALL_SOURCE)
+                            }
                         }
                     }
                 }

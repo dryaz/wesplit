@@ -1,6 +1,7 @@
 package app.wesplit.group.settings
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -49,12 +50,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.Account
+import app.wesplit.domain.model.feature.FeatureAvailability
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.OnboardingStep
@@ -85,6 +89,7 @@ import split.composeapp.generated.resources.error
 import split.composeapp.generated.resources.forget_group
 import split.composeapp.generated.resources.group_name
 import split.composeapp.generated.resources.ic_add_image
+import split.composeapp.generated.resources.ic_plus
 import split.composeapp.generated.resources.ic_user_add
 import split.composeapp.generated.resources.image_description_ai
 import split.composeapp.generated.resources.join_group
@@ -95,6 +100,7 @@ import split.composeapp.generated.resources.leave_group
 import split.composeapp.generated.resources.leave_group_confirmation
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.new_group
+import split.composeapp.generated.resources.plus_badge
 import split.composeapp.generated.resources.retry
 import split.composeapp.generated.resources.save
 import split.composeapp.generated.resources.settings
@@ -109,6 +115,8 @@ sealed interface GroupSettingsAction {
     data object Back : GroupSettingsAction
 
     data object Home : GroupSettingsAction
+
+    data object PaywallForAi : GroupSettingsAction
 }
 
 private sealed interface GroupSettingTollbarAction {
@@ -166,6 +174,7 @@ fun GroupSettingsScreen(
                 GroupSettingsView(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
                     account = state.value.account,
+                    imageGenAvailability = state.value.imageGenAvailability,
                     group = groupState,
                     onDone = {
                         viewModel.commit()
@@ -180,6 +189,9 @@ fun GroupSettingsScreen(
                         onAction(GroupSettingsAction.Back)
                     },
                     tutorialControl = tutorialControl,
+                    onPaywallFromFocusOnAi = {
+                        onAction(GroupSettingsAction.PaywallForAi)
+                    },
                 ) { group ->
                     viewModel.update(group)
                 }
@@ -204,15 +216,18 @@ fun GroupSettingsScreen(
 private fun GroupSettingsView(
     modifier: Modifier = Modifier,
     group: GroupSettingsViewModel.DataState.Group,
+    imageGenAvailability: FeatureAvailability,
     account: Account,
     tutorialControl: TutorialControl,
     onDone: () -> Unit,
     onJoin: (Participant?) -> Unit,
     onLeave: () -> Unit,
+    onPaywallFromFocusOnAi: () -> Unit,
     onUpdated: (GroupSettingsViewModel.DataState.Group) -> Unit,
 ) {
     val analyticsManager: AnalyticsManager = koinInject()
     val focusRequester: FocusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     var userSelectorVisibility by rememberSaveable { mutableStateOf(false) }
     var leaveDialogShown by remember { mutableStateOf(false) }
     var joinAsDialogShown by remember { mutableStateOf<Set<Participant>?>(null) }
@@ -239,34 +254,37 @@ private fun GroupSettingsView(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                GroupImage(
-                    modifier = Modifier.padding(top = 8.dp),
-                    imageUrl = group.imageUrl,
-                    groupTitle = group.title,
-                    placeholder = {
-                        Box(
-                            modifier =
-                                Modifier.size(52.dp).clip(RoundedCornerShape(15.dp))
-                                    .border(
-                                        width = 2.dp,
-                                        color = MaterialTheme.colorScheme.outline,
-                                        shape = RoundedCornerShape(15.dp),
-                                    ),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                modifier = Modifier.size(24.dp),
-                                painter = painterResource(Res.drawable.ic_add_image),
-                                contentDescription = stringResource(Res.string.add_group_image),
-                            )
-                        }
-                    },
+                AnimatedVisibility(
+                    modifier = Modifier.padding(end = 16.dp),
+                    visible = imageGenAvailability != FeatureAvailability.HIDE,
                 ) {
-                    analyticsManager.track(IMAGE_CLICK)
-                    focusRequester.requestFocus()
+                    GroupImage(
+                        modifier = Modifier.padding(top = 8.dp),
+                        imageUrl = group.imageUrl,
+                        groupTitle = group.title,
+                        placeholder = {
+                            Box(
+                                modifier =
+                                    Modifier.size(52.dp).clip(RoundedCornerShape(15.dp))
+                                        .border(
+                                            width = 2.dp,
+                                            color = MaterialTheme.colorScheme.outline,
+                                            shape = RoundedCornerShape(15.dp),
+                                        ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    painter = painterResource(Res.drawable.ic_add_image),
+                                    contentDescription = stringResource(Res.string.add_group_image),
+                                )
+                            }
+                        },
+                    ) {
+                        analyticsManager.track(IMAGE_CLICK)
+                        focusRequester.requestFocus()
+                    }
                 }
-
-                Spacer(modifier = Modifier.width(16.dp))
                 OutlinedTextField(
                     modifier = Modifier.weight(1f),
                     // TODO: Prefil later when select paritipatns if empty
@@ -289,30 +307,50 @@ private fun GroupSettingsView(
                 )
             }
 
-            OutlinedTextField(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(1f)
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 16.dp)
-                        .focusRequester(focusRequester),
-                value = group.imageDescription ?: "",
-                onValueChange = { onUpdated(group.copy(imageDescription = it)) },
-                label = {
-                    Text(stringResource(Res.string.image_description_ai))
-                },
-                singleLine = true,
-                maxLines = 1,
-                keyboardOptions =
-                    KeyboardOptions(
-                        imeAction = ImeAction.Next,
-                        capitalization = KeyboardCapitalization.Sentences,
-                    ),
-                keyboardActions =
-                    KeyboardActions {
-                        onDone()
+            AnimatedVisibility(visible = imageGenAvailability != FeatureAvailability.HIDE) {
+                OutlinedTextField(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(1f)
+                            .padding(horizontal = 16.dp)
+                            .padding(bottom = 16.dp)
+                            .focusRequester(focusRequester)
+                            .onFocusChanged {
+                                if (it.isFocused && imageGenAvailability == FeatureAvailability.PAYWAL) {
+                                    onPaywallFromFocusOnAi()
+                                    focusManager.clearFocus(true)
+                                    focusRequester.freeFocus()
+                                }
+                            },
+                    trailingIcon = {
+                        if (imageGenAvailability == FeatureAvailability.PAYWAL) {
+                            Image(
+                                modifier = Modifier.height(20.dp).padding(horizontal = 16.dp),
+                                painter = painterResource(Res.drawable.ic_plus),
+                                contentDescription = stringResource(Res.string.plus_badge),
+                            )
+                        } else {
+                            null
+                        }
                     },
-            )
+                    value = group.imageDescription ?: "",
+                    onValueChange = { onUpdated(group.copy(imageDescription = it)) },
+                    label = {
+                        Text(stringResource(Res.string.image_description_ai))
+                    },
+                    singleLine = true,
+                    maxLines = 1,
+                    keyboardOptions =
+                        KeyboardOptions(
+                            imeAction = ImeAction.Next,
+                            capitalization = KeyboardCapitalization.Sentences,
+                        ),
+                    keyboardActions =
+                        KeyboardActions {
+                            onDone()
+                        },
+                )
+            }
         }
 
         Card(
