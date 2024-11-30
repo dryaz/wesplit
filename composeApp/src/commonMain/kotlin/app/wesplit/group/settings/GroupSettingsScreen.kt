@@ -322,17 +322,18 @@ private fun GroupSettingsView(
                                     focusRequester.freeFocus()
                                 }
                             },
-                    trailingIcon = {
+                    trailingIcon =
                         if (imageGenAvailability == FeatureAvailability.PAYWAL) {
-                            Image(
-                                modifier = Modifier.height(20.dp).padding(horizontal = 16.dp),
-                                painter = painterResource(Res.drawable.ic_plus),
-                                contentDescription = stringResource(Res.string.plus_badge),
-                            )
+                            {
+                                Image(
+                                    modifier = Modifier.height(20.dp).padding(horizontal = 16.dp),
+                                    painter = painterResource(Res.drawable.ic_plus),
+                                    contentDescription = stringResource(Res.string.plus_badge),
+                                )
+                            }
                         } else {
                             null
-                        }
-                    },
+                        },
                     value = group.imageDescription ?: "",
                     onValueChange = { onUpdated(group.copy(imageDescription = it)) },
                     label = {
