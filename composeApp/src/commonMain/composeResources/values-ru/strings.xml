@@ -71,8 +71,8 @@
   <string name="plus_feature_noads_descr_short">Ничто не будет вас отвлекать</string>
   <string name="plus_feature_noads_descr_full">Не будем вас отвлекать. Сосредоточьтесь исключительно на отслеживании и расчете долгов.</string>
   <string name="plus_feature_images_title">Изображения групп</string>
-  <string name="plus_feature_images_descr_short">Добавьте настроение вашим группам</string>
-  <string name="plus_feature_images_descr_full">Отметьте каждую группу изображением по вашему выбору. Это делает ее красивее и помогает быстро находить что нужно.</string>
+  <string name="plus_feature_images_descr_short">ИИ добавляет настроение в группы</string>
+  <string name="plus_feature_images_descr_full">Добавляйте изображения к группам с ИИ. Это делает их классными и помогает быстро находить что нужно.</string>
   <string name="plus_feature_more_title">И многое другое...</string>
   <string name="plus_feature_more_descr">Нажмите, чтобы увидеть преимущества</string>
   <string name="best_offer_badge">Значок лучшего предложения</string>

@@ -3,9 +3,9 @@ package app.wesplit.paywall
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.img_feature_ai_group
 import split.composeapp.generated.resources.img_feature_cat_arrow
 import split.composeapp.generated.resources.img_feature_fx
-import split.composeapp.generated.resources.img_feature_images
 import split.composeapp.generated.resources.img_feature_no_ads
 import split.composeapp.generated.resources.img_feature_protect
 import split.composeapp.generated.resources.img_feature_single_settle
@@ -41,6 +41,12 @@ internal val features: List<Feature> =
             image = Res.drawable.img_feature_cat_arrow,
         ),
         Feature(
+            title = Res.string.plus_feature_images_title,
+            shortDescr = Res.string.plus_feature_images_descr_short,
+            fullDescr = Res.string.plus_feature_images_descr_full,
+            image = Res.drawable.img_feature_ai_group,
+        ),
+        Feature(
             title = Res.string.plus_feature_protect_title,
             shortDescr = Res.string.plus_feature_protect_descr_short,
             fullDescr = Res.string.plus_feature_protect_descr_full,
@@ -57,12 +63,6 @@ internal val features: List<Feature> =
             shortDescr = Res.string.plus_feature_suggest_descr_short,
             fullDescr = Res.string.plus_feature_suggest_descr_full,
             image = Res.drawable.img_feature_suggest,
-        ),
-        Feature(
-            title = Res.string.plus_feature_images_title,
-            shortDescr = Res.string.plus_feature_images_descr_short,
-            fullDescr = Res.string.plus_feature_images_descr_full,
-            image = Res.drawable.img_feature_images,
         ),
         Feature(
             title = Res.string.plus_feature_single_settle_title,
