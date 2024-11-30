@@ -34,7 +34,7 @@ fun GroupImage(
     placeholder: @Composable () -> Unit = {
         Box(
             modifier =
-                Modifier.size(52.dp).clip(RoundedCornerShape(15.dp))
+                Modifier.size(52.dp).clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerLow),
             contentAlignment = Alignment.Center,
         ) {
@@ -62,7 +62,7 @@ fun GroupImage(
                 is ImageAction.Success -> {
                     Image(
                         rememberImageSuccessPainter(action),
-                        modifier = Modifier.size(52.dp).clip(RoundedCornerShape(15.dp)),
+                        modifier = Modifier.size(52.dp).clip(RoundedCornerShape(8.dp)),
                         contentDescription = groupTitle,
                     )
                 }

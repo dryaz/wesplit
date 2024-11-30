@@ -755,6 +755,7 @@ private fun AmountsSplit(
                         keyboardType = KeyboardType.Decimal,
                     ),
                 onValueChange = { newValue ->
+                    // TODO: WORKS BEST of possible solution, repeared multiple times, extract
                     val newFilteredValue = newValue.text.filterDoubleInput()
                     val isEndingWithDot = newFilteredValue.endsWith(".")
                     var needUpdate = false
@@ -1001,17 +1002,20 @@ private fun ExpenseDetails(
                             keyboardType = KeyboardType.Decimal,
                         ),
                     isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
-                    onValueChange = { value ->
-                        if (value.isNullOrBlank()) {
-                            amount = ""
-                            onUpdated(UpdateAction.TotalAmount(0.0, data.expense.totalAmount.currencyCode))
-                        } else {
-                            val doubleValue = value.toDoubleOrNull()
-                            val filtered = if (doubleValue != null) value else amount
-                            amount = filtered
-                            doubleValue?.let {
-                                onUpdated(UpdateAction.TotalAmount(it, data.expense.totalAmount.currencyCode))
-                            }
+                    onValueChange = { newValue ->
+                        val newFilteredValue = newValue.filterDoubleInput()
+                        val isEndingWithDot = newFilteredValue.endsWith(".")
+                        var needUpdate = false
+
+                        if (!isEndingWithDot) {
+                            needUpdate = true
+                        }
+
+                        amount = newFilteredValue
+
+                        if (needUpdate) {
+                            val doubleValue = newFilteredValue.toDoubleOrNull() ?: 0.0
+                            onUpdated(UpdateAction.TotalAmount(doubleValue, data.expense.totalAmount.currencyCode))
                         }
                     },
                     placeholder = {

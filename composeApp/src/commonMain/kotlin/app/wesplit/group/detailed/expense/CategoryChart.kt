@@ -168,7 +168,7 @@ fun PieSampleView(
                             if (selected) {
                                 {
                                     Icon(
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(12.dp),
                                         imageVector = AdaptiveIcons.Outlined.Done,
                                         contentDescription = uiCategory.category.uiTitle(),
                                     )
@@ -203,7 +203,7 @@ fun PieSampleView(
                         },
                         trailingIcon = {
                             Icon(
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(12.dp),
                                 imageVector =
                                     if (otherCollapsed) {
                                         AdaptiveIcons.Outlined.KeyboardArrowDown

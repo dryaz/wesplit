@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.currency.currencySymbol
+import app.wesplit.filterDoubleInput
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Clear
 import org.jetbrains.compose.resources.stringResource
@@ -95,6 +96,7 @@ internal fun QuickAdd(
             modifier = modifier,
             onAction = onAction,
         )
+
     QuickAddState.Hidden -> Unit
 }
 
@@ -183,18 +185,25 @@ private fun QuickAddControl(
     val focusManager = LocalFocusManager.current
 
     var title by remember(state) { mutableStateOf(state.title) }
-    var amount by remember(state) { mutableStateOf(state.amount?.toString() ?: "") }
+    var doubleAmount by remember(state) { mutableStateOf(state.amount ?: 0.0) }
+    var amount: String by remember(state) {
+        mutableStateOf(
+            state.amount?.let {
+                if (it != 0.0) it.toString() else ""
+            } ?: "",
+        )
+    }
 
-    LaunchedEffect(title, amount) {
+    LaunchedEffect(title, doubleAmount) {
         onAction(
             QuickAddAction.Change(
-                if (title.isNullOrBlank() && amount.isNullOrBlank()) {
+                if (title.isNullOrBlank() && doubleAmount == 0.0) {
                     null
                 } else {
                     QuickAddValue(
                         title = title,
                         currencyCode = state.currencyCode,
-                        amount = amount.toDoubleOrNull(),
+                        amount = doubleAmount,
                     )
                 },
             ),
@@ -244,13 +253,19 @@ private fun QuickAddControl(
             modifier = Modifier.weight(2f).focusRequester(amountFocusRequester),
             value = amount,
             isError = error == QuickAddErrorState.AMOUNT,
-            onValueChange = { value ->
-                if (value.isNullOrBlank()) {
-                    amount = ""
-                } else {
-                    val doubleValue = value.toDoubleOrNull()
-                    val filtered = if (doubleValue != null) value else amount
-                    amount = filtered
+            onValueChange = { newValue ->
+                val newFilteredValue = newValue.filterDoubleInput()
+                val isEndingWithDot = newFilteredValue.endsWith(".")
+                var needUpdate = false
+
+                if (!isEndingWithDot) {
+                    needUpdate = true
+                }
+
+                amount = newFilteredValue
+
+                if (needUpdate) {
+                    doubleAmount = newFilteredValue.toDoubleOrNull() ?: 0.0
                 }
             },
             label = {
@@ -279,7 +294,7 @@ private fun QuickAddControl(
         )
         AnimatedVisibility(
             modifier = Modifier.padding(start = 8.dp),
-            visible = amount.length > 0 || title.length > 0,
+            visible = doubleAmount > 0.0 || title.length > 0,
         ) {
             IconButton(
                 modifier = Modifier.minimumInteractiveComponentSize(),
