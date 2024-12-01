@@ -61,7 +61,7 @@ exports.handleImageGeneration = onDocumentWritten(
       const imageStyle = config.getString('image_style') || "vivid";
       const imagePromptTemplate = config.getString('image_prompt') || "Generate a square flat vector-style icon about \"{description}\". The icon should look visually appealing and recognizable even at 128x128 resolution. No borders, paddings, or text.";
 
-      console.log(`Generating image for group: ${groupId} | ${imageModel}, ${imageQuality}, ${imageResolution}, ${imageStyle}`);
+      console.log(`Generating image for group: ${groupId} | ${newImageDescription} | ${imageModel}, ${imageQuality}, ${imageResolution}, ${imageStyle}`);
 
       // Step 1: Craft the prompt
       const prompt = imagePromptTemplate.replace("{description}", newImageDescription);
