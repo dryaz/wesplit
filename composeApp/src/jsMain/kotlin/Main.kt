@@ -37,6 +37,7 @@ fun main() {
                 authDomain = "wesplit-bill.firebaseapp.com",
                 storageBucket = "wesplit-bill.appspot.com",
                 gcmSenderId = "548791587175",
+                gaTrackingId = "G-5EBQE3J64M",
             )
         Firebase.initialize(null, options)
 
