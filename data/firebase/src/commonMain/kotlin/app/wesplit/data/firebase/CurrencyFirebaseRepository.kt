@@ -7,18 +7,13 @@ import app.wesplit.domain.model.currency.FxRates
 import app.wesplit.domain.model.currency.FxState
 import app.wesplit.domain.model.currency.currencySymbols
 import app.wesplit.domain.model.user.UserRepository
-import app.wesplit.domain.model.user.isPlus
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
 import dev.gitlive.firebase.firestore.firestore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.flow.stateIn
@@ -52,28 +47,21 @@ class CurrencyFirebaseRepository(
                 ),
         )
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private val fxState =
-        userRepository.get().filterNotNull().flatMapLatest { user ->
-            if (user.isPlus()) {
-                Firebase.firestore.collection(FX_COLLECTION).document(FX_LATEST).snapshots.map {
-                    if (it.exists) {
-                        val rates = it.data(FxRates.serializer(), ServerTimestampBehavior.ESTIMATE)
-                        FxState.Data(rates)
-                    } else {
-                        val exception = NullPointerException("No fx rates found")
-                        analyticsManager.log(exception)
-                        FxState.Error(FxState.Error.Type.FETCH_ERROR)
-                    }
-                }.retryWhen { cause, attempt ->
-                    if (attempt > 3) return@retryWhen false
-                    cause.printStackTrace()
-                    analyticsManager.log(cause)
-                    return@retryWhen true
-                }
+        Firebase.firestore.collection(FX_COLLECTION).document(FX_LATEST).snapshots.map {
+            if (it.exists) {
+                val rates = it.data(FxRates.serializer(), ServerTimestampBehavior.ESTIMATE)
+                FxState.Data(rates)
             } else {
-                flow<FxState> { emit(FxState.Error(FxState.Error.Type.PLUS_NEEDED)) }
+                val exception = NullPointerException("No fx rates found")
+                analyticsManager.log(exception)
+                FxState.Error(FxState.Error.Type.FETCH_ERROR)
             }
+        }.retryWhen { cause, attempt ->
+            if (attempt > 3) return@retryWhen false
+            cause.printStackTrace()
+            analyticsManager.log(cause)
+            return@retryWhen true
         }.stateIn(
             scope = coroutinScope,
             started = SharingStarted.Lazily,
