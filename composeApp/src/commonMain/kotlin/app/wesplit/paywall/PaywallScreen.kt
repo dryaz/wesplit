@@ -42,6 +42,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -68,6 +69,8 @@ import app.wesplit.domain.model.user.isPlus
 import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.PlusProtected
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.perf.performance
 import io.github.alexzhirkevich.cupertino.adaptive.AdaptiveCircularProgressIndicator
 import io.github.alexzhirkevich.cupertino.adaptive.ExperimentalAdaptiveApi
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -119,6 +122,8 @@ import split.composeapp.generated.resources.what_you_get_with
 import split.composeapp.generated.resources.year_plus
 import kotlin.random.Random
 
+private const val PAYWALL_SCREEN_TIME = "paywall_time"
+
 sealed interface PaywallAction {
     data object Back : PaywallAction
 
@@ -138,6 +143,18 @@ fun PaywallRoute(
     val scope = rememberCoroutineScope()
     var isPendingPurchase by remember { mutableStateOf(false) }
     var showPromoDialog by remember { mutableStateOf(false) }
+
+    val screenTrace = remember { Firebase.performance.newTrace(PAYWALL_SCREEN_TIME) }
+
+    LaunchedEffect(Unit) {
+        screenTrace.start()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            screenTrace.stop()
+        }
+    }
 
     Scaffold(
         snackbarHost = {

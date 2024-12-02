@@ -68,12 +68,15 @@ import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
 import app.wesplit.ui.tutorial.TutorialStep
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.perf.performance
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
@@ -100,6 +103,12 @@ import split.composeapp.generated.resources.tutorial_step_invite_friends_descrip
 import split.composeapp.generated.resources.tutorial_step_invite_friends_title
 import split.composeapp.generated.resources.tutorial_step_settle_up_description
 import split.composeapp.generated.resources.tutorial_step_settle_up_title
+
+private const val GROUP_OPEN_TRACE = "group_open"
+private const val GROUP_OPEN_TRACE_STATUS = "status"
+private const val GROUP_OPEN_TRACE_STATUS_OK = 1L
+private const val GROUP_OPEN_TRACE_STATUS_ERROR = -1L
+private const val GROUP_OPEN_TRACE_THRESHOLD = 10_000L
 
 sealed interface GroupInfoAction {
     data object Back : GroupInfoAction
@@ -170,6 +179,20 @@ fun GroupInfoScreen(
     onAction: (GroupInfoAction) -> Unit,
 ) {
     val data = viewModel.dataState.collectAsState()
+    val trace = remember { Firebase.performance.newTrace(GROUP_OPEN_TRACE) }
+
+    LaunchedEffect(data) {
+        if (data.value is GroupInfoViewModel.State.Loading) {
+            trace.start()
+            delay(GROUP_OPEN_TRACE_THRESHOLD)
+            trace.putMetric(GROUP_OPEN_TRACE_STATUS, GROUP_OPEN_TRACE_STATUS_ERROR)
+            trace.stop()
+        } else {
+            trace.putMetric(GROUP_OPEN_TRACE_STATUS, GROUP_OPEN_TRACE_STATUS_OK)
+            trace.stop()
+        }
+    }
+
     val coroutineScope = rememberCoroutineScope()
 
     val windowSizeClass = calculateWindowSizeClass()
