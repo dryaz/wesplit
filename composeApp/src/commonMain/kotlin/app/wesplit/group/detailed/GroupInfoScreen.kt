@@ -184,12 +184,20 @@ fun GroupInfoScreen(
 
     LaunchedEffect(data.value) {
         if (data.value !is GroupInfoViewModel.State.Loading) {
-            trace.stop()
+            try {
+                trace.stop()
+            } catch (_: Throwable) {
+            }
         }
     }
 
     DisposableEffect(Unit) {
-        onDispose { trace.stop() }
+        onDispose {
+            try {
+                trace.stop()
+            } catch (_: Throwable) {
+            }
+        }
     }
 
     val coroutineScope = rememberCoroutineScope()
