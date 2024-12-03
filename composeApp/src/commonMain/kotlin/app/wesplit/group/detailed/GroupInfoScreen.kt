@@ -26,6 +26,7 @@ import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -76,7 +77,6 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
@@ -105,9 +105,6 @@ import split.composeapp.generated.resources.tutorial_step_settle_up_description
 import split.composeapp.generated.resources.tutorial_step_settle_up_title
 
 private const val GROUP_OPEN_TRACE = "group_open"
-private const val GROUP_OPEN_TRACE_STATUS = "status"
-private const val GROUP_OPEN_TRACE_STATUS_OK = 1L
-private const val GROUP_OPEN_TRACE_STATUS_ERROR = -1L
 private const val GROUP_OPEN_TRACE_THRESHOLD = 10_000L
 
 sealed interface GroupInfoAction {
@@ -181,16 +178,18 @@ fun GroupInfoScreen(
     val data = viewModel.dataState.collectAsState()
     val trace = remember { Firebase.performance.newTrace(GROUP_OPEN_TRACE) }
 
-    LaunchedEffect(data) {
-        if (data.value is GroupInfoViewModel.State.Loading) {
-            trace.start()
-            delay(GROUP_OPEN_TRACE_THRESHOLD)
-            trace.putMetric(GROUP_OPEN_TRACE_STATUS, GROUP_OPEN_TRACE_STATUS_ERROR)
-            trace.stop()
-        } else {
-            trace.putMetric(GROUP_OPEN_TRACE_STATUS, GROUP_OPEN_TRACE_STATUS_OK)
+    LaunchedEffect(Unit) {
+        trace.start()
+    }
+
+    LaunchedEffect(data.value) {
+        if (data.value !is GroupInfoViewModel.State.Loading) {
             trace.stop()
         }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { trace.stop() }
     }
 
     val coroutineScope = rememberCoroutineScope()
