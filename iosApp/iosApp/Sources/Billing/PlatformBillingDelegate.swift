@@ -63,7 +63,12 @@ extension PlatformBillingDelegate {
         )
         subscriptions.append(subscription)
       }
-      Dependencies.shared.billingRepositoryController.update(pricingResult: subscriptions)
+      // Check if subscriptions is empty and handle error
+      if subscriptions.isEmpty {
+          Dependencies.shared.billingRepositoryController.onPurchaseError()
+      } else {
+          Dependencies.shared.billingRepositoryController.update(pricingResult: subscriptions)
+      }
     } catch {
       Dependencies.shared.billingRepositoryController.onPurchaseError()
     }
