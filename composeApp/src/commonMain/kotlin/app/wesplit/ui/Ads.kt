@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemColors
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,6 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_group_image
 import split.composeapp.generated.resources.category_magic
+import split.composeapp.generated.resources.ic_add_many
 import split.composeapp.generated.resources.ic_cat_magic
 import split.composeapp.generated.resources.ic_eifell_ads
 import split.composeapp.generated.resources.ic_plus
@@ -34,6 +36,9 @@ import split.composeapp.generated.resources.plus_feature_cats_cta
 import split.composeapp.generated.resources.plus_feature_cats_title
 import split.composeapp.generated.resources.plus_feature_images_descr_short
 import split.composeapp.generated.resources.plus_feature_images_title
+import split.composeapp.generated.resources.plus_feature_quick_add_descr_short
+import split.composeapp.generated.resources.plus_feature_quick_add_title
+import split.composeapp.generated.resources.quick_add
 
 enum class Banner {
     AI_CAT,
@@ -46,7 +51,7 @@ fun Banner.title() =
     when (this) {
         Banner.AI_CAT -> stringResource(Res.string.plus_feature_cats_title)
         Banner.IMG_GROUP -> stringResource(Res.string.plus_feature_images_title)
-        Banner.QUICK_ADD -> TODO("Yet not showing this type of banner")
+        Banner.QUICK_ADD -> stringResource(Res.string.plus_feature_quick_add_title)
     }
 
 @Composable
@@ -54,7 +59,7 @@ fun Banner.cta() =
     when (this) {
         Banner.AI_CAT -> stringResource(Res.string.plus_feature_cats_cta)
         Banner.IMG_GROUP -> stringResource(Res.string.plus_feature_images_descr_short)
-        Banner.QUICK_ADD -> TODO("Yet not showing this type of banner")
+        Banner.QUICK_ADD -> stringResource(Res.string.plus_feature_quick_add_descr_short)
     }
 
 @Composable
@@ -87,12 +92,37 @@ fun Banner.icon() =
                 )
             }
 
-        Banner.QUICK_ADD -> TODO("Yet not showing this type of banner")
+        Banner.QUICK_ADD ->
+            Box(
+                modifier = Modifier.fillMaxHeight(1f),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column {
+                    Image(
+                        modifier = Modifier.width(48.dp).clip(CircleShape).background(MaterialTheme.extraColorScheme.onInfoContainer),
+                        painter = painterResource(Res.drawable.ic_add_many),
+                        contentDescription = stringResource(Res.string.quick_add),
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Image(
+                        modifier = Modifier.height(16.dp),
+                        painter = painterResource(Res.drawable.ic_plus),
+                        contentDescription = stringResource(Res.string.plus_badge),
+                    )
+                }
+            }
     }
 
 @Composable
 fun FeatureBanner(
     banner: Banner,
+    colors: ListItemColors =
+        ListItemDefaults.colors(
+            containerColor = MaterialTheme.extraColorScheme.infoContainer,
+            supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
+            leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
+            headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
+        ),
     onClick: (Banner) -> Unit,
 ) {
     ListItem(
@@ -109,13 +139,7 @@ fun FeatureBanner(
                 style = MaterialTheme.typography.bodyMedium,
             )
         },
-        colors =
-            ListItemDefaults.colors(
-                containerColor = MaterialTheme.extraColorScheme.infoContainer,
-                supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
-            ),
+        colors = colors,
         leadingContent = {
             banner.icon()
         },

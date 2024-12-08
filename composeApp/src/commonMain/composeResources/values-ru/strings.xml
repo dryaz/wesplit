@@ -73,6 +73,9 @@
   <string name="plus_feature_images_title">Изображения групп</string>
   <string name="plus_feature_images_descr_short">ИИ добавляет настроение в группы</string>
   <string name="plus_feature_images_descr_full">Добавляйте изображения к группам с ИИ. Это делает их классными и помогает быстро находить что нужно.</string>
+    <string name="plus_feature_quick_add_title">Быстрое добавление трат</string>
+    <string name="plus_feature_quick_add_descr_short">Вносите расходы за секунды!</string>
+    <string name="plus_feature_quick_add_descr_full">Заносите расходы в список без лишних движений. Идеально для быстрого учета и поддержания порядка на ходу!</string>
   <string name="plus_feature_more_title">И многое другое...</string>
   <string name="plus_feature_more_descr">Нажмите, чтобы увидеть преимущества</string>
   <string name="best_offer_badge">Значок лучшего предложения</string>

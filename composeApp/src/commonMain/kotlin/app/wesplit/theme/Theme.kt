@@ -36,6 +36,7 @@ data class ColorFamily(
 @Immutable
 data class ExtraColorsPalette(
     val warning: Color = Color.Unspecified,
+    val onWarning: Color = Color.Unspecified,
     val infoContainer: Color = Color.Unspecified,
     val onInfoContainer: Color = Color.Unspecified,
     val onInfoContainerAction: Color = Color.Unspecified,
@@ -44,6 +45,7 @@ data class ExtraColorsPalette(
 val LightCustomColorsPalette =
     ExtraColorsPalette(
         warning = warningLight,
+        onWarning = onWarningLight,
         infoContainer = infoContainerLight,
         onInfoContainer = onInfoContainerLight,
         onInfoContainerAction = warningDark,
@@ -52,6 +54,7 @@ val LightCustomColorsPalette =
 val DarkCustomColorsPalette =
     ExtraColorsPalette(
         warning = warningDark,
+        onWarning = onWarningDark,
         infoContainer = infoContainerDark,
         onInfoContainer = onInfoContainerDark,
         onInfoContainerAction = warningDark,

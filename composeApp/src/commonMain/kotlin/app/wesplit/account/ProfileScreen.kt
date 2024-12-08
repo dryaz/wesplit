@@ -82,8 +82,8 @@ import split.composeapp.generated.resources.plus_feature_currencies_descr_short
 import split.composeapp.generated.resources.plus_feature_currencies_title
 import split.composeapp.generated.resources.plus_feature_more_descr
 import split.composeapp.generated.resources.plus_feature_more_title
-import split.composeapp.generated.resources.plus_feature_protect_descr_short
-import split.composeapp.generated.resources.plus_feature_protect_title
+import split.composeapp.generated.resources.plus_feature_quick_add_descr_short
+import split.composeapp.generated.resources.plus_feature_quick_add_title
 import split.composeapp.generated.resources.privacy_policy
 import split.composeapp.generated.resources.profile
 import split.composeapp.generated.resources.subscribe_plus
@@ -492,7 +492,7 @@ private fun FeaturesList(
     val featuresMap =
         mapOf(
             Res.string.plus_feature_cats_title to Res.string.plus_feature_cats_descr_short,
-            Res.string.plus_feature_protect_title to Res.string.plus_feature_protect_descr_short,
+            Res.string.plus_feature_quick_add_title to Res.string.plus_feature_quick_add_descr_short,
             Res.string.plus_feature_currencies_title to Res.string.plus_feature_currencies_descr_short,
             Res.string.plus_feature_more_title to Res.string.plus_feature_more_descr,
         )

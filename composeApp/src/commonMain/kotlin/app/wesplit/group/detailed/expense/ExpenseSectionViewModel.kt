@@ -11,6 +11,7 @@ import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.model.user.isPlus
 import app.wesplit.ui.Banner
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -78,8 +79,12 @@ class ExpenseSectionViewModel(
                             }
 
                         State.Expenses(
-                            // if (!user.isPlus() && groupedExpenses.isNotEmpty()) Banner.AI_CAT else null,
-                            banner = null,
+                            banner =
+                                if (!user.isPlus()) {
+                                    Banner.AI_CAT
+                                } else {
+                                    null
+                                },
                             group = group,
                             groupedExpenses = groupedExpenses,
                         )

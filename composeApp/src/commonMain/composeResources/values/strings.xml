@@ -75,6 +75,9 @@ Prevent unauthorized changes and maintain financial integrity effortlessly.</str
   <string name="plus_feature_images_title">Group images</string>
   <string name="plus_feature_images_descr_short">AI Brings Mood to Groups</string>
   <string name="plus_feature_images_descr_full">Discover your groups with ease! With AI-generated images, find everything at a glance.</string>
+  <string name="plus_feature_quick_add_title">Quick Add an Expense</string>
+  <string name="plus_feature_quick_add_descr_short">Add expenses in seconds!</string>
+  <string name="plus_feature_quick_add_descr_full">Quickly add expenses to your list without any hassle. Perfect for fast tracking and staying organized on the go!</string>
   <string name="plus_feature_more_title">And more...</string>
   <string name="plus_feature_more_descr">Click to see benefits</string>
   <string name="best_offer_badge">Best offer badge</string>

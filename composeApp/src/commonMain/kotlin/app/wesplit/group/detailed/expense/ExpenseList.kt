@@ -20,11 +20,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,6 +50,7 @@ import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.expense.category.categoryIconRes
+import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.Banner
 import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.PlusProtected
@@ -77,6 +79,7 @@ import split.composeapp.generated.resources.with_me
 import split.composeapp.generated.resources.you_borrowed
 import split.composeapp.generated.resources.you_lent
 import split.composeapp.generated.resources.your_share
+import kotlin.random.Random
 
 private const val FILTER_CLICK_EVENT = "filter_click"
 private const val FILTER_CLICK_PARAM = "filter"
@@ -211,14 +214,6 @@ fun ExpenseList(
             }
         }
 
-        item {
-            bannerUnderFilter?.let {
-                FeatureBanner(it) {
-                    onAction(ExpenseAction.BannerClick(it))
-                }
-            }
-        }
-
         if (quickAddState !is QuickAddState.Hidden) {
             item {
                 Column {
@@ -273,12 +268,59 @@ fun ExpenseList(
                     color = MaterialTheme.colorScheme.outline,
                 )
             }
-            items(items = entry.value, key = { it.id ?: it.hashCode() }) { expense ->
-                ExpenseItem(
-                    group = group,
-                    expense = expense,
-                    onAction = onAction,
-                )
+            itemsIndexed(items = entry.value, key = { index, it -> it.id ?: it.hashCode() }) { index, expense ->
+                if (index == 2 && bannerUnderFilter != null) {
+                    Column {
+                        bannerUnderFilter?.let {
+                            FeatureBanner(
+                                banner =
+                                    when {
+                                        Random.nextFloat() < 0.50 -> Banner.AI_CAT
+                                        Random.nextFloat() < 0.80 -> Banner.QUICK_ADD
+                                        else -> Banner.IMG_GROUP
+                                    },
+                                colors =
+                                    when {
+                                        Random.nextFloat() < 0.50 ->
+                                            ListItemDefaults.colors(
+                                                containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                                                supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                                                leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                                                headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                                            )
+                                        Random.nextFloat() < 0.80 ->
+                                            ListItemDefaults.colors(
+                                                containerColor = MaterialTheme.extraColorScheme.warning,
+                                                supportingColor = MaterialTheme.extraColorScheme.onWarning,
+                                                leadingIconColor = MaterialTheme.extraColorScheme.onWarning,
+                                                headlineColor = MaterialTheme.extraColorScheme.onWarning,
+                                            )
+                                        else ->
+                                            ListItemDefaults.colors(
+                                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                                supportingColor = MaterialTheme.colorScheme.onErrorContainer,
+                                                leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                                                headlineColor = MaterialTheme.colorScheme.onErrorContainer,
+                                            )
+                                    },
+                            ) {
+                                onAction(ExpenseAction.BannerClick(it))
+                            }
+                        }
+
+                        ExpenseItem(
+                            group = group,
+                            expense = expense,
+                            onAction = onAction,
+                        )
+                    }
+                } else {
+                    ExpenseItem(
+                        group = group,
+                        expense = expense,
+                        onAction = onAction,
+                    )
+                }
             }
         }
         item {
