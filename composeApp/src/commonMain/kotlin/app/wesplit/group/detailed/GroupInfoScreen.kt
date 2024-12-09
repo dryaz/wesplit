@@ -1,12 +1,11 @@
 package app.wesplit.group.detailed
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -34,6 +33,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +53,7 @@ import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.group.ShareQrDialog
 import app.wesplit.group.detailed.balance.BalanceList
 import app.wesplit.group.detailed.expense.ExpenseAction
 import app.wesplit.group.detailed.expense.ExpenseSection
@@ -62,9 +63,9 @@ import app.wesplit.group.detailed.expense.QuickAddErrorState
 import app.wesplit.group.detailed.expense.QuickAddState
 import app.wesplit.group.detailed.expense.QuickAddValue
 import app.wesplit.group.detailed.expense.isEmpty
-import app.wesplit.participant.ParticipantAvatar
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.Banner
+import app.wesplit.ui.molecules.GroupHead
 import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import app.wesplit.ui.tutorial.TutorialItem
@@ -107,6 +108,8 @@ import split.composeapp.generated.resources.tutorial_step_settle_up_title
 
 private const val GROUP_OPEN_TRACE = "group_open"
 private const val GROUP_OPEN_TRACE_THRESHOLD = 10_000L
+
+private const val SHARE_QR_EVENT = "share_qr"
 
 sealed interface GroupInfoAction {
     data object Back : GroupInfoAction
@@ -178,6 +181,7 @@ fun GroupInfoScreen(
 ) {
     val data = viewModel.dataState.collectAsState()
     val trace = remember { Firebase.performance.newTrace(GROUP_OPEN_TRACE) }
+    val analyticsManager: AnalyticsManager = koinInject()
 
     LaunchedEffect(Unit) {
         trace.start()
@@ -230,6 +234,12 @@ fun GroupInfoScreen(
 
     var quickAddError: QuickAddErrorState by remember { mutableStateOf(QuickAddErrorState.NONE) }
 
+    var shareDialogVisibility by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(shareDialogVisibility) {
+        if (shareDialogVisibility) analyticsManager.track(SHARE_QR_EVENT)
+    }
+
     val quickAddCommitCallback = {
         if (quickAddData.title.isNullOrBlank()) {
             quickAddError = QuickAddErrorState.TITLE
@@ -253,6 +263,17 @@ fun GroupInfoScreen(
             }
         }
     }
+
+    val actionCallback: (GroupInfoAction) -> Unit =
+        remember {
+            {
+                if (it is GroupInfoAction.Share) {
+                    shareDialogVisibility = true
+                } else {
+                    onAction(it)
+                }
+            }
+        }
 
     Scaffold(
         modifier = modifier,
@@ -335,7 +356,7 @@ fun GroupInfoScreen(
                                 // TODO: Proper state handling, not just 1 groupinfo handler
                                 tutorialControl.onNext()
                                 (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                                    onAction.invoke(
+                                    actionCallback.invoke(
                                         GroupInfoAction.Share(group),
                                     )
                                 }
@@ -355,16 +376,8 @@ fun GroupInfoScreen(
             modifier = Modifier.fillMaxSize(1f).padding(top = padding.calculateTopPadding()),
             contentAlignment = Alignment.Center,
         ) {
-            val actionCallback: (GroupInfoAction) -> Unit =
-                remember {
-                    {
-                        if (it is GroupInfoAction.Share && !shareDelegate.supportPlatformSharing()) showLinkCopiedSnackbar()
-                        onAction(it)
-                    }
-                }
-
             when (val state = data.value) {
-                is GroupInfoViewModel.State.GroupInfo ->
+                is GroupInfoViewModel.State.GroupInfo -> {
                     GroupInfoContent(
                         group = state.group,
                         onAction = actionCallback,
@@ -385,6 +398,21 @@ fun GroupInfoScreen(
                             QuickAddAction.RequestPaywall -> onAction(GroupInfoAction.BannerClick(Banner.QUICK_ADD))
                         }
                     }
+
+                    AnimatedVisibility(visible = shareDialogVisibility) {
+                        ShareQrDialog(
+                            group = state.group,
+                            isFullScreen = true,
+                            onClose = {
+                                shareDialogVisibility = false
+                            },
+                            onShare = {
+                                shareDialogVisibility = false
+                                onAction(GroupInfoAction.Share(state.group))
+                            },
+                        )
+                    }
+                }
 
                 GroupInfoViewModel.State.Loading ->
                     Box(modifier = Modifier.fillMaxSize()) {
@@ -613,24 +641,10 @@ private fun GroupHeader(
     Row(
         modifier = Modifier.padding(16.dp).fillMaxWidth(1f),
     ) {
-        Column(
+        GroupHead(
             modifier = Modifier.weight(1f),
-        ) {
-            Text(
-                text = group.uiTitle(),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Box {
-                group.participants.forEachIndexed { index, participant ->
-                    ParticipantAvatar(
-                        modifier = Modifier.padding(start = 20.dp * index),
-                        participant = participant,
-                        size = 36.dp,
-                    )
-                }
-            }
-        }
+            group = group,
+        )
         IconButton(onClick = { onAction.invoke(GroupInfoAction.Edit(group)) }) {
             if (group.participants.any { it.isMe() }) {
                 Icon(

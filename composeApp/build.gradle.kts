@@ -141,6 +141,8 @@ kotlin {
                 implementation(libs.korge.core)
 
                 implementation(libs.koalaplot.core)
+
+                implementation("io.github.alexzhirkevich:qrose:1.0.1")
             }
 
             desktopMain.dependencies {
