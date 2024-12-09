@@ -75,6 +75,7 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Settings
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
@@ -633,7 +634,7 @@ private fun GroupHeader(
         IconButton(onClick = { onAction.invoke(GroupInfoAction.Edit(group)) }) {
             if (group.participants.any { it.isMe() }) {
                 Icon(
-                    AdaptiveIcons.Outlined.Edit,
+                    AdaptiveIcons.Outlined.Settings,
                     contentDescription = stringResource(Res.string.edit_group),
                 )
             } else {

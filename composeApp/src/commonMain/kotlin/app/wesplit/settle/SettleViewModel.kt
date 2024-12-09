@@ -10,7 +10,6 @@ import app.wesplit.domain.model.account.Account
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.account.Login
 import app.wesplit.domain.model.account.isPlus
-import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.currency.FxState
 import app.wesplit.domain.model.exception.UnauthorizeAcceessException
@@ -22,6 +21,7 @@ import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.domain.settle.SettleSuggestion
 import app.wesplit.domain.settle.SettleSuggestionUseCase
 import app.wesplit.routing.RightPane
+import app.wesplit.ui.molecules.FxToggleState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -144,12 +144,15 @@ class SettleViewModel(
 
             UiState.Data(
                 group = groupState.group,
-                selectedCurrency = uiSettings.selectedCurrency,
-                fxRates = fxState,
-                currencyCodesCollection = availableCurrencies,
+                fxToggleState =
+                    FxToggleState(
+                        fxRates = fxState,
+                        selectedCurrency = uiSettings.selectedCurrency,
+                        currencyCodesCollection = availableCurrencies,
+                        isRecalculateEnabled = uiSettings.isRecalculateEnabled,
+                    ),
                 participantBalances = participantBalance,
                 // TODO: Store in settings?
-                recalculationEnabled = uiSettings.isRecalculateEnabled,
                 suggestionsEnabled = uiSettings.isSuggestionsEnabled,
                 suggestions =
                     if (uiSettings.isSuggestionsEnabled) {
@@ -293,10 +296,7 @@ class SettleViewModel(
 
         data class Data(
             val group: Group,
-            val selectedCurrency: String,
-            val fxRates: FxState,
-            val recalculationEnabled: Boolean,
-            val currencyCodesCollection: CurrencyCodesCollection,
+            val fxToggleState: FxToggleState,
             val participantBalances: Balance,
             val suggestionsEnabled: Boolean,
             val suggestions: ApplicableSuggestion?,

@@ -6,12 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
@@ -47,14 +45,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.wesplit.ShareDelegate
-import app.wesplit.currency.CurrencyPicker
-import app.wesplit.domain.model.currency.CurrencyCodesCollection
-import app.wesplit.domain.model.currency.FxState
-import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.group.Group
 import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.PlusProtected
+import app.wesplit.ui.molecules.FxToggle
+import app.wesplit.ui.molecules.FxToggleAction
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Info
@@ -69,9 +65,7 @@ import split.composeapp.generated.resources.confirm_mark_all_settled
 import split.composeapp.generated.resources.confirm_no_wait
 import split.composeapp.generated.resources.confirm_yes_settle
 import split.composeapp.generated.resources.error
-import split.composeapp.generated.resources.fx_single_currency
 import split.composeapp.generated.resources.info_sign
-import split.composeapp.generated.resources.recalculate
 import split.composeapp.generated.resources.settle_all_balances
 import split.composeapp.generated.resources.settle_balances
 import split.composeapp.generated.resources.settled_all_expenses
@@ -180,13 +174,14 @@ private fun SettleContent(
             balance = state.participantBalances,
             appliedSuggestions = state.suggestions?.appliedSuggestions,
             footer = {
-                FxBlock(
-                    fxRates = state.fxRates,
-                    selectedCurrency = state.selectedCurrency,
-                    currencyCodesCollection = state.currencyCodesCollection,
-                    isRecalculateEnabled = state.recalculationEnabled,
-                    onCurrencyChanged = { viewModel.selectCurrency(it) },
-                    onToggle = { viewModel.toggleRecalculation(it) },
+                FxToggle(
+                    state = state.fxToggleState,
+                    onAction = {
+                        when (it) {
+                            is FxToggleAction.CurrencyChanged -> viewModel.selectCurrency(it.newCurrency)
+                            is FxToggleAction.Toggle -> viewModel.toggleRecalculation(it.isChecked)
+                        }
+                    },
                 )
                 SuggestionsBlock(
                     isSuggestionsEnabled = state.suggestionsEnabled,
@@ -278,86 +273,6 @@ private fun SettleContent(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-            },
-        )
-    }
-}
-
-@Composable
-private fun FxBlock(
-    fxRates: FxState,
-    selectedCurrency: String,
-    currencyCodesCollection: CurrencyCodesCollection,
-    isRecalculateEnabled: Boolean,
-    onCurrencyChanged: (String) -> Unit,
-    onToggle: (Boolean) -> Unit,
-) {
-    var showCurrencyPicker by remember { mutableStateOf(false) }
-    val protectCallback: (Boolean) -> Unit =
-        remember {
-            { onToggle(it) }
-        }
-
-    val clickabeModifier =
-        if (fxRates !is FxState.Loading) {
-            Modifier.clickable { protectCallback(!isRecalculateEnabled) }
-        } else {
-            Modifier
-        }
-
-    ListItem(
-        modifier = clickabeModifier.height(IntrinsicSize.Max),
-        leadingContent = {
-            when (fxRates) {
-                is FxState.Data,
-                is FxState.Error,
-                ->
-                    FilledTonalButton(
-                        modifier = Modifier.fillMaxHeight(1f),
-                        onClick = { showCurrencyPicker = true },
-                        enabled = fxRates !is FxState.Loading,
-                        shape = RoundedCornerShape(10.dp),
-                    ) {
-                        Text(selectedCurrency.currencySymbol())
-                    }
-
-                FxState.Loading ->
-                    Box(modifier = Modifier.size(52.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-            }
-        },
-        headlineContent = {
-            PlusProtected {
-                Text(
-                    text = stringResource(Res.string.recalculate),
-                )
-            }
-        },
-        supportingContent = {
-            Text(
-                text = stringResource(Res.string.fx_single_currency),
-            )
-        },
-        colors =
-            ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            ),
-        trailingContent = {
-            Switch(
-                checked = isRecalculateEnabled,
-                enabled = fxRates !is FxState.Loading,
-                onCheckedChange = { protectCallback(it) },
-            )
-        },
-    )
-
-    if (showCurrencyPicker) {
-        CurrencyPicker(
-            currencies = currencyCodesCollection,
-            onDismiss = { showCurrencyPicker = false },
-            onConfirm = { currency ->
-                onCurrencyChanged(currency)
             },
         )
     }
