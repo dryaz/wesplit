@@ -1352,9 +1352,15 @@ exports.updateUserSubscription = functions.firestore
     // Current server timestamp
     const currentTime = Timestamp.now();
 
-    // Calculate the expiration time (current time + 1 week)
-    const oneWeekInSeconds = 3 * 24 * 60 * 60; // 3 days in seconds
-    const expiresAt = Timestamp.fromMillis(currentTime.toMillis() + oneWeekInSeconds * 1000);
+    // Fetch the image resolution from Remote Config
+    const template = await getRemoteConfig(firebaseApp).getServerTemplate();
+    const config = template.evaluate()
+
+    const days = config.getNumber('free_trial_days') || 3;
+
+    // Calculate the expiration time
+    const trialDays = days * 24 * 60 * 60; // X days in seconds
+    const expiresAt = Timestamp.fromMillis(currentTime.toMillis() + trialDays * 1000);
 
     try {
       // Update the 'subs' field to 'plus' and add 'expiresAt'
