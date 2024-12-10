@@ -81,7 +81,7 @@ fun BalanceList(
             modifier = Modifier.verticalScroll(rememberScrollState()),
         ) {
             TutorialItem(
-                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[1], it) },
+                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
                 suffixModifier = Modifier.padding(bottom = 64.dp),
             ) { modifier ->
                 Card(
@@ -184,34 +184,30 @@ fun BalanceList(
                         LocalBalances()
                     }
 
-                    TutorialItem(
-                        onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[2], it) },
-                    ) { modifier ->
-                        AnimatedVisibility(
-                            modifier = modifier.fillMaxWidth(1f),
-                            visible = balance.participantsBalance.any { it.amounts.any { it.value != 0.0 } },
-                        ) {
-                            ListItem(
-                                modifier =
-                                    Modifier.fillMaxWidth().clickable {
-                                        if (balance.status == BalanceStatus.SYNC) onSettle()
-                                    }.then(
-                                        if (balance.status == BalanceStatus.SYNC) Modifier else Modifier.alpha(0.4f),
-                                    ),
-                                colors =
-                                    ListItemDefaults.colors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        headlineColor = MaterialTheme.colorScheme.onPrimary,
-                                    ),
-                                headlineContent = {
-                                    Text(
-                                        modifier = Modifier.fillMaxSize(1f),
-                                        text = stringResource(Res.string.settle_balances),
-                                        textAlign = TextAlign.Center,
-                                    )
-                                },
-                            )
-                        }
+                    AnimatedVisibility(
+                        modifier = Modifier.fillMaxWidth(1f),
+                        visible = balance.participantsBalance.any { it.amounts.any { it.value != 0.0 } },
+                    ) {
+                        ListItem(
+                            modifier =
+                                Modifier.fillMaxWidth().clickable {
+                                    if (balance.status == BalanceStatus.SYNC) onSettle()
+                                }.then(
+                                    if (balance.status == BalanceStatus.SYNC) Modifier else Modifier.alpha(0.4f),
+                                ),
+                            colors =
+                                ListItemDefaults.colors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    headlineColor = MaterialTheme.colorScheme.onPrimary,
+                                ),
+                            headlineContent = {
+                                Text(
+                                    modifier = Modifier.fillMaxSize(1f),
+                                    text = stringResource(Res.string.settle_balances),
+                                    textAlign = TextAlign.Center,
+                                )
+                            },
+                        )
                     }
                 }
             }

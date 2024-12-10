@@ -97,14 +97,8 @@ import split.composeapp.generated.resources.share_link_copied
 import split.composeapp.generated.resources.transactions
 import split.composeapp.generated.resources.tutorial_step_add_expense_description
 import split.composeapp.generated.resources.tutorial_step_add_expense_title
-import split.composeapp.generated.resources.tutorial_step_balances_tab_description
-import split.composeapp.generated.resources.tutorial_step_balances_tab_title
 import split.composeapp.generated.resources.tutorial_step_check_balances_description
 import split.composeapp.generated.resources.tutorial_step_check_balances_title
-import split.composeapp.generated.resources.tutorial_step_invite_friends_description
-import split.composeapp.generated.resources.tutorial_step_invite_friends_title
-import split.composeapp.generated.resources.tutorial_step_settle_up_description
-import split.composeapp.generated.resources.tutorial_step_settle_up_title
 
 private const val GROUP_OPEN_TRACE = "group_open"
 private const val GROUP_OPEN_TRACE_THRESHOLD = 10_000L
@@ -142,31 +136,10 @@ private val addExpenseTutorialStep =
 internal val checkBalanceTutorialStepFlow =
     listOf(
         TutorialStep(
-            title = Res.string.tutorial_step_balances_tab_title,
-            description = Res.string.tutorial_step_balances_tab_description,
-            onboardingStep = OnboardingStep.BALANCE_CHOOSER,
-            isModal = false,
-            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
-        ),
-        TutorialStep(
             title = Res.string.tutorial_step_check_balances_title,
             description = Res.string.tutorial_step_check_balances_description,
             onboardingStep = OnboardingStep.BALANCE_PREVIEW,
             isModal = true,
-            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
-        ),
-        TutorialStep(
-            title = Res.string.tutorial_step_settle_up_title,
-            description = Res.string.tutorial_step_settle_up_description,
-            onboardingStep = OnboardingStep.SETTLE_UP,
-            isModal = true,
-            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
-        ),
-        TutorialStep(
-            title = Res.string.tutorial_step_invite_friends_title,
-            description = Res.string.tutorial_step_invite_friends_description,
-            onboardingStep = OnboardingStep.SHARE_GROUP,
-            isModal = false,
             helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
         ),
     )
@@ -347,26 +320,22 @@ fun GroupInfoScreen(
                         }
                     }
 
-                    TutorialItem(
-                        onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[3], it) },
-                    ) { modifier ->
-                        IconButton(
-                            modifier = modifier,
-                            onClick = {
-                                // TODO: Proper state handling, not just 1 groupinfo handler
-                                tutorialControl.onNext()
-                                (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
-                                    actionCallback.invoke(
-                                        GroupInfoAction.Share(group),
-                                    )
-                                }
-                            },
-                        ) {
-                            Icon(
-                                AdaptiveIcons.Outlined.Share,
-                                contentDescription = stringResource(Res.string.share_group),
-                            )
-                        }
+                    IconButton(
+                        modifier = modifier,
+                        onClick = {
+                            // TODO: Proper state handling, not just 1 groupinfo handler
+                            tutorialControl.onNext()
+                            (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
+                                actionCallback.invoke(
+                                    GroupInfoAction.Share(group),
+                                )
+                            }
+                        },
+                    ) {
+                        Icon(
+                            AdaptiveIcons.Outlined.Share,
+                            contentDescription = stringResource(Res.string.share_group),
+                        )
                     }
                 })
             }
@@ -517,13 +486,9 @@ private fun SplitView(
             selectedTabIndex = 2,
         ) {
             Tab(selected = false, onClick = {}, text = { Text(stringResource(Res.string.transactions)) })
-            TutorialItem(
-                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
-            ) { modifier ->
-                Tab(modifier = modifier, selected = false, onClick = {
-                    tutorialControl.onNext()
-                }, text = { Text(stringResource(Res.string.balances)) })
-            }
+            Tab(modifier = Modifier, selected = false, onClick = {
+                tutorialControl.onNext()
+            }, text = { Text(stringResource(Res.string.balances)) })
         }
     }
     Row {
@@ -578,14 +543,10 @@ private fun PaginationView(
                 onClick = { selectedTabIndex = 0 },
                 text = { Text(stringResource(Res.string.transactions)) },
             )
-            TutorialItem(
-                onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[0], it) },
-            ) { modifier ->
-                Tab(modifier = modifier, selected = selectedTabIndex == 1, onClick = {
-                    tutorialControl.onNext()
-                    selectedTabIndex = 1
-                }, text = { Text(stringResource(Res.string.balances)) })
-            }
+            Tab(modifier = Modifier, selected = selectedTabIndex == 1, onClick = {
+                tutorialControl.onNext()
+                selectedTabIndex = 1
+            }, text = { Text(stringResource(Res.string.balances)) })
         }
 
         HorizontalPager(
@@ -637,7 +598,6 @@ private fun GroupHeader(
     group: Group,
     onAction: (GroupInfoAction) -> Unit,
 ) {
-    val tutorialControl = LocalTutorialControl.current
     Row(
         modifier = Modifier.padding(16.dp).fillMaxWidth(1f),
     ) {
@@ -659,21 +619,16 @@ private fun GroupHeader(
             }
         }
 
-        TutorialItem(
-            onPositioned = { tutorialControl.onPositionRecieved(checkBalanceTutorialStepFlow[3], it) },
-        ) { modifier ->
-            IconButton(
-                modifier = modifier,
-                onClick = {
-                    tutorialControl.onNext()
-                    onAction.invoke(GroupInfoAction.Share(group))
-                },
-            ) {
-                Icon(
-                    AdaptiveIcons.Outlined.Share,
-                    contentDescription = stringResource(Res.string.share_group),
-                )
-            }
+        IconButton(
+            modifier = Modifier,
+            onClick = {
+                onAction.invoke(GroupInfoAction.Share(group))
+            },
+        ) {
+            Icon(
+                AdaptiveIcons.Outlined.Share,
+                contentDescription = stringResource(Res.string.share_group),
+            )
         }
     }
 }

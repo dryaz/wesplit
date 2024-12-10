@@ -88,7 +88,6 @@ import app.wesplit.domain.model.expense.isSettled
 import app.wesplit.domain.model.expense.toInstant
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.uiTitle
-import app.wesplit.domain.model.user.OnboardingStep
 import app.wesplit.domain.model.user.isAuthorized
 import app.wesplit.expense.ExpenseDetailsViewModel.State.Loading.allParticipants
 import app.wesplit.expense.category.ExpenseCategoryPicker
@@ -98,10 +97,7 @@ import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.PlusProtected
-import app.wesplit.ui.tutorial.HelpOverlayPosition
 import app.wesplit.ui.tutorial.LocalTutorialControl
-import app.wesplit.ui.tutorial.TutorialItem
-import app.wesplit.ui.tutorial.TutorialStep
 import dev.gitlive.firebase.firestore.Timestamp
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Clear
@@ -155,16 +151,6 @@ import split.composeapp.generated.resources.select_payer_cd
 import split.composeapp.generated.resources.settings
 import split.composeapp.generated.resources.shares
 import split.composeapp.generated.resources.title_should_be_filled
-import split.composeapp.generated.resources.tutorial_step_choose_payer
-import split.composeapp.generated.resources.tutorial_step_choose_payer_description
-import split.composeapp.generated.resources.tutorial_step_date_currency_description
-import split.composeapp.generated.resources.tutorial_step_date_currency_setup
-import split.composeapp.generated.resources.tutorial_step_expense_title
-import split.composeapp.generated.resources.tutorial_step_expense_title_description
-import split.composeapp.generated.resources.tutorial_step_put_amount
-import split.composeapp.generated.resources.tutorial_step_put_amount_description
-import split.composeapp.generated.resources.tutorial_step_save_expense
-import split.composeapp.generated.resources.tutorial_step_save_expense_description
 import split.composeapp.generated.resources.undistributed
 import split.composeapp.generated.resources.we_split_in
 import kotlin.math.roundToInt
@@ -181,47 +167,6 @@ sealed interface AddExpenseAction {
 private sealed interface AddExpenseTollbarAction {
     data object Commit : AddExpenseTollbarAction
 }
-
-internal val checkBalanceTutorialStepFlow =
-    listOf(
-        TutorialStep(
-            title = Res.string.tutorial_step_expense_title,
-            description = Res.string.tutorial_step_expense_title_description,
-            onboardingStep = OnboardingStep.EXPENSE_TITLE,
-            isModal = false,
-            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
-        ),
-        TutorialStep(
-            title = Res.string.tutorial_step_date_currency_setup,
-            description = Res.string.tutorial_step_date_currency_description,
-            onboardingStep = OnboardingStep.EXPENSE_DATE_CURRENCY,
-            isModal = true,
-            helpOverlayPosition = HelpOverlayPosition.BOTTOM_RIGHT,
-        ),
-        TutorialStep(
-            title = Res.string.tutorial_step_put_amount,
-            description = Res.string.tutorial_step_put_amount_description,
-            onboardingStep = OnboardingStep.EXPENSE_AMOUNT,
-            isModal = false,
-            helpOverlayPosition = HelpOverlayPosition.BOTTOM_LEFT,
-        ),
-        TutorialStep(
-            title = Res.string.tutorial_step_choose_payer,
-            description = Res.string.tutorial_step_choose_payer_description,
-            onboardingStep = OnboardingStep.EXPENSE_PAYER,
-            isModal = true,
-            helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
-        ),
-        TutorialStep(
-            title = Res.string.tutorial_step_save_expense,
-            description = Res.string.tutorial_step_save_expense_description,
-            onboardingStep = OnboardingStep.EXPENSE_SAVE,
-            isModal = false,
-            helpOverlayPosition = HelpOverlayPosition.TOP_LEFT,
-        ),
-    )
-
-private fun getStep(type: OnboardingStep) = checkBalanceTutorialStepFlow.first { it.onboardingStep == type }
 
 // TODO: Clear hardcoded strings
 @Composable
@@ -249,22 +194,18 @@ fun ExpenseDetailsScreen(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         floatingActionButton = {
-            TutorialItem(
-                onPositioned = { tutorialControl.onPositionRecieved(getStep(OnboardingStep.EXPENSE_SAVE), it) },
-            ) { modifier ->
-                FloatingActionButton(
-                    modifier = modifier,
-                    onClick = {
-                        tutorialControl.onNext()
-                        commit()
-                        // TODO: Show error in case of it not yet ready?
-                    },
-                ) {
-                    Icon(
-                        AdaptiveIcons.Outlined.Done,
-                        contentDescription = stringResource(Res.string.add_expense_to_group),
-                    )
-                }
+            FloatingActionButton(
+                modifier = modifier,
+                onClick = {
+                    tutorialControl.onNext()
+                    commit()
+                    // TODO: Show error in case of it not yet ready?
+                },
+            ) {
+                Icon(
+                    AdaptiveIcons.Outlined.Done,
+                    contentDescription = stringResource(Res.string.add_expense_to_group),
+                )
             }
         },
         topBar = {
@@ -294,10 +235,6 @@ fun ExpenseDetailsScreen(
             // TODO: Shimmer?
             ExpenseDetailsViewModel.State.Loading -> Text(stringResource(Res.string.loading))
         }
-    }
-
-    LaunchedEffect(Unit) {
-        tutorialControl.stepRequest(checkBalanceTutorialStepFlow)
     }
 }
 
@@ -889,55 +826,52 @@ private fun ExpenseDetails(
         modifier = Modifier.widthIn(max = 450.dp).fillMaxWidth(1f).padding(horizontal = 16.dp),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-        TutorialItem(
-            onPositioned = { tutorialControl.onPositionRecieved(getStep(OnboardingStep.EXPENSE_TITLE), it) },
-        ) { modifier ->
-            Row(
-                modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(1f).padding(horizontal = 16.dp),
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(1f).padding(horizontal = 16.dp),
+        ) {
+            FilledTonalButton(
+                modifier = Modifier.fillMaxHeight(0.8f),
+                onClick = { showCategoryPicker = true },
+                enabled = data.expense.allowedToChange(),
+                shape = RoundedCornerShape(10.dp),
             ) {
-                FilledTonalButton(
-                    modifier = Modifier.fillMaxHeight(0.8f),
-                    onClick = { showCategoryPicker = true },
-                    enabled = data.expense.allowedToChange(),
-                    shape = RoundedCornerShape(10.dp),
-                ) {
-                    data.expense.category.Icon()
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedTextField(
-                    modifier = modifier.fillMaxWidth(1f).focusRequester(focusRequester),
-                    singleLine = true,
-                    enabled = data.expense.allowedToChange(),
-                    value = data.expense.title,
-                    isError = data.expense.title.isNullOrBlank(),
-                    keyboardOptions =
-                        KeyboardOptions(
-                            imeAction = ImeAction.Next,
-                            keyboardType = KeyboardType.Text,
-                            capitalization = KeyboardCapitalization.Sentences,
-                        ),
-                    supportingText = {
-                        if (data.expense.title.isNullOrBlank()) Text(stringResource(Res.string.title_should_be_filled))
-                    },
-                    onValueChange = { value -> onUpdated(UpdateAction.Title(value)) },
-                    prefix = {
-                        Row {
-                            Icon(
-                                imageVector = AdaptiveIcons.Outlined.Create,
-                                contentDescription = stringResource(Res.string.expense_title),
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                        }
-                    },
-                    placeholder = {
-                        Text(
-                            text = stringResource(Res.string.expense_title),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    },
-                )
+                data.expense.category.Icon()
             }
+            Spacer(modifier = Modifier.width(8.dp))
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(1f).focusRequester(focusRequester),
+                singleLine = true,
+                enabled = data.expense.allowedToChange(),
+                value = data.expense.title,
+                isError = data.expense.title.isNullOrBlank(),
+                keyboardOptions =
+                    KeyboardOptions(
+                        imeAction = ImeAction.Next,
+                        keyboardType = KeyboardType.Text,
+                        capitalization = KeyboardCapitalization.Sentences,
+                    ),
+                supportingText = {
+                    if (data.expense.title.isNullOrBlank()) Text(stringResource(Res.string.title_should_be_filled))
+                },
+                onValueChange = { value -> onUpdated(UpdateAction.Title(value)) },
+                prefix = {
+                    Row {
+                        Icon(
+                            imageVector = AdaptiveIcons.Outlined.Create,
+                            contentDescription = stringResource(Res.string.expense_title),
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                },
+                placeholder = {
+                    Text(
+                        text = stringResource(Res.string.expense_title),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                },
+            )
         }
+
         Spacer(modifier = Modifier.height(8.dp))
         AnimatedVisibility(
             modifier = Modifier.padding(bottom = 16.dp),
@@ -952,80 +886,73 @@ private fun ExpenseDetails(
         Row(
             modifier = Modifier.height(IntrinsicSize.Max).fillMaxWidth(1f).padding(horizontal = 16.dp),
         ) {
-            TutorialItem(
-                onPositioned = { tutorialControl.onPositionRecieved(getStep(OnboardingStep.EXPENSE_DATE_CURRENCY), it) },
-            ) { modifier ->
-                Row(
-                    modifier = modifier.height(IntrinsicSize.Max),
+            Row(
+                modifier = Modifier.height(IntrinsicSize.Max),
+            ) {
+                FilledTonalButton(
+                    modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
+                    enabled = data.expense.allowedToChange(),
+                    onClick = { showDatePicker = !showDatePicker },
+                    shape = RoundedCornerShape(10.dp),
                 ) {
-                    FilledTonalButton(
-                        modifier = Modifier.minimumInteractiveComponentSize().fillMaxHeight(1f),
-                        enabled = data.expense.allowedToChange(),
-                        onClick = { showDatePicker = !showDatePicker },
-                        shape = RoundedCornerShape(10.dp),
-                    ) {
-                        val expenseDate = data.expense.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = expenseDate.month.name.substring(0, 3),
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                            Text(
-                                text = expenseDate.dayOfMonth.toString().padStart(2, '0'),
-                                style = MaterialTheme.typography.titleLarge,
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    FilledTonalButton(
-                        modifier = Modifier.fillMaxHeight(1f),
-                        onClick = { showCurrencyPicker = true },
-                        enabled = data.expense.allowedToChange(),
-                        shape = RoundedCornerShape(10.dp),
-                    ) {
-                        Text(data.expense.totalAmount.currencyCode.currencySymbol())
+                    val expenseDate = data.expense.date.toInstant().toLocalDateTime(TimeZone.currentSystemDefault())
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = expenseDate.month.name.substring(0, 3),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        Text(
+                            text = expenseDate.dayOfMonth.toString().padStart(2, '0'),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
                     }
                 }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            TutorialItem(
-                onPositioned = { tutorialControl.onPositionRecieved(getStep(OnboardingStep.EXPENSE_AMOUNT), it) },
-            ) { modifier ->
-                TextField(
-                    modifier = modifier.fillMaxWidth(1f),
-                    singleLine = true,
-                    value = amount,
+                Spacer(modifier = Modifier.width(8.dp))
+                FilledTonalButton(
+                    modifier = Modifier.fillMaxHeight(1f),
+                    onClick = { showCurrencyPicker = true },
                     enabled = data.expense.allowedToChange(),
-                    keyboardOptions =
-                        KeyboardOptions(
-                            imeAction = ImeAction.Done,
-                            keyboardType = KeyboardType.Decimal,
-                        ),
-                    isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
-                    onValueChange = { newValue ->
-                        val newFilteredValue = newValue.filterDoubleInput()
-                        val isEndingWithDot = newFilteredValue.endsWith(".")
-                        var needUpdate = false
-
-                        if (!isEndingWithDot) {
-                            needUpdate = true
-                        }
-
-                        amount = newFilteredValue
-
-                        if (needUpdate) {
-                            val doubleValue = newFilteredValue.toDoubleOrNull() ?: 0.0
-                            onUpdated(UpdateAction.TotalAmount(doubleValue, data.expense.totalAmount.currencyCode))
-                        }
-                    },
-                    placeholder = {
-                        Text(
-                            text = stringResource(Res.string.amount),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    },
-                )
+                    shape = RoundedCornerShape(10.dp),
+                ) {
+                    Text(data.expense.totalAmount.currencyCode.currencySymbol())
+                }
             }
+
+            Spacer(modifier = Modifier.width(16.dp))
+            TextField(
+                modifier = Modifier.fillMaxWidth(1f),
+                singleLine = true,
+                value = amount,
+                enabled = data.expense.allowedToChange(),
+                keyboardOptions =
+                    KeyboardOptions(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Decimal,
+                    ),
+                isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
+                onValueChange = { newValue ->
+                    val newFilteredValue = newValue.filterDoubleInput()
+                    val isEndingWithDot = newFilteredValue.endsWith(".")
+                    var needUpdate = false
+
+                    if (!isEndingWithDot) {
+                        needUpdate = true
+                    }
+
+                    amount = newFilteredValue
+
+                    if (needUpdate) {
+                        val doubleValue = newFilteredValue.toDoubleOrNull() ?: 0.0
+                        onUpdated(UpdateAction.TotalAmount(doubleValue, data.expense.totalAmount.currencyCode))
+                    }
+                },
+                placeholder = {
+                    Text(
+                        text = stringResource(Res.string.amount),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                },
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -1038,22 +965,18 @@ private fun ExpenseDetails(
 
         var payerSelection by remember { mutableStateOf(false) }
 
-        TutorialItem(
-            onPositioned = { tutorialControl.onPositionRecieved(getStep(OnboardingStep.EXPENSE_PAYER), it) },
-        ) { modifier ->
-            ParticipantListItem(
-                modifier = modifier,
-                participant = data.expense.payedBy,
-                enabled = data.expense.allowedToChange(),
-                onClick = { payerSelection = true },
-                action = {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_down),
-                        contentDescription = stringResource(Res.string.select_payer_cd),
-                    )
-                },
-            )
-        }
+        ParticipantListItem(
+            modifier = Modifier,
+            participant = data.expense.payedBy,
+            enabled = data.expense.allowedToChange(),
+            onClick = { payerSelection = true },
+            action = {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_down),
+                    contentDescription = stringResource(Res.string.select_payer_cd),
+                )
+            },
+        )
 
         PayerChooser(
             expanded = payerSelection,
