@@ -75,7 +75,6 @@ import dev.gitlive.firebase.perf.performance
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
-import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Settings
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
@@ -309,7 +308,7 @@ fun GroupInfoScreen(
                     }) {
                         if (isMeParticipating) {
                             Icon(
-                                AdaptiveIcons.Outlined.Edit,
+                                AdaptiveIcons.Outlined.Settings,
                                 contentDescription = stringResource(Res.string.edit_group),
                             )
                         } else {
