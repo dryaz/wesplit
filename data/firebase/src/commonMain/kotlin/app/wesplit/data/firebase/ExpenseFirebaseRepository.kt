@@ -116,7 +116,7 @@ class ExpenseFirebaseRepository(
             analyticsManager.track(eventName)
 
             val groupDocRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId)
-            val group = groupDocRef.get(Source.CACHE).data(Group.serializer(), ServerTimestampBehavior.ESTIMATE)
+            val group = groupDocRef.get(Source.CACHE).data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(id = groupId)
             shortcutDelegate.push(ShortcutAction.NewExpense(group))
 
             val batch = Firebase.firestore.batch()
