@@ -150,6 +150,8 @@ fun App(
                     else -> analyticsManager.log("Unexpected navigation to $link", LogLevel.WARNING)
                 }
             }
+
+            deepLinkHandler.consume()
         }
     }
 }

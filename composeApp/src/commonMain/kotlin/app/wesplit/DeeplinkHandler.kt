@@ -9,4 +9,8 @@ class DeepLinkHandler {
     fun handleDeeplink(url: String) {
         deeplink.update { url }
     }
+
+    fun consume() {
+        deeplink.update { "" }
+    }
 }
