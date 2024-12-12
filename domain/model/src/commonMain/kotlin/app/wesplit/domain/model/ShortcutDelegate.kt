@@ -1,4 +1,4 @@
-package app.wesplit
+package app.wesplit.domain.model
 
 import app.wesplit.domain.model.group.Group
 

@@ -4,10 +4,9 @@ import app.wesplit.App
 import app.wesplit.DeepLinkHandler
 import app.wesplit.PermissionsDelegate
 import app.wesplit.ShareDelegate
-import app.wesplit.ShortcutDelegate
-import app.wesplit.ShortcutDelegateNotSupport
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
+import app.wesplit.domain.model.ShortcutDelegate
 import app.wesplit.domain.model.account.LoginDelegate
 import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
@@ -30,7 +29,7 @@ fun mainViewController(iosDiHelper: IosDiHelper): UIViewController {
                 single<IosDiHelper> { iosDiHelper }
                 single<PermissionsDelegate> { IosPermissionDelegate }
                 single<ShareDelegate> { iosDiHelper.shareDelegate }
-                single<ShortcutDelegate> { ShortcutDelegateNotSupport }
+                single<ShortcutDelegate> { ShortcutIosDelegate() }
                 single<DeepLinkHandler> { iosDiHelper.deepLinkHandler }
                 single<BillingIosNativeDelegate> { iosDiHelper.billingDelegate }
                 single<BillingDelegate> { BillingIosDelegate(get()) }

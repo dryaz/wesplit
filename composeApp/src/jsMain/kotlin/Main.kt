@@ -6,11 +6,11 @@ import app.wesplit.DefaultPermissionDelegate
 import app.wesplit.DefaultShareDelegate
 import app.wesplit.PermissionsDelegate
 import app.wesplit.ShareDelegate
-import app.wesplit.ShortcutDelegate
-import app.wesplit.ShortcutDelegateNotSupport
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.NotSupportedAppReviewManager
+import app.wesplit.domain.model.ShortcutDelegate
+import app.wesplit.domain.model.ShortcutDelegateNotSupport
 import app.wesplit.domain.model.account.LoginDelegate
 import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.paywall.UnsupportedBiilingDelegate

@@ -3,8 +3,6 @@ package app.wesplit.expense
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.wesplit.ShortcutAction
-import app.wesplit.ShortcutDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.LogLevel
@@ -105,7 +103,6 @@ class ExpenseDetailsViewModel(
     private val expenseRepository: ExpenseRepository,
     private val currencyRepository: CurrencyRepository,
     private val analyticsManager: AnalyticsManager,
-    private val shortcutDelegate: ShortcutDelegate,
     private val settings: Settings,
     private val appReviewManager: AppReviewManager,
     private val userRepository: UserRepository,
@@ -178,9 +175,6 @@ class ExpenseDetailsViewModel(
                     }
 
                     val existingExpense = expenseResult.getOrNull()
-                    if (existingExpense == null) {
-                        shortcutDelegate.push(ShortcutAction.NewExpense(group))
-                    }
 
                     val currencyCode = currencyFlow.value.lru.first()
                     val expense =

@@ -4,18 +4,22 @@ import app.wesplit.Permission
 import app.wesplit.PermissionsDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.LogLevel
+import app.wesplit.domain.model.ShortcutAction
+import app.wesplit.domain.model.ShortcutDelegate
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.currency.FxState
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.expense.ExpenseStatus
+import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.user.Setting
 import app.wesplit.domain.model.user.UserRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.ServerTimestampBehavior
+import dev.gitlive.firebase.firestore.Source
 import dev.gitlive.firebase.firestore.Timestamp
 import dev.gitlive.firebase.firestore.WriteBatch
 import dev.gitlive.firebase.firestore.firestore
@@ -52,6 +56,7 @@ class ExpenseFirebaseRepository(
     private val analyticsManager: AnalyticsManager,
     private val permissionsDelegate: PermissionsDelegate,
     private val currencyRepository: CurrencyRepository,
+    private val shortcutDelegate: ShortcutDelegate,
 ) : ExpenseRepository {
     // TODO: Check if firebase get local balances or maybe need to cache expenses by group id in order
     //  not to fetch this multiple times, e.g. for showing trxs and for computing balances.
@@ -109,6 +114,10 @@ class ExpenseFirebaseRepository(
             val eventName = if (expenseId != null) EXPENSE_UPDATE_EVENT else EXPENSE_CREATE_EVENT
 
             analyticsManager.track(eventName)
+
+            val groupDocRef = Firebase.firestore.collection(GROUP_COLLECTION).document(groupId)
+            val group = groupDocRef.get(Source.CACHE).data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(id = groupId)
+            shortcutDelegate.push(ShortcutAction.NewExpense(group))
 
             val batch = Firebase.firestore.batch()
             if (expenseId != null) {

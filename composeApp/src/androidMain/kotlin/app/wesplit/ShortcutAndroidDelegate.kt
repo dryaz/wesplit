@@ -5,6 +5,8 @@ import android.content.Intent
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import app.wesplit.domain.model.ShortcutAction
+import app.wesplit.domain.model.ShortcutDelegate
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.uiTitle
 import app.wesplit.routing.DeeplinkAction

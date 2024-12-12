@@ -35,7 +35,6 @@ import app.wesplit.DoublePaneNavigation
 import app.wesplit.NavigationMenuItem
 import app.wesplit.ShareData
 import app.wesplit.ShareDelegate
-import app.wesplit.ShortcutDelegate
 import app.wesplit.account.ProfileAction
 import app.wesplit.account.ProfileRoute
 import app.wesplit.account.ProfileViewModel
@@ -872,7 +871,6 @@ private fun Navigation(
                 ) {
                     // TODO: Accorgin ti github koin starts to support navigation args in savedstate in VM, POC
                     val groupRepository: GroupRepository = koinInject()
-                    val shortcutDelegate: ShortcutDelegate = koinInject()
                     val settings: Settings = koinInject()
                     val appReview: AppReviewManager = koinInject()
 
@@ -907,7 +905,6 @@ private fun Navigation(
                                 expenseRepository,
                                 currencyRepository,
                                 analyticsManager,
-                                shortcutDelegate,
                                 settings,
                                 appReview,
                                 userRepository,
