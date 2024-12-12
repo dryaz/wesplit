@@ -31,12 +31,25 @@ private fun createAddExpenseShortcut(group: Group) {
             localizedTitle = "Add Expense to ${group.uiTitle()}",
             localizedSubtitle = null,
             icon = UIApplicationShortcutIcon.iconWithType(UIApplicationShortcutIconType.UIApplicationShortcutIconTypeAdd),
-            userInfo = mapOf("group_deeplink" to NSString.create(string = getDeeplink(group.id))),
+            userInfo = mapOf(
+                NSString.create(string = "group_deeplink") to NSString.create(string = getDeeplink(group.id))
+            )
         )
 
-    // If you have existing shortcuts, append to them
+    // Retrieve existing shortcuts or initialize an empty list
     val existingShortcuts = UIApplication.sharedApplication.shortcutItems?.toMutableList() ?: mutableListOf()
+
+    // Remove any existing shortcut with the same type
+    // existingShortcuts.removeAll { it.type == shortcutItem.type }
+    existingShortcuts.clear()
+
+    // Add the new shortcut
     existingShortcuts.add(shortcutItem)
+
+    // Ensure the maximum number of shortcuts is 4 by removing the oldest ones if necessary
+    if (existingShortcuts.size > 4) {
+        existingShortcuts.removeFirst()
+    }
 
     UIApplication.sharedApplication.shortcutItems = existingShortcuts
 }

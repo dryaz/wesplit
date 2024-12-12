@@ -83,8 +83,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     performActionFor shortcutItem: UIApplicationShortcutItem,
     completionHandler: @escaping (Bool) -> Void
   ) {
-    // тут нужно вызвать действие по диплинку в shortcutItem
-    //deeplinkHandler.handleDeeplink(url: shortcutItem. url.absoluteString)
+    if let userInfo = shortcutItem.userInfo,
+       let value = userInfo["group_deeplink"] as? String?,
+       let deeplink = value {
+      deeplinkHandler.handleDeeplink(url: deeplink)
+    }
   }
 }
 
