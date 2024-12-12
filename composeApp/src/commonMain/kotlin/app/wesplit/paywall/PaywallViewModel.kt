@@ -5,6 +5,8 @@ import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.KotlinPlatform
+import app.wesplit.domain.model.currentPlatform
 import app.wesplit.domain.model.experiment.Experiment
 import app.wesplit.domain.model.experiment.ExperimentRepository
 import app.wesplit.domain.model.paywall.Offer
@@ -42,12 +44,16 @@ class PaywallViewModel(
     val state: StateFlow<State>
         get() = _state
 
+    val configState: StateFlow<ConfigState>
+        get() = _configState
+
     val event: Flow<Event>
         get() = _event.receiveAsFlow()
 
     private val coroutinScope = CoroutineScope(coroutineDispatcher)
 
     private val _state = MutableStateFlow<State>(State.Loading)
+    private val _configState = MutableStateFlow<ConfigState>(ConfigState.Loading)
     private val _event = Channel<Event>(Channel.BUFFERED)
 
     init {
@@ -56,6 +62,36 @@ class PaywallViewModel(
 
     private fun refresh() =
         coroutinScope.launch {
+            val paywallTypeConfig = experimentRepository.get(Experiment.PAYWALL_TYPE)
+            val paywallPricingPlacementConfig = experimentRepository.get(Experiment.PAYWALL_PRICE_PLACEMENT)
+
+            val paywallType =
+                when (currentPlatform) {
+                    is KotlinPlatform.Mobile -> PaywallType.entries.firstOrNull { it.value == paywallTypeConfig } ?: PaywallType.LIST
+                    else -> PaywallType.LIST
+                }
+
+            val paywallPricingPlacement =
+                when (currentPlatform) {
+                    is KotlinPlatform.Mobile ->
+                        PaywallPricingPlacement.entries.firstOrNull {
+                            it.value == paywallPricingPlacementConfig
+                        } ?: PaywallPricingPlacement.TOP
+                    else -> PaywallPricingPlacement.TOP
+                }
+
+            _configState.update {
+                ConfigState.Config(
+                    paywallType = paywallType,
+                    paywallPricingPlacement =
+                        if (paywallType == PaywallType.CAROUSEL) {
+                            PaywallPricingPlacement.BOTTOM
+                        } else {
+                            paywallPricingPlacement
+                        },
+                )
+            }
+
             if (userRepository.get().value?.isPlus() == true) {
                 _state.update { State.AlreadySubscribed }
                 return@launch
@@ -69,11 +105,16 @@ class PaywallViewModel(
                 _state.update { State.Error }
                 return@launch
             }
+
             val paywallItemTypeConfig = experimentRepository.get(Experiment.PAYWALL_ITEM_TYPE)
-            println("paywallItemTypeConfig: $paywallItemTypeConfig")
             val paywallItemType = PaywallItemType.entries.firstOrNull { it.value == paywallItemTypeConfig } ?: PaywallItemType.PRICE_FOCUS
-            println("paywallItemType: $paywallItemType")
-            _state.update { State.Data(result.getOrThrow(), paywallItemType) }
+
+            _state.update {
+                State.Data(
+                    products = result.getOrThrow(),
+                    paywallItemType = paywallItemType,
+                )
+            }
         }
 
     fun subscribe(subscription: Subscription) {
@@ -113,6 +154,15 @@ class PaywallViewModel(
         paywallRepository.openPromoRedeem()
     }
 
+    sealed interface ConfigState {
+        data object Loading : ConfigState
+
+        data class Config(
+            val paywallType: PaywallType,
+            val paywallPricingPlacement: PaywallPricingPlacement,
+        ) : ConfigState
+    }
+
     sealed interface State {
         data object Loading : State
 
@@ -142,5 +192,10 @@ class PaywallViewModel(
     enum class PaywallItemType(val value: Long) {
         PRICE_FOCUS(0),
         FREE_PERIOD_FOCUS(1),
+    }
+
+    enum class PaywallPricingPlacement(val value: Long) {
+        TOP(0),
+        BOTTOM(1),
     }
 }

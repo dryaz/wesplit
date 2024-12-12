@@ -2,6 +2,7 @@ package app.wesplit.paywall
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +21,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -125,7 +129,6 @@ import split.composeapp.generated.resources.web_billing_in_progress
 import split.composeapp.generated.resources.week_plus
 import split.composeapp.generated.resources.what_you_get_with
 import split.composeapp.generated.resources.year_plus
-import kotlin.random.Random
 
 private const val PAYWALL_SCREEN_TIME = "paywall_time"
 
@@ -144,6 +147,7 @@ fun PaywallRoute(
     val userRepository: UserRepository = koinInject()
     val userState = userRepository.get().collectAsState()
     val productsState = viewModel.state.collectAsState()
+    val configState = viewModel.configState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var isPendingPurchase by remember { mutableStateOf(false) }
@@ -217,6 +221,7 @@ fun PaywallRoute(
             modifier = Modifier.padding(paddings),
             user = userState.value,
             productState = productsState.value,
+            configState = configState.value,
             isPendingPurchase = isPendingPurchase,
             onAction = onAction,
         ) {
@@ -281,32 +286,25 @@ fun PaywallRoute(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalAdaptiveApi::class)
 @Composable
 fun PaywallScreen(
     modifier: Modifier = Modifier,
     user: User?,
+    configState: PaywallViewModel.ConfigState,
     productState: PaywallViewModel.State,
     isPendingPurchase: Boolean,
     onAction: (PaywallAction) -> Unit,
     onSubscribe: (Subscription) -> Unit,
 ) {
-    val trailingIcon =
-        if (user?.isPlus() == true) {
-            AdaptiveIcons.Outlined.Done
-        } else {
-            AdaptiveIcons.Outlined.Lock
-        }
-
     var selected by remember {
         mutableStateOf<Subscription?>(null)
     }
 
-    var isOnTopShow: Boolean by remember {
-        mutableStateOf(
-            Random.nextFloat() < 0.25f,
-        )
-    }
+    val isOnTopShow: Boolean =
+        remember(configState) {
+            (configState as? PaywallViewModel.ConfigState.Config)?.paywallPricingPlacement == PaywallViewModel.PaywallPricingPlacement.TOP
+        }
 
     LaunchedEffect(productState) {
         selected = (productState as? PaywallViewModel.State.Data)?.products?.sortedBy { it.first.monthlyPrice.value }?.get(0)?.first
@@ -345,61 +343,14 @@ fun PaywallScreen(
             }
         }
 
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(1f).padding(vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            features.map { feature ->
-                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Card(
-                        colors =
-                            CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                            ),
-                        modifier = Modifier.widthIn(max = 360.dp),
-                    ) {
-                        Image(
-                            modifier = Modifier.fillMaxWidth(1f).aspectRatio(9f / 5f),
-                            painter = painterResource(feature.image),
-                            contentDescription = stringResource(feature.title),
-                        )
-                        ListItem(
-                            modifier = Modifier.fillMaxWidth(1f),
-                            colors =
-                                ListItemDefaults.colors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                                ),
-                            trailingContent = {
-                                Icon(
-                                    modifier = Modifier.minimumInteractiveComponentSize(),
-                                    imageVector = trailingIcon,
-                                    contentDescription = stringResource(Res.string.locked_feature),
-                                )
-                            },
-                            headlineContent = {
-                                Text(
-                                    text = stringResource(feature.title),
-                                )
-                            },
-                            supportingContent = {
-                                Text(
-                                    text = stringResource(feature.shortDescr),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = MaterialTheme.colorScheme.outline,
-                                )
-                            },
-                        )
-
-                        Text(
-                            modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
-                            text = stringResource(feature.fullDescr),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+        when (configState) {
+            is PaywallViewModel.ConfigState.Config ->
+                when (configState.paywallType) {
+                    PaywallViewModel.PaywallType.LIST -> FeatureList(user.isPlus() == true)
+                    PaywallViewModel.PaywallType.CAROUSEL -> FeatureCarousel(user.isPlus() == true)
                 }
-            }
+
+            PaywallViewModel.ConfigState.Loading -> AdaptiveCircularProgressIndicator()
         }
 
         if (!isOnTopShow) {
@@ -416,6 +367,184 @@ fun PaywallScreen(
                 onSubscribe(it)
             }
             Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+fun FeatureCarousel(isPlus: Boolean) {
+    val trailingIcon =
+        if (isPlus) {
+            AdaptiveIcons.Outlined.Done
+        } else {
+            AdaptiveIcons.Outlined.Lock
+        }
+
+    val pagerState = rememberPagerState(pageCount = { features.size }) // For tracking the currently displayed page
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        // LazyRow for the carousel
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+        ) { page ->
+            Box(
+                modifier =
+                    Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+            ) {
+                Card(
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        ),
+                    modifier = Modifier.widthIn(max = 360.dp),
+                ) {
+                    Column {
+                        Image(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(9f / 5f),
+                            painter = painterResource(features[page].image),
+                            contentDescription = stringResource(features[page].title),
+                        )
+                        ListItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors =
+                                ListItemDefaults.colors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                ),
+                            trailingContent = {
+                                Icon(
+                                    modifier = Modifier.minimumInteractiveComponentSize(),
+                                    imageVector = trailingIcon,
+                                    contentDescription = stringResource(Res.string.locked_feature),
+                                )
+                            },
+                            headlineContent = {
+                                Text(
+                                    text = stringResource(features[page].title),
+                                )
+                            },
+                            supportingContent = {
+                                Text(
+                                    text = stringResource(features[page].shortDescr),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            },
+                        )
+                        Text(
+                            modifier =
+                                Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 16.dp),
+                            text = stringResource(features[page].fullDescr),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+
+        // Dot indicator
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            repeat(features.size) { index ->
+                Box(
+                    modifier =
+                        Modifier
+                            .height(16.dp)
+                            .width(if (pagerState.currentPage == index) 24.dp else 16.dp)
+                            .padding(4.dp)
+                            .background(
+                                color =
+                                    if (pagerState.currentPage == index) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.outlineVariant
+                                    },
+                                shape = CircleShape,
+                            ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalLayoutApi::class)
+private fun FeatureList(isPlus: Boolean) {
+    val trailingIcon =
+        if (isPlus) {
+            AdaptiveIcons.Outlined.Done
+        } else {
+            AdaptiveIcons.Outlined.Lock
+        }
+
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(1f).padding(vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        features.map { feature ->
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Card(
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        ),
+                    modifier = Modifier.widthIn(max = 360.dp),
+                ) {
+                    Image(
+                        modifier = Modifier.fillMaxWidth(1f).aspectRatio(9f / 5f),
+                        painter = painterResource(feature.image),
+                        contentDescription = stringResource(feature.title),
+                    )
+                    ListItem(
+                        modifier = Modifier.fillMaxWidth(1f),
+                        colors =
+                            ListItemDefaults.colors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                            ),
+                        trailingContent = {
+                            Icon(
+                                modifier = Modifier.minimumInteractiveComponentSize(),
+                                imageVector = trailingIcon,
+                                contentDescription = stringResource(Res.string.locked_feature),
+                            )
+                        },
+                        headlineContent = {
+                            Text(
+                                text = stringResource(feature.title),
+                            )
+                        },
+                        supportingContent = {
+                            Text(
+                                text = stringResource(feature.shortDescr),
+                                style = MaterialTheme.typography.titleSmall,
+                                color = MaterialTheme.colorScheme.outline,
+                            )
+                        },
+                    )
+
+                    Text(
+                        modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
+                        text = stringResource(feature.fullDescr),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
     }
 }
@@ -814,7 +943,7 @@ private fun PriceFocusedItem(
                 Text(
                     modifier = Modifier.fillMaxWidth(1f),
                     text = subscription.formattedPrice,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.End,
                 )
