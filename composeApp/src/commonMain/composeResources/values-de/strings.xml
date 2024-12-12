@@ -88,6 +88,13 @@ Fügen Sie eine neue Ausgabe hinzu, um hier Statistiken zu sehen!</string>
   <string name="try_year_plus">Jährliches Abonnement</string>
   <string name="offer_badge">Angebot Badge</string>
   <string name="per_month">%1$s/Monat</string>
+    <string name="per_week">%1$s/Woche</string>
+    <string name="per_year">%1$s/Jahr</string>
+    <string name="free">Kostenlos!</string>
+    <plurals name="days">
+        <item quantity="one">%1$d Tag</item>
+        <item quantity="other">%1$d Tage</item>
+    </plurals>
   <string name="share_subject">Neue Ausgaben</string>
   <string name="login_anon">Anonym anmelden</string>
   <string name="get_mobile_app">Mobile App holen</string>

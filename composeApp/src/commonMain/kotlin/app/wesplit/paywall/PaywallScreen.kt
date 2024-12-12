@@ -81,6 +81,7 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.Lock
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
@@ -89,12 +90,14 @@ import split.composeapp.generated.resources.back_btn_cd
 import split.composeapp.generated.resources.benefits
 import split.composeapp.generated.resources.best_offer_badge
 import split.composeapp.generated.resources.cancel
+import split.composeapp.generated.resources.days
 import split.composeapp.generated.resources.download_mobile_app
 import split.composeapp.generated.resources.enter_promocode
 import split.composeapp.generated.resources.enter_valid_promocode
 import split.composeapp.generated.resources.error_encountered_problems
 import split.composeapp.generated.resources.error_fetching_plans
 import split.composeapp.generated.resources.fetch_available_plans
+import split.composeapp.generated.resources.free
 import split.composeapp.generated.resources.get_mobile_app
 import split.composeapp.generated.resources.ic_badge_white
 import split.composeapp.generated.resources.ic_mobile_app
@@ -107,6 +110,8 @@ import split.composeapp.generated.resources.locked_feature
 import split.composeapp.generated.resources.month_plus
 import split.composeapp.generated.resources.offer_badge
 import split.composeapp.generated.resources.per_month
+import split.composeapp.generated.resources.per_week
+import split.composeapp.generated.resources.per_year
 import split.composeapp.generated.resources.plus_active
 import split.composeapp.generated.resources.plus_badge_benefits
 import split.composeapp.generated.resources.subscribe_for
@@ -427,7 +432,7 @@ private fun BillingData(
             selected?.let {
                 PricingSelection(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
-                    subscriptions = productState.products,
+                    data = productState,
                     selected = it,
                 ) {
                     onSelect(it)
@@ -522,7 +527,7 @@ private fun BillingData(
 @Composable
 private fun PricingSelection(
     modifier: Modifier = Modifier,
-    subscriptions: List<Pair<Subscription, Offer>>,
+    data: PaywallViewModel.State.Data,
     selected: Subscription,
     onSelected: (Subscription) -> Unit,
 ) {
@@ -536,11 +541,12 @@ private fun PricingSelection(
             .border(BorderStroke(2.dp, MaterialTheme.colorScheme.primary), RoundedCornerShape(15.dp))
 
     Column(modifier = modifier) {
-        subscriptions.sortedBy { it.first.monthlyPrice.value }.mapIndexed { index, subscription ->
+        data.products.sortedBy { it.first.monthlyPrice.value }.mapIndexed { index, subscription ->
             if (index == 0) {
                 Box {
                     SubscriptionItem(
                         modifier = if (selected == subscription.first) selectedModifier else unSelectedModifier,
+                        type = data.paywallItemType,
                         isSelected = selected == subscription.first,
                         subscription = subscription.first,
                         offer = subscription.second,
@@ -562,9 +568,11 @@ private fun PricingSelection(
                     isSelected = selected == subscription.first,
                     subscription = subscription.first,
                     offer = subscription.second,
-                ) {
-                    onSelected(it)
-                }
+                    type = data.paywallItemType,
+                    onClick = {
+                        onSelected(it)
+                    },
+                )
             }
             Spacer(modifier = Modifier.height(5.dp))
         }
@@ -619,10 +627,118 @@ private fun SubscriptionButton(
 @Composable
 private fun SubscriptionItem(
     modifier: Modifier = Modifier,
+    type: PaywallViewModel.PaywallItemType,
     isSelected: Boolean = true,
     subscription: Subscription,
     offer: Offer,
     onClick: (Subscription) -> Unit,
+) {
+    when (type) {
+        PaywallViewModel.PaywallItemType.PRICE_FOCUS -> PriceFocusedItem(modifier, isSelected, onClick, subscription, offer)
+        PaywallViewModel.PaywallItemType.FREE_PERIOD_FOCUS -> FreeTierFocusedItem(modifier, isSelected, onClick, subscription, offer)
+    }
+}
+
+@Composable
+private fun FreeTierFocusedItem(
+    modifier: Modifier,
+    isSelected: Boolean,
+    onClick: (Subscription) -> Unit,
+    subscription: Subscription,
+    offer: Offer,
+) {
+    ListItem(
+        modifier =
+            modifier
+                .fillMaxWidth(1f)
+                .height(IntrinsicSize.Max)
+                .alpha(if (isSelected) 1f else 0.65f)
+                .clickable {
+                    onClick(subscription)
+                },
+        colors =
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
+        headlineContent = {
+            Row {
+                Text(
+                    text =
+                        when (subscription.period) {
+                            Subscription.Period.WEEK -> stringResource(Res.string.week_plus)
+                            Subscription.Period.MONTH -> stringResource(Res.string.month_plus)
+                            Subscription.Period.YEAR -> stringResource(Res.string.year_plus)
+                        },
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                androidx.compose.animation.AnimatedVisibility(visible = offer.discountPercent != 0) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            modifier = Modifier.height(24.dp),
+                            painter = painterResource(Res.drawable.ic_badge_white),
+                            contentDescription = stringResource(Res.string.offer_badge),
+                            tint = MaterialTheme.colorScheme.errorContainer,
+                        )
+                        Text(
+                            modifier = Modifier.padding(start = 8.dp),
+                            text = "- ${offer.discountPercent}%",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
+                        )
+                    }
+                }
+            }
+        },
+        supportingContent = {
+            Text(
+                modifier = Modifier.fillMaxWidth(1f),
+                text =
+                    when (subscription.period) {
+                        Subscription.Period.WEEK -> stringResource(Res.string.per_week, subscription.formattedPrice)
+                        Subscription.Period.MONTH -> stringResource(Res.string.per_month, subscription.formattedPrice)
+                        Subscription.Period.YEAR -> stringResource(Res.string.per_year, subscription.formattedPrice)
+                    },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        trailingContent = {
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxHeight(1f)
+                        .padding(end = 8.dp)
+                        .width(IntrinsicSize.Max)
+                        .widthIn(min = 80.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(1f),
+                    text = pluralStringResource(Res.plurals.days, offer.daysFree, offer.daysFree),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.extraColorScheme.infoContainer,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    modifier = Modifier.fillMaxWidth(1f),
+                    text = stringResource(Res.string.free),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.extraColorScheme.infoContainer,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        },
+    )
+}
+
+@Composable
+private fun PriceFocusedItem(
+    modifier: Modifier,
+    isSelected: Boolean,
+    onClick: (Subscription) -> Unit,
+    subscription: Subscription,
+    offer: Offer,
 ) {
     ListItem(
         modifier =

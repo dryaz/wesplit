@@ -5,6 +5,8 @@ import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import app.wesplit.domain.model.AnalyticsManager
+import app.wesplit.domain.model.experiment.Experiment
+import app.wesplit.domain.model.experiment.ExperimentRepository
 import app.wesplit.domain.model.paywall.Offer
 import app.wesplit.domain.model.paywall.PaywallRepository
 import app.wesplit.domain.model.paywall.Subscription
@@ -32,6 +34,7 @@ private const val PROMO_CODE_PARAM = "code"
 
 class PaywallViewModel(
     private val paywallRepository: PaywallRepository,
+    private val experimentRepository: ExperimentRepository,
     private val coroutineDispatcher: CoroutineDispatcher,
     private val userRepository: UserRepository,
     private val analyticsManager: AnalyticsManager,
@@ -66,8 +69,11 @@ class PaywallViewModel(
                 _state.update { State.Error }
                 return@launch
             }
-
-            _state.update { State.Data(result.getOrThrow()) }
+            val paywallItemTypeConfig = experimentRepository.get(Experiment.PAYWALL_ITEM_TYPE)
+            println("paywallItemTypeConfig: $paywallItemTypeConfig")
+            val paywallItemType = PaywallItemType.entries.firstOrNull { it.value == paywallItemTypeConfig } ?: PaywallItemType.PRICE_FOCUS
+            println("paywallItemType: $paywallItemType")
+            _state.update { State.Data(result.getOrThrow(), paywallItemType) }
         }
 
     fun subscribe(subscription: Subscription) {
@@ -116,12 +122,25 @@ class PaywallViewModel(
 
         data object AlreadySubscribed : State
 
-        data class Data(val products: List<Pair<Subscription, Offer>>) : State
+        data class Data(
+            val products: List<Pair<Subscription, Offer>>,
+            val paywallItemType: PaywallItemType,
+        ) : State
     }
 
     sealed interface Event {
         data object Purchased : Event
 
         data class Error(val msg: String) : Event
+    }
+
+    enum class PaywallType(val value: Long) {
+        LIST(0),
+        CAROUSEL(1),
+    }
+
+    enum class PaywallItemType(val value: Long) {
+        PRICE_FOCUS(0),
+        FREE_PERIOD_FOCUS(1),
     }
 }

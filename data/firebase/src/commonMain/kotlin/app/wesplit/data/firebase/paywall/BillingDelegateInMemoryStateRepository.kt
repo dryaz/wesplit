@@ -1,5 +1,7 @@
 package app.wesplit.data.firebase.paywall
 
+import app.wesplit.domain.model.experiment.Experiment
+import app.wesplit.domain.model.experiment.ExperimentRepository
 import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.paywall.BillingState
 import app.wesplit.domain.model.paywall.Offer
@@ -15,13 +17,20 @@ import kotlin.math.roundToInt
 @Single
 class BillingDelegateInMemoryStateRepository(
     private val userRepository: UserRepository,
+    private val experimentRepository: ExperimentRepository,
 ) : BillingDelegate.StateRepository {
     private val billingState = MutableStateFlow<BillingState>(BillingState.Loading)
 
     override fun update(pricingResult: List<Subscription>) {
-        val highestMonthlyPrice = pricingResult.maxBy { it.monthlyPrice.value }.monthlyPrice.value
+        val data =
+            if (experimentRepository.get(Experiment.PAYWALL_SHOW_WEEKLY) == 0L) {
+                pricingResult.filterNot { it.period == Subscription.Period.WEEK }
+            } else {
+                pricingResult
+            }
+        val highestMonthlyPrice = data.maxBy { it.monthlyPrice.value }.monthlyPrice.value
         val offers =
-            pricingResult.map { price ->
+            data.map { price ->
                 price.period to
                     Offer(
                         daysFree =
@@ -34,7 +43,7 @@ class BillingDelegateInMemoryStateRepository(
                     )
             }.toMap()
 
-        billingState.value = BillingState.Data(pricingResult, offers)
+        billingState.value = BillingState.Data(data, offers)
     }
 
     override fun onPurchaseEvent(state: PurchaseState) {

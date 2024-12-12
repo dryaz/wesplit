@@ -31,9 +31,10 @@ private fun createAddExpenseShortcut(group: Group) {
             localizedTitle = "Add Expense to ${group.uiTitle()}",
             localizedSubtitle = null,
             icon = UIApplicationShortcutIcon.iconWithType(UIApplicationShortcutIconType.UIApplicationShortcutIconTypeAdd),
-            userInfo = mapOf(
-                NSString.create(string = "group_deeplink") to NSString.create(string = getDeeplink(group.id))
-            )
+            userInfo =
+                mapOf(
+                    NSString.create(string = "group_deeplink") to NSString.create(string = getDeeplink(group.id)),
+                ),
         )
 
     // Retrieve existing shortcuts or initialize an empty list

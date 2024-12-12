@@ -90,6 +90,13 @@ Prevent unauthorized changes and maintain financial integrity effortlessly.</str
   <string name="try_year_plus">Yearly subscription</string>
   <string name="offer_badge">Offer badge</string>
   <string name="per_month">%1$s/Month</string>
+    <string name="per_week">%1$s/Week</string>
+    <string name="per_year">%1$s/Year</string>
+    <string name="free">For Free!</string>
+    <plurals name="days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
   <string name="share_subject">New expenses</string>
   <string name="login_anon">Login Anonymously</string>
   <string name="get_mobile_app">Get mobile app</string>

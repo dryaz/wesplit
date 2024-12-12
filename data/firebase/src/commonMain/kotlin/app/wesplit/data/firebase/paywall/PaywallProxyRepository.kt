@@ -34,8 +34,10 @@ class PaywallProxyRepository(
             }.first()
 
         return when (result) {
-            // TODO: Offer should be part of the subscription also coming from Stores.
-            is BillingState.Data -> Result.success(result.data.map { it to result.offer[it.period]!! })
+            is BillingState.Data -> {
+                // TODO: Offer should be part of the subscription also coming from Stores.
+                Result.success(result.data.map { it to result.offer[it.period]!! })
+            }
             BillingState.Error -> Result.failure(PaywallRestrictionException("Can't get PRO prices"))
             else -> throw IllegalStateException("Data or Error states only should be pro pricing call")
         }

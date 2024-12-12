@@ -14,6 +14,7 @@ import app.wesplit.billing.GooglePlayBillingDelegate
 import app.wesplit.di.AndroidAppModule
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.AppReviewManager
+import app.wesplit.domain.model.ShortcutDelegate
 import app.wesplit.domain.model.paywall.BillingDelegate
 import app.wesplit.domain.model.user.ContactListDelegate
 import app.wesplit.user.UnsupportedContactListDelegate

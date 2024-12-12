@@ -88,6 +88,14 @@
   <string name="try_year_plus">Годовая подписка</string>
   <string name="offer_badge">Значок предложения</string>
   <string name="per_month">%1$s/Месяц</string>
+    <string name="per_week">%1$s/Неделя</string>
+    <string name="per_year">%1$s/Год</string>
+    <string name="free">Бесплатно!</string>
+    <plurals name="days">
+        <item quantity="one">%1$d день</item>
+        <item quantity="few">%1$d дня</item>
+        <item quantity="many">%1$d дней</item>
+    </plurals>
   <string name="share_subject">Новые траты</string>
   <string name="login_anon">Войти анонимно</string>
   <string name="get_mobile_app">Скачать мобильное приложение</string>

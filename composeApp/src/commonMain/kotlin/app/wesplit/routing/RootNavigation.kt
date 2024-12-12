@@ -45,6 +45,7 @@ import app.wesplit.domain.model.AppReviewManager
 import app.wesplit.domain.model.account.AccountRepository
 import app.wesplit.domain.model.currency.CurrencyRepository
 import app.wesplit.domain.model.expense.ExpenseRepository
+import app.wesplit.domain.model.experiment.ExperimentRepository
 import app.wesplit.domain.model.feature.FeatureRepository
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.paywall.PaywallRepository
@@ -541,12 +542,14 @@ private fun Navigation(
                     },
                 ) {
                     val paywallRepository: PaywallRepository = koinInject()
+                    val experimentRepository: ExperimentRepository = koinInject()
                     val ioDispatcher: CoroutineDispatcher = koinInject()
 
                     val paywallViewModel: PaywallViewModel =
                         viewModel {
                             PaywallViewModel(
                                 paywallRepository = paywallRepository,
+                                experimentRepository = experimentRepository,
                                 coroutineDispatcher = ioDispatcher,
                                 userRepository = userRepository,
                                 analyticsManager = analyticsManager,
