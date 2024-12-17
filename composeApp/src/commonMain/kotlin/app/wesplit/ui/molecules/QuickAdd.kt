@@ -1,4 +1,4 @@
-package app.wesplit.group.detailed.expense
+package app.wesplit.ui.molecules
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Row
@@ -78,7 +78,7 @@ enum class QuickAddErrorState {
 }
 
 @Composable
-internal fun QuickAdd(
+fun QuickAdd(
     modifier: Modifier = Modifier,
     state: QuickAddState,
     onAction: (QuickAddAction) -> Unit,

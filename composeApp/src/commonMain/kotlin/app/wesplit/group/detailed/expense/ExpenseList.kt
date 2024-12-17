@@ -54,6 +54,9 @@ import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.Banner
 import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.PlusProtected
+import app.wesplit.ui.molecules.QuickAdd
+import app.wesplit.ui.molecules.QuickAddAction
+import app.wesplit.ui.molecules.QuickAddState
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource

@@ -9,6 +9,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import app.wesplit.domain.model.expense.Expense
 import app.wesplit.ui.Banner
+import app.wesplit.ui.molecules.QuickAddAction
+import app.wesplit.ui.molecules.QuickAddState
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.error
