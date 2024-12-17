@@ -315,4 +315,5 @@
   <string name="plus_feature_cats_cta">Подпишись, чтобы включить ИИ</string>
   <string name="quick_add">Быстрое добавление</string>
   <string name="image_description_ai">Описание для ИИ Картинки</string>
+    <string name="quick_split">Разделить Счет</string>
 </resources>

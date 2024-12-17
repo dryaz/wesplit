@@ -67,6 +67,9 @@ import app.wesplit.group.settings.GroupSettingsViewModel
 import app.wesplit.paywall.PaywallAction
 import app.wesplit.paywall.PaywallRoute
 import app.wesplit.paywall.PaywallViewModel
+import app.wesplit.quicksplit.QuickSplitAction
+import app.wesplit.quicksplit.QuickSplitScreen
+import app.wesplit.quicksplit.QuickSplitViewModel
 import app.wesplit.settle.SettleAction
 import app.wesplit.settle.SettleScreen
 import app.wesplit.settle.SettleViewModel
@@ -85,7 +88,9 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.groups
 import split.composeapp.generated.resources.ic_group
 import split.composeapp.generated.resources.ic_profile
+import split.composeapp.generated.resources.ic_quick_split
 import split.composeapp.generated.resources.profile
+import split.composeapp.generated.resources.quick_split
 
 private const val SHARE_EVENT = "share"
 private const val SHARE_SETTLE_EVENT = "share_settle"
@@ -123,6 +128,8 @@ sealed class RightPane(
     data object Empty : RightPane("empty")
 
     data object Paywall : RightPane("paywall")
+
+    data object QuickSplit : RightPane("quickSplit")
 
     data object Group : RightPane("group/{${Param.GROUP_ID.paramName}}?${Param.TOKEN.paramName}={${Param.TOKEN.paramName}}") {
         enum class Param(
@@ -201,7 +208,7 @@ sealed class RightPane(
     }
 }
 
-sealed class MenuItem : NavigationMenuItem {
+sealed class MenuItem : NavigationMenuItem.Item {
     data object Group : MenuItem() {
         override val icon: DrawableResource
             get() = Res.drawable.ic_group
@@ -214,6 +221,13 @@ sealed class MenuItem : NavigationMenuItem {
             get() = Res.drawable.ic_profile
         override val title: StringResource
             get() = Res.string.profile
+    }
+
+    data object QuickSplit : MenuItem() {
+        override val icon: DrawableResource
+            get() = Res.drawable.ic_quick_split
+        override val title: StringResource
+            get() = Res.string.quick_split
     }
 }
 
@@ -342,6 +356,8 @@ private fun Navigation(
             mutableStateListOf(
                 MenuItem.Profile,
                 MenuItem.Group,
+                NavigationMenuItem.Delimetr,
+                MenuItem.QuickSplit,
             )
         }
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -355,6 +371,8 @@ private fun Navigation(
     val settleSuggestionUseCase: SettleSuggestionUseCase = koinInject()
     val coroutineScope = rememberCoroutineScope()
     val shareDelegate: ShareDelegate = koinInject()
+    val settings: Settings = koinInject()
+    val appReview: AppReviewManager = koinInject()
     val clipboardManager = LocalClipboardManager.current
     val uriHandler = LocalUriHandler.current
 
@@ -407,6 +425,18 @@ private fun Navigation(
                                 )
                             },
                     )
+
+                is MenuItem.QuickSplit ->
+                    secondPaneNavController.navigate(
+                        RightPane.QuickSplit.route,
+                        navOptions =
+                            navOptions {
+                                launchSingleTop = true
+                            },
+                    )
+
+                NavigationMenuItem.Delimetr -> TODO()
+                is NavigationMenuItem.Item -> TODO()
             }
             coroutineScope.launch { drawerState.close() }
         },
@@ -526,6 +556,27 @@ private fun Navigation(
             ) {
                 composable(route = RightPane.Empty.route) {
                     NoGroupScreen()
+                }
+
+                composable(route = RightPane.QuickSplit.route) {
+                    val quickSplitViewModel: QuickSplitViewModel =
+                        viewModel {
+                            QuickSplitViewModel(
+                                currencyRepository = currencyRepository,
+                                userRepository = userRepository,
+                                analyticsManager = analyticsManager,
+                                settings = settings,
+                                appReviewManager = appReview,
+                            )
+                        }
+
+                    QuickSplitScreen(
+                        viewModel = quickSplitViewModel,
+                    ) { action ->
+                        when (action) {
+                            QuickSplitAction.Back -> secondPaneNavController.popBackStack()
+                        }
+                    }
                 }
 
                 composable(
@@ -874,8 +925,6 @@ private fun Navigation(
                 ) {
                     // TODO: Accorgin ti github koin starts to support navigation args in savedstate in VM, POC
                     val groupRepository: GroupRepository = koinInject()
-                    val settings: Settings = koinInject()
-                    val appReview: AppReviewManager = koinInject()
 
                     val groupId =
                         checkNotNull(

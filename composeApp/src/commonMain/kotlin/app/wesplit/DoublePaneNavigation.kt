@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -58,7 +59,6 @@ import split.composeapp.generated.resources.app_version
 import split.composeapp.generated.resources.change_color_mode
 import split.composeapp.generated.resources.change_theme
 import split.composeapp.generated.resources.dark_theme
-import split.composeapp.generated.resources.feedback
 import split.composeapp.generated.resources.get_app
 import split.composeapp.generated.resources.get_mobile_app
 import split.composeapp.generated.resources.ic_android
@@ -104,17 +104,30 @@ fun DoublePaneNavigation(
                 AppLogo(modifier = Modifier.size(56.dp))
                 Spacer(modifier = Modifier.height(8.dp))
                 menuItems.forEach { item ->
-                    NavigationRailItem(
-                        icon = {
-                            Icon(
-                                painter = painterResource(item.icon),
-                                contentDescription = stringResource(item.title),
+                    when (item) {
+                        NavigationMenuItem.Delimetr ->
+                            HorizontalDivider(
+                                modifier = Modifier.width(64.dp),
                             )
-                        },
-                        label = { Text(stringResource(item.title)) },
-                        selected = item == selectedMenuItem,
-                        onClick = { onMenuItemClick(item) },
-                    )
+                        is NavigationMenuItem.Item ->
+                            NavigationRailItem(
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(item.icon),
+                                        contentDescription = stringResource(item.title),
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        modifier = Modifier,
+                                        text = stringResource(item.title).split(' ').joinToString("\n"),
+                                        textAlign = TextAlign.Center,
+                                    )
+                                },
+                                selected = item == selectedMenuItem,
+                                onClick = { onMenuItemClick(item) },
+                            )
+                    }
                 }
                 Spacer(modifier = Modifier.weight(1f))
 
@@ -160,24 +173,24 @@ fun DoublePaneNavigation(
                         )
                     })
                 }
-
-                NavigationRailItem(icon = {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_feedback),
-                        contentDescription = stringResource(Res.string.submit_feedback_cd),
-                    )
-                }, selected = false, onClick = {
-                    if (shareDelegate.supportPlatformSharing()) {
-                        shareDelegate.open(ShareData.Link("https://wesplit.prodcamp.com/"))
-                    } else {
-                        uriHandler.openUri("https://wesplit.prodcamp.com/")
-                    }
-                }, label = {
-                    Text(
-                        text = stringResource(Res.string.feedback),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
-                })
+// 'Leave feedback is not used yet'
+//                NavigationRailItem(icon = {
+//                    Icon(
+//                        painter = painterResource(Res.drawable.ic_feedback),
+//                        contentDescription = stringResource(Res.string.submit_feedback_cd),
+//                    )
+//                }, selected = false, onClick = {
+//                    if (shareDelegate.supportPlatformSharing()) {
+//                        shareDelegate.open(ShareData.Link("https://wesplit.prodcamp.com/"))
+//                    } else {
+//                        uriHandler.openUri("https://wesplit.prodcamp.com/")
+//                    }
+//                }, label = {
+//                    Text(
+//                        text = stringResource(Res.string.feedback),
+//                        style = MaterialTheme.typography.labelSmall,
+//                    )
+//                })
 
                 NavigationRailItem(icon = {
                     Icon(
@@ -242,18 +255,22 @@ fun DoublePaneNavigation(
                 }
 
                 menuItems.forEach { item ->
-                    NavigationDrawerItem(
-                        label = { Text(text = stringResource(item.title)) },
-                        selected = item == selectedMenuItem,
-                        onClick = { onMenuItemClick(item) },
-                        shape = RectangleShape,
-                        icon = {
-                            Icon(
-                                painter = painterResource(item.icon),
-                                contentDescription = stringResource(item.title),
+                    when (item) {
+                        NavigationMenuItem.Delimetr -> HorizontalDivider()
+                        is NavigationMenuItem.Item ->
+                            NavigationDrawerItem(
+                                label = { Text(text = stringResource(item.title)) },
+                                selected = item == selectedMenuItem,
+                                onClick = { onMenuItemClick(item) },
+                                shape = RectangleShape,
+                                icon = {
+                                    Icon(
+                                        painter = painterResource(item.icon),
+                                        contentDescription = stringResource(item.title),
+                                    )
+                                },
                             )
-                        },
-                    )
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -330,7 +347,11 @@ fun DoublePaneNavigation(
     }
 }
 
-interface NavigationMenuItem {
-    val title: StringResource
-    val icon: DrawableResource
+sealed interface NavigationMenuItem {
+    interface Item : NavigationMenuItem {
+        val title: StringResource
+        val icon: DrawableResource
+    }
+
+    object Delimetr : NavigationMenuItem
 }
