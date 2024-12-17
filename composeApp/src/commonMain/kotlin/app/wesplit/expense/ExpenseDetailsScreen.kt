@@ -76,7 +76,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import app.wesplit.currency.CurrencyPicker
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.FutureFeature
 import app.wesplit.domain.model.currency.currencySymbol
@@ -97,6 +96,8 @@ import app.wesplit.participant.ParticipantListItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.PlusProtected
+import app.wesplit.ui.atoms.AmountField
+import app.wesplit.ui.atoms.CurrencyPicker
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import dev.gitlive.firebase.firestore.Timestamp
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -113,7 +114,6 @@ import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.already_settled
-import split.composeapp.generated.resources.amount
 import split.composeapp.generated.resources.amounts
 import split.composeapp.generated.resources.at_date
 import split.composeapp.generated.resources.cancel
@@ -919,40 +919,14 @@ private fun ExpenseDetails(
             }
 
             Spacer(modifier = Modifier.width(16.dp))
-            TextField(
+            AmountField(
                 modifier = Modifier.fillMaxWidth(1f),
-                singleLine = true,
-                value = amount,
+                value = data.expense.totalAmount.value,
                 enabled = data.expense.allowedToChange(),
-                keyboardOptions =
-                    KeyboardOptions(
-                        imeAction = ImeAction.Done,
-                        keyboardType = KeyboardType.Decimal,
-                    ),
                 isError = amount.isNullOrBlank() || amount.toDoubleOrNull() == 0.0,
-                onValueChange = { newValue ->
-                    val newFilteredValue = newValue.filterDoubleInput()
-                    val isEndingWithDot = newFilteredValue.endsWith(".")
-                    var needUpdate = false
-
-                    if (!isEndingWithDot) {
-                        needUpdate = true
-                    }
-
-                    amount = newFilteredValue
-
-                    if (needUpdate) {
-                        val doubleValue = newFilteredValue.toDoubleOrNull() ?: 0.0
-                        onUpdated(UpdateAction.TotalAmount(doubleValue, data.expense.totalAmount.currencyCode))
-                    }
-                },
-                placeholder = {
-                    Text(
-                        text = stringResource(Res.string.amount),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                },
-            )
+            ) { newAmount ->
+                onUpdated(UpdateAction.TotalAmount(newAmount, data.expense.totalAmount.currencyCode))
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))

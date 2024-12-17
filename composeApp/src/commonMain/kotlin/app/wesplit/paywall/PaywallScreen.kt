@@ -394,9 +394,10 @@ fun FeatureCarousel(isPlus: Boolean) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
             if (page != 0) {
                 analyticsManager.track(
-                    PAYWALL_PAGE_SCROLLED, mapOf(
-                        PAYWALL_PAGE_SCROLLED_PAGE to page.toString()
-                    )
+                    PAYWALL_PAGE_SCROLLED,
+                    mapOf(
+                        PAYWALL_PAGE_SCROLLED_PAGE to page.toString(),
+                    ),
                 )
             }
         }
@@ -413,32 +414,32 @@ fun FeatureCarousel(isPlus: Boolean) {
         ) { page ->
             Box(
                 modifier =
-                Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth(),
+                    Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
             ) {
                 Card(
                     colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    ),
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        ),
                     modifier = Modifier.widthIn(max = 360.dp),
                 ) {
                     Column {
                         Image(
                             modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(9f / 5f),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(9f / 5f),
                             painter = painterResource(features[page].image),
                             contentDescription = stringResource(features[page].title),
                         )
                         ListItem(
                             modifier = Modifier.fillMaxWidth(),
                             colors =
-                            ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                            ),
+                                ListItemDefaults.colors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                                ),
                             trailingContent = {
                                 Icon(
                                     modifier = Modifier.minimumInteractiveComponentSize(),
@@ -461,9 +462,9 @@ fun FeatureCarousel(isPlus: Boolean) {
                         )
                         Text(
                             modifier =
-                            Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(bottom = 16.dp),
+                                Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .padding(bottom = 16.dp),
                             text = stringResource(features[page].fullDescr),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -482,19 +483,19 @@ fun FeatureCarousel(isPlus: Boolean) {
             repeat(features.size) { index ->
                 Box(
                     modifier =
-                    Modifier
-                        .height(16.dp)
-                        .width(if (pagerState.currentPage == index) 24.dp else 16.dp)
-                        .padding(4.dp)
-                        .background(
-                            color =
-                            if (pagerState.currentPage == index) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.outlineVariant
-                            },
-                            shape = CircleShape,
-                        ),
+                        Modifier
+                            .height(16.dp)
+                            .width(if (pagerState.currentPage == index) 24.dp else 16.dp)
+                            .padding(4.dp)
+                            .background(
+                                color =
+                                    if (pagerState.currentPage == index) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.outlineVariant
+                                    },
+                                shape = CircleShape,
+                            ),
                 )
             }
         }
@@ -520,9 +521,9 @@ private fun FeatureList(isPlus: Boolean) {
             Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Card(
                     colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    ),
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        ),
                     modifier = Modifier.widthIn(max = 360.dp),
                 ) {
                     Image(
@@ -533,9 +534,9 @@ private fun FeatureList(isPlus: Boolean) {
                     ListItem(
                         modifier = Modifier.fillMaxWidth(1f),
                         colors =
-                        ListItemDefaults.colors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                        ),
+                            ListItemDefaults.colors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                            ),
                         trailingContent = {
                             Icon(
                                 modifier = Modifier.minimumInteractiveComponentSize(),
@@ -593,12 +594,12 @@ private fun BillingData(
             ListItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)),
                 colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    headlineColor = MaterialTheme.colorScheme.onErrorContainer,
-                    leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
-                    supportingColor = MaterialTheme.colorScheme.onErrorContainer,
-                ),
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        headlineColor = MaterialTheme.colorScheme.onErrorContainer,
+                        leadingIconColor = MaterialTheme.colorScheme.onErrorContainer,
+                        supportingColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
                 headlineContent = { Text(stringResource(Res.string.error_fetching_plans)) },
                 supportingContent = { Text(stringResource(Res.string.error_encountered_problems)) },
                 leadingContent = {
@@ -614,9 +615,9 @@ private fun BillingData(
             ListItem(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)),
                 colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                ),
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    ),
                 headlineContent = { Text(stringResource(Res.string.text_loading)) },
                 supportingContent = { Text(stringResource(Res.string.fetch_available_plans)) },
                 leadingContent = { CircularProgressIndicator() },
@@ -626,16 +627,16 @@ private fun BillingData(
         PaywallViewModel.State.BillingNotSupported -> {
             ListItem(
                 modifier =
-                Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
-                    onAction(PaywallAction.DownloadMobile)
-                },
+                    Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
+                        onAction(PaywallAction.DownloadMobile)
+                    },
                 colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.extraColorScheme.infoContainer,
-                    headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                    leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                    supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                ),
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                        headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                        leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                        supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                    ),
                 headlineContent = { Text(stringResource(Res.string.web_billing_in_progress)) },
                 supportingContent = { Text(stringResource(Res.string.subscribe_via_mobile_app)) },
                 leadingContent = {
@@ -650,16 +651,16 @@ private fun BillingData(
         PaywallViewModel.State.AlreadySubscribed -> {
             ListItem(
                 modifier =
-                Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
-                    onAction(PaywallAction.DownloadMobile)
-                },
+                    Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(15.dp)).clickable {
+                        onAction(PaywallAction.DownloadMobile)
+                    },
                 colors =
-                ListItemDefaults.colors(
-                    containerColor = MaterialTheme.extraColorScheme.infoContainer,
-                    headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                    leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                    supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
-                ),
+                    ListItemDefaults.colors(
+                        containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                        headlineColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                        leadingIconColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                        supportingColor = MaterialTheme.extraColorScheme.onInfoContainer,
+                    ),
                 headlineContent = { Text(stringResource(Res.string.plus_active)) },
                 supportingContent = { Text(stringResource(Res.string.available_in_mobile_app)) },
                 leadingContent = {
@@ -704,9 +705,9 @@ private fun PricingSelection(
                     }
                     Image(
                         modifier =
-                        Modifier
-                            .width(64.dp)
-                            .align(Alignment.TopEnd),
+                            Modifier
+                                .width(64.dp)
+                                .align(Alignment.TopEnd),
                         painter = painterResource(Res.drawable.img_best_offer),
                         contentDescription = stringResource(Res.string.best_offer_badge),
                     )
@@ -738,16 +739,16 @@ private fun SubscriptionButton(
     Spacer(modifier = Modifier.height(8.dp))
     FilledTonalButton(
         colors =
-        ButtonDefaults.filledTonalButtonColors(
-            containerColor = MaterialTheme.extraColorScheme.infoContainer,
-            contentColor = MaterialTheme.extraColorScheme.onInfoContainer,
-        ),
+            ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.extraColorScheme.infoContainer,
+                contentColor = MaterialTheme.extraColorScheme.onInfoContainer,
+            ),
         modifier =
-        Modifier
-            .height(52.dp)
-            .padding(4.dp)
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth(1f),
+            Modifier
+                .height(52.dp)
+                .padding(4.dp)
+                .padding(horizontal = 16.dp)
+                .fillMaxWidth(1f),
         onClick = { if (!isPendingPurchase) onSelected(selected) },
         shape = RoundedCornerShape(10.dp),
     ) {
@@ -763,10 +764,10 @@ private fun SubscriptionButton(
             Text(
                 text = stringResource(Res.string.subscribe_for, selected.formattedPrice),
                 style =
-                MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 0.7.sp,
-                ),
+                    MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 0.7.sp,
+                    ),
             )
         }
     }
@@ -798,26 +799,26 @@ private fun FreeTierFocusedItem(
 ) {
     ListItem(
         modifier =
-        modifier
-            .fillMaxWidth(1f)
-            .height(IntrinsicSize.Max)
-            .alpha(if (isSelected) 1f else 0.65f)
-            .clickable {
-                onClick(subscription)
-            },
+            modifier
+                .fillMaxWidth(1f)
+                .height(IntrinsicSize.Max)
+                .alpha(if (isSelected) 1f else 0.65f)
+                .clickable {
+                    onClick(subscription)
+                },
         colors =
-        ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
         headlineContent = {
             Row {
                 Text(
                     text =
-                    when (subscription.period) {
-                        Subscription.Period.WEEK -> stringResource(Res.string.week_plus)
-                        Subscription.Period.MONTH -> stringResource(Res.string.month_plus)
-                        Subscription.Period.YEAR -> stringResource(Res.string.year_plus)
-                    },
+                        when (subscription.period) {
+                            Subscription.Period.WEEK -> stringResource(Res.string.week_plus)
+                            Subscription.Period.MONTH -> stringResource(Res.string.month_plus)
+                            Subscription.Period.YEAR -> stringResource(Res.string.year_plus)
+                        },
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.width(6.dp))
@@ -844,22 +845,22 @@ private fun FreeTierFocusedItem(
             Text(
                 modifier = Modifier.fillMaxWidth(1f),
                 text =
-                when (subscription.period) {
-                    Subscription.Period.WEEK -> stringResource(Res.string.per_week, subscription.formattedPrice)
-                    Subscription.Period.MONTH -> stringResource(Res.string.per_month, subscription.formattedPrice)
-                    Subscription.Period.YEAR -> stringResource(Res.string.per_year, subscription.formattedPrice)
-                },
+                    when (subscription.period) {
+                        Subscription.Period.WEEK -> stringResource(Res.string.per_week, subscription.formattedPrice)
+                        Subscription.Period.MONTH -> stringResource(Res.string.per_month, subscription.formattedPrice)
+                        Subscription.Period.YEAR -> stringResource(Res.string.per_year, subscription.formattedPrice)
+                    },
                 style = MaterialTheme.typography.bodyMedium,
             )
         },
         trailingContent = {
             Column(
                 modifier =
-                Modifier
-                    .fillMaxHeight(1f)
-                    .padding(end = 8.dp)
-                    .width(IntrinsicSize.Max)
-                    .widthIn(min = 80.dp),
+                    Modifier
+                        .fillMaxHeight(1f)
+                        .padding(end = 8.dp)
+                        .width(IntrinsicSize.Max)
+                        .widthIn(min = 80.dp),
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
@@ -891,17 +892,17 @@ private fun PriceFocusedItem(
 ) {
     ListItem(
         modifier =
-        modifier
-            .fillMaxWidth(1f)
-            .height(IntrinsicSize.Max)
-            .alpha(if (isSelected) 1f else 0.65f)
-            .clickable {
-                onClick(subscription)
-            },
+            modifier
+                .fillMaxWidth(1f)
+                .height(IntrinsicSize.Max)
+                .alpha(if (isSelected) 1f else 0.65f)
+                .clickable {
+                    onClick(subscription)
+                },
         colors =
-        ListItemDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-        ),
+            ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ),
         overlineContent = {
             Text(
                 text = stringResource(Res.string.try_days, offer.daysFree),
@@ -912,11 +913,11 @@ private fun PriceFocusedItem(
             Row {
                 Text(
                     text =
-                    when (subscription.period) {
-                        Subscription.Period.WEEK -> stringResource(Res.string.week_plus)
-                        Subscription.Period.MONTH -> stringResource(Res.string.month_plus)
-                        Subscription.Period.YEAR -> stringResource(Res.string.year_plus)
-                    },
+                        when (subscription.period) {
+                            Subscription.Period.WEEK -> stringResource(Res.string.week_plus)
+                            Subscription.Period.MONTH -> stringResource(Res.string.month_plus)
+                            Subscription.Period.YEAR -> stringResource(Res.string.year_plus)
+                        },
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(modifier = Modifier.width(6.dp))
@@ -942,22 +943,22 @@ private fun PriceFocusedItem(
         supportingContent = {
             Text(
                 text =
-                when (subscription.period) {
-                    Subscription.Period.WEEK -> stringResource(Res.string.try_week_plus)
-                    Subscription.Period.MONTH -> stringResource(Res.string.try_month_plus)
-                    Subscription.Period.YEAR -> stringResource(Res.string.try_year_plus)
-                },
+                    when (subscription.period) {
+                        Subscription.Period.WEEK -> stringResource(Res.string.try_week_plus)
+                        Subscription.Period.MONTH -> stringResource(Res.string.try_month_plus)
+                        Subscription.Period.YEAR -> stringResource(Res.string.try_year_plus)
+                    },
                 style = MaterialTheme.typography.bodyMedium,
             )
         },
         trailingContent = {
             Column(
                 modifier =
-                Modifier
-                    .fillMaxHeight(1f)
-                    .padding(end = 8.dp)
-                    .width(IntrinsicSize.Max)
-                    .widthIn(min = 80.dp),
+                    Modifier
+                        .fillMaxHeight(1f)
+                        .padding(end = 8.dp)
+                        .width(IntrinsicSize.Max)
+                        .widthIn(min = 80.dp),
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(

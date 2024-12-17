@@ -1,4 +1,4 @@
-package app.wesplit.currency
+package app.wesplit.ui.atoms
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background

@@ -22,11 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.wesplit.currency.CurrencyPicker
 import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.FxState
 import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.ui.PlusProtected
+import app.wesplit.ui.atoms.CurrencyPicker
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.fx_single_currency
