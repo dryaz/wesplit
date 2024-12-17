@@ -26,7 +26,7 @@ import app.wesplit.domain.model.currency.CurrencyCodesCollection
 import app.wesplit.domain.model.currency.FxState
 import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.ui.PlusProtected
-import app.wesplit.ui.atoms.CurrencyPicker
+import app.wesplit.ui.atoms.CurrencyPickerDialog
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.fx_single_currency
@@ -111,7 +111,7 @@ internal fun FxToggle(
     )
 
     if (showCurrencyPicker) {
-        CurrencyPicker(
+        CurrencyPickerDialog(
             currencies = state.currencyCodesCollection,
             onDismiss = { showCurrencyPicker = false },
             onConfirm = { currency ->

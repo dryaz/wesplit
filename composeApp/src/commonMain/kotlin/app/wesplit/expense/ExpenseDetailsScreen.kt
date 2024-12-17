@@ -78,7 +78,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.FutureFeature
-import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.expense.SplitType
 import app.wesplit.domain.model.expense.allowedToChange
@@ -97,7 +96,6 @@ import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.PlusProtected
 import app.wesplit.ui.atoms.AmountField
-import app.wesplit.ui.atoms.CurrencyPicker
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import dev.gitlive.firebase.firestore.Timestamp
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -798,7 +796,7 @@ private fun ExpenseDetails(
     }
 
     var showDatePicker by remember { mutableStateOf(false) }
-    var showCurrencyPicker by remember { mutableStateOf(false) }
+
     var showCategoryPicker by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val tutorialControl = LocalTutorialControl.current
@@ -908,17 +906,17 @@ private fun ExpenseDetails(
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                FilledTonalButton(
+                app.wesplit.ui.molecules.CurrencyChooser(
                     modifier = Modifier.fillMaxHeight(1f),
-                    onClick = { showCurrencyPicker = true },
+                    selectedCurrencyCode = data.expense.totalAmount.currencyCode,
+                    availableCurrencies = data.availableCurrencies,
                     enabled = data.expense.allowedToChange(),
-                    shape = RoundedCornerShape(10.dp),
-                ) {
-                    Text(data.expense.totalAmount.currencyCode.currencySymbol())
+                ) { currency ->
+                    onUpdated(UpdateAction.TotalAmount(data.expense.totalAmount.value, currency))
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             AmountField(
                 modifier = Modifier.fillMaxWidth(1f),
                 value = data.expense.totalAmount.value,
@@ -988,16 +986,6 @@ private fun ExpenseDetails(
             }) {
                 DatePicker(state = datePickerState)
             }
-        }
-
-        if (showCurrencyPicker) {
-            CurrencyPicker(
-                currencies = data.availableCurrencies,
-                onDismiss = { showCurrencyPicker = false },
-                onConfirm = { currency ->
-                    onUpdated(UpdateAction.TotalAmount(data.expense.totalAmount.value, currency))
-                },
-            )
         }
 
         if (showCategoryPicker) {

@@ -41,7 +41,7 @@ import split.composeapp.generated.resources.search_currency
 import split.composeapp.generated.resources.select_currency
 
 @Composable
-fun CurrencyPicker(
+fun CurrencyPickerDialog(
     currencies: CurrencyCodesCollection,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
