@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -73,6 +74,8 @@ class GroupFirebaseRepository(
                         }
                     }
             }
+        }.catch {
+            analyticsManager.log(it)
         }
 
     override fun get(
@@ -109,6 +112,8 @@ class GroupFirebaseRepository(
             } else {
                 false
             }
+        }.catch {
+            analyticsManager.log(it)
         }
     }
 

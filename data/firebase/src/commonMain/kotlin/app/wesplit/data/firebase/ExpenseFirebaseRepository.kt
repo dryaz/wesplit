@@ -27,6 +27,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -82,6 +83,8 @@ class ExpenseFirebaseRepository(
 
                     Result.success(expenses)
                 }
+            }.catch {
+                analyticsManager.log(it)
             }
 
     override fun getById(
@@ -98,6 +101,8 @@ class ExpenseFirebaseRepository(
                 analyticsManager.log(exception)
                 Result.failure(exception)
             }
+        }.catch {
+            analyticsManager.log(it)
         }
 
     override suspend fun commit(
