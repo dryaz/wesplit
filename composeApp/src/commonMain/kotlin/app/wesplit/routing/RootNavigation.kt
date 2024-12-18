@@ -214,6 +214,8 @@ sealed class MenuItem : NavigationMenuItem.Item {
             get() = Res.drawable.ic_group
         override val title: StringResource
             get() = Res.string.groups
+        override val selectable: Boolean
+            get() = true
     }
 
     data object Profile : MenuItem() {
@@ -221,6 +223,8 @@ sealed class MenuItem : NavigationMenuItem.Item {
             get() = Res.drawable.ic_profile
         override val title: StringResource
             get() = Res.string.profile
+        override val selectable: Boolean
+            get() = true
     }
 
     data object QuickSplit : MenuItem() {
@@ -228,6 +232,8 @@ sealed class MenuItem : NavigationMenuItem.Item {
             get() = Res.drawable.ic_quick_split
         override val title: StringResource
             get() = Res.string.quick_split
+        override val selectable: Boolean
+            get() = false
     }
 }
 

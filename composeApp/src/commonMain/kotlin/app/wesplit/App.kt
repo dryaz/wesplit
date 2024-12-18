@@ -71,7 +71,9 @@ fun App(
                 secondPaneNavController = secondPaneNavController,
                 selectedMenuItem = selectedMenuItem,
             ) { menuItem ->
-                selectedMenuItem = menuItem
+                if ((menuItem as? NavigationMenuItem.Item)?.selectable == true) {
+                    selectedMenuItem = menuItem
+                }
             }
         }
 

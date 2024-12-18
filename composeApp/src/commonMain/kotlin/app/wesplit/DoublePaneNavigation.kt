@@ -351,7 +351,8 @@ sealed interface NavigationMenuItem {
     interface Item : NavigationMenuItem {
         val title: StringResource
         val icon: DrawableResource
+        val selectable: Boolean
     }
 
-    object Delimetr : NavigationMenuItem
+    data object Delimetr : NavigationMenuItem
 }

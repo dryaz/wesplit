@@ -25,7 +25,12 @@ class QuickSplitViewModel(
     val state: StateFlow<State>
         get() = _state
 
-    private val _state = MutableStateFlow<State>(State.Loading)
+    private val _state =
+        MutableStateFlow<State>(
+            State.Data(
+                Amount(value = 0.0, currencyCode = "USD"),
+            ),
+        )
 
     init {
         viewModelScope.launch {

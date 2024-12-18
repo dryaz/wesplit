@@ -96,6 +96,7 @@ import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.FeatureBanner
 import app.wesplit.ui.PlusProtected
 import app.wesplit.ui.atoms.AmountField
+import app.wesplit.ui.molecules.CurrencyChooser
 import app.wesplit.ui.tutorial.LocalTutorialControl
 import dev.gitlive.firebase.firestore.Timestamp
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -906,10 +907,9 @@ private fun ExpenseDetails(
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                app.wesplit.ui.molecules.CurrencyChooser(
+                CurrencyChooser(
                     modifier = Modifier.fillMaxHeight(1f),
                     selectedCurrencyCode = data.expense.totalAmount.currencyCode,
-                    availableCurrencies = data.availableCurrencies,
                     enabled = data.expense.allowedToChange(),
                 ) { currency ->
                     onUpdated(UpdateAction.TotalAmount(data.expense.totalAmount.value, currency))
@@ -1088,31 +1088,6 @@ private fun PayerChooser(
                 onClick = {
                     onUpdated(UpdateAction.NewPayer(participant))
                     onDismiss()
-                },
-            )
-        }
-    }
-}
-
-@FutureFeature
-@Composable
-private fun CurrencyChooser(
-    expanded: Boolean,
-    onUpdated: (UpdateAction) -> Unit,
-) {
-    var expanded1 = expanded
-    DropdownMenu(
-        modifier = Modifier.requiredSizeIn(maxHeight = 250.dp),
-        expanded = expanded1,
-        onDismissRequest = { expanded1 = false },
-    ) {
-        (0..20).forEach {
-            DropdownMenuItem(
-                // TODO: Currencies in here
-                text = { Text("Item1") },
-                onClick = {
-                    // TODO: Change selected currency
-                    expanded1 = false
                 },
             )
         }
