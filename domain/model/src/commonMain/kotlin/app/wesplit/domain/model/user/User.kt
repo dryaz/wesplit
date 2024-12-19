@@ -9,6 +9,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * User is an authorized user info.
@@ -136,8 +138,10 @@ enum class OnboardingStep {
     EXPENSE_SAVE,
 }
 
+@OptIn(ExperimentalUuidApi::class)
 fun User.participant(): Participant =
     Participant(
+        id = if (id.isNullOrBlank()) Uuid.random().toString() else id,
         name = name,
         user = this,
     )

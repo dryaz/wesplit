@@ -568,11 +568,7 @@ private fun Navigation(
                     val quickSplitViewModel: QuickSplitViewModel =
                         viewModel {
                             QuickSplitViewModel(
-                                currencyRepository = currencyRepository,
                                 userRepository = userRepository,
-                                analyticsManager = analyticsManager,
-                                settings = settings,
-                                appReviewManager = appReview,
                             )
                         }
 

@@ -177,6 +177,7 @@ kotlin {
                 implementation(libs.kotest.assertions.core)
                 implementation(libs.kotest.framework.engine)
                 implementation(libs.kotest.framework.datatest)
+                implementation(libs.kotlinx.coroutines.test)
             }
         }
     }
@@ -234,6 +235,7 @@ android {
         buildConfig = true
     }
     dependencies {
+        testImplementation(libs.kotlinx.coroutines.test)
         debugImplementation(compose.uiTooling)
         coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.3")
     }

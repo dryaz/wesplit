@@ -91,6 +91,7 @@ kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-co
 kotlinx-coroutines-wasmjs = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-wasm-js", version.ref = "coroutinesVersion" }
 kotlinx-coroutines-js = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-js", version.ref = "coroutinesVersion" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion"}
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesVersion"}
 kotlinx-io = { group = "org.jetbrains.kotlinx", name ="kotlinx-io-core", version.ref = "kotlinx-io" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
@@ -163,4 +164,3 @@ ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 google-services = { id = "com.google.gms.google-services", version.ref = "gservice" }
 crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "crashlytics" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-
