@@ -314,4 +314,8 @@ Möchten Sie die Gruppe wirklich verlassen?</string>
   <string name="quick_add">Schnell Ausgaben hinzufügen</string>
   <string name="image_description_ai">Beschreibung für AI-Bild</string>
     <string name="quick_split">Rechnung teilen</string>
+    <string name="quick_split_turn">Wer ist jetzt dran?</string>
+    <string name="quick_split_total_participants">Insgesamt Teilnehmer: %1$d</string>
+    <string name="no_selected_user">Niemand ist ausgewählt</string>
+    <string name="all_participants">Alle Teilnehmer</string>
 </resources>

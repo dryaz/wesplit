@@ -1,6 +1,5 @@
 package app.wesplit.quicksplit
 
-import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.participant
@@ -100,7 +99,7 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Lunch",
-                    value = 100.0,
+                    priceValue = 100.0,
                 )
             val participant1 = Participant("p1", "John")
             val participant2 = Participant("p2", "Doe")
@@ -129,7 +128,7 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Lunch",
-                    value = 100.0,
+                    priceValue = 100.0,
                 )
             val participant1 = Participant("p1", "John")
             val participant2 = Participant("p2", "Doe")
@@ -159,7 +158,7 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Lunch",
-                    value = 100.0,
+                    priceValue = 100.0,
                 )
             val participant1 = Participant("p1", "John")
             val participant2 = Participant("p2", "Doe")
@@ -189,7 +188,7 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Dinner",
-                    value = 50.0,
+                    priceValue = 50.0,
                 )
             val participant = Participant("p1", "Alice")
             val vm =
@@ -213,12 +212,12 @@ class QuickSplitViewModelTest {
             val shareItem1 =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Groceries",
-                    value = 20.0,
+                    priceValue = 20.0,
                 )
             val shareItem2 =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Fuel",
-                    value = 30.0,
+                    priceValue = 30.0,
                 )
             val participant = Participant("p1", "Alice")
             val vm =
@@ -246,13 +245,11 @@ class QuickSplitViewModelTest {
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
                 )
-            val newAmount = Amount(200.0, "EUR")
 
-            vm.update(UpdateAction.UpdateAmount(newAmount))
+            vm.update(UpdateAction.UpdateAmountCurrency("EUR"))
 
             vm.state.value.shouldBeInstanceOf<QuickSplitViewModel.State.Data>()
             with(vm.state.value as QuickSplitViewModel.State.Data) {
-                amount.value shouldBe 200.0
                 amount.currencyCode shouldBe "EUR"
             }
         }
@@ -263,7 +260,7 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Gift",
-                    value = 50.0,
+                    priceValue = 50.0,
                 )
             val participant = Participant("p1", "John")
             val vm =
@@ -286,7 +283,7 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Event",
-                    value = 100.0,
+                    priceValue = 100.0,
                 )
             val participant1 = Participant("p1", "Alice")
             val participant2 = Participant("p2", "Bob")
@@ -312,7 +309,7 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Dinner",
-                    value = 150.0,
+                    priceValue = 150.0,
                 )
             val participant = Participant("p1", "Alice")
             val vm =
@@ -321,7 +318,7 @@ class QuickSplitViewModelTest {
                 )
 
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
-            vm.update(UpdateAction.UpdateAmount(Amount(200.0, "GBP")))
+            vm.update(UpdateAction.UpdateAmountValue(200.0))
 
             vm.state.value.shouldBeInstanceOf<QuickSplitViewModel.State.Data>()
             with(vm.state.value as QuickSplitViewModel.State.Data) {
@@ -335,12 +332,12 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Dinner",
-                    value = 150.0,
+                    priceValue = 150.0,
                 )
             val finalItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Dinner",
-                    value = 50.0,
+                    priceValue = 50.0,
                 )
             val participant = Participant("p1", "Alice")
             val vm =
@@ -348,7 +345,7 @@ class QuickSplitViewModelTest {
                     userRepository = UserRepositoryMock(),
                 )
 
-            vm.update(UpdateAction.UpdateAmount(Amount(200.0, "GBP")))
+            vm.update(UpdateAction.UpdateAmountValue(200.0))
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
             vm.update(UpdateAction.AddItem(finalItem, emptySet()))
 
@@ -364,12 +361,12 @@ class QuickSplitViewModelTest {
             val shareItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Dinner",
-                    value = 150.0,
+                    priceValue = 150.0,
                 )
             val finalItem =
                 QuickSplitViewModel.State.Data.ShareItem(
                     title = "Dinner",
-                    value = 50.0,
+                    priceValue = 50.0,
                 )
             val participant = Participant("p1", "Alice")
             val vm =
@@ -377,7 +374,7 @@ class QuickSplitViewModelTest {
                     userRepository = UserRepositoryMock(),
                 )
 
-            vm.update(UpdateAction.UpdateAmount(Amount(200.0, "GBP")))
+            vm.update(UpdateAction.UpdateAmountValue(200.0))
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
             vm.update(UpdateAction.AddItem(finalItem, setOf(participant)))
 

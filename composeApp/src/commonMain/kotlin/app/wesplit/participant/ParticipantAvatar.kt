@@ -31,6 +31,7 @@ import split.composeapp.generated.resources.no_image_user
 fun ParticipantAvatar(
     modifier: Modifier = Modifier,
     participant: Participant,
+    addIconEnabled: Boolean = true,
     size: Dp = 56.dp,
 ) {
     val photoUrl = participant.user?.photoUrl
@@ -60,6 +61,7 @@ fun ParticipantAvatar(
                 is ImageAction.Failure -> {
                     EmptyParticipantAvatar(
                         modifier = Modifier,
+                        addIconEnabled = addIconEnabled,
                         participant = participant,
                         size = size,
                     )
@@ -69,6 +71,7 @@ fun ParticipantAvatar(
     } else {
         EmptyParticipantAvatar(
             modifier = modifier,
+            addIconEnabled = addIconEnabled,
             participant = participant,
             size = size,
         )
@@ -78,6 +81,7 @@ fun ParticipantAvatar(
 @Composable
 private fun EmptyParticipantAvatar(
     modifier: Modifier = Modifier,
+    addIconEnabled: Boolean = true,
     participant: Participant,
     size: Dp = 56.dp,
 ) {
@@ -91,7 +95,12 @@ private fun EmptyParticipantAvatar(
     ) {
         val painter =
             if (participant.user == null) {
-                rememberVectorPainter(AdaptiveIcons.Outlined.Add)
+                if (addIconEnabled) {
+                    rememberVectorPainter(AdaptiveIcons.Outlined.Add)
+                } else {
+                    // TODO: Show Name first letter instead of dummy ic?
+                    painterResource(Res.drawable.ic_user)
+                }
             } else {
                 painterResource(Res.drawable.ic_user)
             }

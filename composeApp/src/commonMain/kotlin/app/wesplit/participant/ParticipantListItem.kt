@@ -27,6 +27,7 @@ fun ParticipantListItem(
     enabled: Boolean = true,
     showImage: Boolean = true,
     showMeBadge: Boolean = true,
+    addAlertEnabled: Boolean = true,
     avatarSize: Dp = 56.dp,
     subComposable: @Composable (() -> Unit)? = null,
     action: @Composable (() -> Unit)? = null,
@@ -49,6 +50,7 @@ fun ParticipantListItem(
         if (showImage) {
             ParticipantAvatar(
                 participant = participant,
+                addIconEnabled = addAlertEnabled,
                 size = avatarSize,
             )
         }
@@ -56,7 +58,7 @@ fun ParticipantListItem(
         val suffix =
             if (participant.isMe()) {
                 " (${stringResource(Res.string.you)})"
-            } else if (participant.user == null) {
+            } else if (participant.user == null && addAlertEnabled) {
                 " (${stringResource(Res.string.new)})"
             } else {
                 ""

@@ -21,7 +21,9 @@ import kotlin.uuid.Uuid
 //  List of participants, each item could expand and show all items, multipliers and sum user ows.
 // TODO: Tests!
 sealed interface UpdateAction {
-    data class UpdateAmount(val amount: Amount) : UpdateAction
+    data class UpdateAmountValue(val value: Double) : UpdateAction
+
+    data class UpdateAmountCurrency(val currencyCode: String) : UpdateAction
 
     data class UpdateExpenseParticipants(val newParticipants: Set<Participant>) : UpdateAction
 
@@ -30,6 +32,8 @@ sealed interface UpdateAction {
         val participants: Set<Participant>,
         val shareDx: Int,
     ) : UpdateAction
+
+    data class UpdateSelectedParticipants(val participants: Set<Participant>) : UpdateAction
 
     data class RemoveItem(val item: QuickSplitViewModel.State.Data.ShareItem) : UpdateAction
 
@@ -114,11 +118,20 @@ class QuickSplitViewModel(
                     )
                 }
 
-                is UpdateAction.UpdateAmount -> {
+                is UpdateAction.UpdateAmountCurrency ->
                     dataState.copy(
-                        amount = action.amount,
+                        amount = dataState.amount.copy(currencyCode = action.currencyCode),
                     )
-                }
+
+                is UpdateAction.UpdateAmountValue ->
+                    dataState.copy(
+                        amount = dataState.amount.copy(value = action.value),
+                    )
+
+                is UpdateAction.UpdateSelectedParticipants ->
+                    dataState.copy(
+                        selectedParticipants = action.participants,
+                    )
             }
 
         // Recalculate undistributed value
@@ -126,7 +139,7 @@ class QuickSplitViewModel(
             newDataState.items.map { (shareItem, participantMap) ->
                 val totalShares = participantMap.values.sum()
                 if (totalShares > 0) {
-                    shareItem.value
+                    shareItem.priceValue
                 } else {
                     0.0
                 }
@@ -163,7 +176,7 @@ class QuickSplitViewModel(
                 constructor(
                     val id: String = Uuid.random().toString(),
                     val title: String,
-                    val value: Double,
+                    val priceValue: Double,
                 )
         }
     }

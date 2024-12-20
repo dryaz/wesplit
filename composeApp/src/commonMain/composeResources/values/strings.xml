@@ -318,4 +318,8 @@ Are you sure you want to leave the group?</string>
   <string name="quick_add">Quick Add an Expense</string>
   <string name="image_description_ai">Description for AI Image</string>
     <string name="quick_split">Quick Split</string>
+    <string name="quick_split_turn">Who's turn now?</string>
+    <string name="quick_split_total_participants">Total participants: %1$d</string>
+    <string name="no_selected_user">Nobody is selected</string>
+    <string name="all_participants">All participants</string>
 </resources>

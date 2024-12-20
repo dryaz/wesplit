@@ -13,6 +13,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -81,6 +82,12 @@ enum class QuickAddErrorState {
 fun QuickAdd(
     modifier: Modifier = Modifier,
     state: QuickAddState,
+    showCurrency: Boolean = true,
+    textFieldColors: TextFieldColors =
+        TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
     onAction: (QuickAddAction) -> Unit,
 ) = when (state) {
     is QuickAddState.Data ->
@@ -88,6 +95,8 @@ fun QuickAdd(
             modifier = modifier,
             state = state.value,
             error = state.error,
+            showCurrency = showCurrency,
+            textFieldColors = textFieldColors,
             onAction = onAction,
         )
 
@@ -177,7 +186,9 @@ private fun QuickAddPaywall(
 private fun QuickAddControl(
     modifier: Modifier = Modifier,
     state: QuickAddValue,
+    showCurrency: Boolean = true,
     error: QuickAddErrorState = QuickAddErrorState.NONE,
+    textFieldColors: TextFieldColors,
     onAction: (QuickAddAction) -> Unit,
 ) {
     val titleFocusRequester = remember { FocusRequester() }
@@ -234,11 +245,7 @@ private fun QuickAddControl(
                     overflow = TextOverflow.Ellipsis,
                 )
             },
-            colors =
-                TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
+            colors = textFieldColors,
             singleLine = true,
             keyboardOptions =
                 KeyboardOptions(
@@ -270,16 +277,18 @@ private fun QuickAddControl(
             },
             label = {
                 Text(
-                    text = stringResource(Res.string.amount) + " (${(state.currencyCode ?: "USD").currencySymbol()})",
+                    text =
+                        stringResource(Res.string.amount) +
+                            if (showCurrency) {
+                                " (${(state.currencyCode ?: "USD").currencySymbol()})"
+                            } else {
+                                ""
+                            },
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             },
-            colors =
-                TextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
-                ),
+            colors = textFieldColors,
             keyboardOptions =
                 KeyboardOptions(
                     keyboardType = KeyboardType.Decimal,
