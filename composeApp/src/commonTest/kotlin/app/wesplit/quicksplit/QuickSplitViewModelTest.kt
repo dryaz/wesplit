@@ -327,6 +327,52 @@ class QuickSplitViewModelTest {
         }
 
     @Test
+    fun undistributed_value_should_not_be_negative_if_amount_is_zero() =
+        runTest {
+            val shareItem =
+                QuickSplitViewModel.State.Data.ShareItem(
+                    title = "Dinner",
+                    priceValue = 150.0,
+                )
+            val participant = Participant("p1", "Alice")
+            val vm =
+                QuickSplitViewModel(
+                    userRepository = UserRepositoryMock(),
+                )
+
+            vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
+            vm.update(UpdateAction.UpdateAmountValue(0.0))
+
+            vm.state.value.shouldBeInstanceOf<QuickSplitViewModel.State.Data>()
+            with(vm.state.value as QuickSplitViewModel.State.Data) {
+                undistributedValue shouldBe 0.0
+            }
+        }
+
+    @Test
+    fun undistributed_value_should_be_negative_if_amount_is_not_zero() =
+        runTest {
+            val shareItem =
+                QuickSplitViewModel.State.Data.ShareItem(
+                    title = "Dinner",
+                    priceValue = 150.0,
+                )
+            val participant = Participant("p1", "Alice")
+            val vm =
+                QuickSplitViewModel(
+                    userRepository = UserRepositoryMock(),
+                )
+
+            vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
+            vm.update(UpdateAction.UpdateAmountValue(10.0))
+
+            vm.state.value.shouldBeInstanceOf<QuickSplitViewModel.State.Data>()
+            with(vm.state.value as QuickSplitViewModel.State.Data) {
+                undistributedValue shouldBe -140.0
+            }
+        }
+
+    @Test
     fun undistributed_value_remains_for_undistributed_items() =
         runTest {
             val shareItem =

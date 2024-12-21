@@ -322,4 +322,7 @@ Are you sure you want to leave the group?</string>
     <string name="quick_split_total_participants">Total participants: %1$d</string>
     <string name="no_selected_user">Nobody is selected</string>
     <string name="all_participants">All participants</string>
+    <string name="quick_add_empty">No expenses recorded yet.\nAdd some to split them.</string>
+    <string name="add_share">Add selected participants to the expense</string>
+    <string name="remove_share">Remove selected participants from the expense</string>
 </resources>

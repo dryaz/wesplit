@@ -145,7 +145,12 @@ class QuickSplitViewModel(
                 }
             }.sum()
 
-        val recalculatedUndistributedValue = newDataState.amount.value - totalDistributed
+        val recalculatedUndistributedValue =
+            if (newDataState.amount.value == 0.0) {
+                0.0
+            } else {
+                newDataState.amount.value - totalDistributed
+            }
 
         // Filter participants with zero shares
         val cleanedItems =

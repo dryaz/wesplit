@@ -318,4 +318,7 @@ Möchten Sie die Gruppe wirklich verlassen?</string>
     <string name="quick_split_total_participants">Insgesamt Teilnehmer: %1$d</string>
     <string name="no_selected_user">Niemand ist ausgewählt</string>
     <string name="all_participants">Alle Teilnehmer</string>
+    <string name="quick_add_empty">Noch keine Ausgaben erfasst.\nFügen Sie welche hinzu, um sie aufzuteilen.</string>
+    <string name="add_share">Fügen Sie die ausgewählten Teilnehmer zur Ausgabe hinzu</string>
+    <string name="remove_share">Entfernen Sie die ausgewählten Teilnehmer aus der Ausgabe</string>
 </resources>

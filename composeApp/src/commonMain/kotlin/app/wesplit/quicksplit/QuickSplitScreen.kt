@@ -1,6 +1,8 @@
 package app.wesplit.quicksplit
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -15,11 +17,14 @@ import androidx.compose.foundation.layout.requiredSizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -39,13 +44,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.wesplit.domain.model.FutureFeature
+import app.wesplit.domain.model.currency.Amount
+import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.atoms.AmountField
+import app.wesplit.ui.atoms.SwipeToDeleteItem
 import app.wesplit.ui.molecules.CurrencyChooser
 import app.wesplit.ui.molecules.ParticipantAvatars
 import app.wesplit.ui.molecules.QuickAdd
@@ -54,20 +63,28 @@ import app.wesplit.ui.molecules.QuickAddErrorState
 import app.wesplit.ui.molecules.QuickAddState
 import app.wesplit.ui.molecules.QuickAddValue
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Clear
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowDown
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_share
 import split.composeapp.generated.resources.all_participants
 import split.composeapp.generated.resources.edit_group
 import split.composeapp.generated.resources.ic_down
+import split.composeapp.generated.resources.ic_minus
 import split.composeapp.generated.resources.loading
 import split.composeapp.generated.resources.no_selected_user
+import split.composeapp.generated.resources.quick_add_empty
 import split.composeapp.generated.resources.quick_split
 import split.composeapp.generated.resources.quick_split_total_participants
 import split.composeapp.generated.resources.quick_split_turn
+import split.composeapp.generated.resources.remove_share
 import split.composeapp.generated.resources.select_payer_cd
+import split.composeapp.generated.resources.undistributed
 
 sealed interface QuickSplitAction {
     data object Back : QuickSplitAction
@@ -195,6 +212,7 @@ private fun SharesDetails(
                                     modifier = Modifier.padding(vertical = 8.dp),
                                     addIconEnabled = false,
                                     participants = data.selectedParticipants,
+                                    size = 28.dp,
                                 )
                             }
                         } else {
@@ -267,12 +285,71 @@ private fun SharesDetails(
         Spacer(modifier = Modifier.height(8.dp))
 
         data.items.mapValues { (item, participants) ->
-            ShareListItem(participants, item)
+            ShareListItem(
+                participants = participants,
+                item = item,
+                currencyCode = data.amount.currencyCode,
+                onUpdated = onUpdated,
+                onPlus = {
+                    onUpdated(
+                        UpdateAction.UpdateShareParticipants(
+                            share = item,
+                            participants = data.selectedParticipants,
+                            shareDx = 1,
+                        ),
+                    )
+                },
+                onMinus = {
+                    onUpdated(
+                        UpdateAction.UpdateShareParticipants(
+                            share = item,
+                            participants = data.selectedParticipants,
+                            shareDx = -1,
+                        ),
+                    )
+                },
+            )
+        }
+
+        if (data.items.isEmpty() && data.undistributedValue == 0.0) {
+            Text(
+                modifier = Modifier.fillMaxWidth(1f).padding(top = 8.dp, bottom = 16.dp),
+                text = stringResource(Res.string.quick_add_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+                textAlign = TextAlign.Center,
+            )
+        }
+
+        AnimatedVisibility(
+            visible = data.undistributedValue != 0.0,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Column {
+                HorizontalDivider()
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                ) {
+                    Text(
+                        modifier = Modifier,
+                        text = stringResource(Res.string.undistributed),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = "${Amount(value = data.undistributedValue, currencyCode = data.amount.currencyCode).format()}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                }
+            }
         }
 
         PayerChooser(
             expanded = payerSelection,
-            payer = data.selectedParticipants.first(),
             allParticipants = data.participants,
             onDismiss = { payerSelection = false },
             onUpdated = onUpdated,
@@ -283,40 +360,82 @@ private fun SharesDetails(
 @Composable
 private fun ShareListItem(
     participants: Map<Participant, Int>,
+    currencyCode: String,
     item: QuickSplitViewModel.State.Data.ShareItem,
+    onUpdated: (UpdateAction) -> Unit,
+    onPlus: () -> Unit,
+    onMinus: () -> Unit,
 ) {
-    ListItem(
-        modifier =
-            Modifier.clickable {
-                // TODO: delete/edit button on click?
+    SwipeToDeleteItem(
+        onDelete = {
+            onUpdated(UpdateAction.RemoveItem(item))
+        },
+    ) {
+        ListItem(
+            modifier = Modifier,
+            colors =
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
+            trailingContent = {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                ) {
+                    Text(
+                        text = "${Amount(value = item.priceValue, currencyCode = currencyCode).format()}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row {
+                        FilledTonalButton(
+                            onClick = onMinus,
+                            shape =
+                                RoundedCornerShape(
+                                    topStart = 5.dp,
+                                    bottomStart = 5.dp,
+                                ),
+                        ) {
+                            Icon(
+                                imageVector = vectorResource(Res.drawable.ic_minus),
+                                contentDescription = stringResource(Res.string.remove_share),
+                            )
+                        }
+                        FilledTonalButton(
+                            onClick = onPlus,
+                            shape =
+                                RoundedCornerShape(
+                                    topEnd = 5.dp,
+                                    bottomEnd = 5.dp,
+                                ),
+                        ) {
+                            Icon(
+                                AdaptiveIcons.Outlined.Add,
+                                contentDescription = stringResource(Res.string.add_share),
+                            )
+                        }
+                    }
+                }
             },
-        colors =
-            ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            ),
-        trailingContent = {
-            Column {
-                Text(
-                    text = "${participants.values.sum()}",
-                )
-            }
-        },
-        headlineContent = {
-            Column {
-                Text(
-                    text = "${item.title}",
-                )
-                Text(
-                    text = "${item.priceValue}",
-                )
-                ParticipantAvatars(
-                    // TODO: show participants shares
-                    participants = participants.keys,
-                    addIconEnabled = false,
-                )
-            }
-        },
-    )
+            headlineContent = {
+                Column {
+                    Text(
+                        text = "${item.title}",
+                    )
+                    ParticipantAvatars(
+                        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                        // TODO: show participants shares
+                        participants =
+                            participants.flatMap { (participant, count) ->
+                                List(count) { participant }
+                            },
+                        addIconEnabled = false,
+                        size = 28.dp,
+                    )
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -409,21 +528,78 @@ private fun ExpenseDetails(
     }
 }
 
+// TODO: to Modal sheet, add option to choose 2+ ppl
 @FutureFeature
 @Composable
 private fun PayerChooser(
     expanded: Boolean,
-    payer: Participant,
     allParticipants: Set<Participant>,
     onDismiss: () -> Unit,
     onUpdated: (UpdateAction) -> Unit,
 ) {
     DropdownMenu(
-        modifier = Modifier.requiredSizeIn(maxHeight = 250.dp, minWidth = 360.dp),
+        modifier = Modifier.requiredSizeIn(maxHeight = 360.dp, minWidth = 360.dp),
         expanded = expanded,
         onDismissRequest = { onDismiss() },
     ) {
-        // TODO: Add Nobody/everybody option
+        DropdownMenuItem(
+            text = {
+                ListItem(
+                    colors =
+                        ListItemDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        ),
+                    headlineContent = {
+                        Text(
+                            text = stringResource(Res.string.no_selected_user),
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    },
+                    leadingContent = {
+                        Icon(
+                            AdaptiveIcons.Outlined.Clear,
+                            contentDescription = stringResource(Res.string.no_selected_user),
+                        )
+                    },
+                )
+            },
+            onClick = {
+                onDismiss()
+                onUpdated(UpdateAction.UpdateSelectedParticipants(emptySet()))
+            },
+        )
+
+        DropdownMenuItem(
+            text = {
+                ListItem(
+                    colors =
+                        ListItemDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        ),
+                    headlineContent = {
+                        Text(
+                            text = stringResource(Res.string.all_participants),
+                            color = MaterialTheme.colorScheme.outline,
+                        )
+                    },
+                    supportingContent = {
+                        ParticipantAvatars(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            participants = allParticipants,
+                            addIconEnabled = false,
+                            size = 28.dp,
+                        )
+                    },
+                )
+            },
+            onClick = {
+                onDismiss()
+                onUpdated(UpdateAction.UpdateSelectedParticipants(allParticipants))
+            },
+        )
+
+        HorizontalDivider()
+
         allParticipants.forEach { participant ->
             DropdownMenuItem(
                 text = {
