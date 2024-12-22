@@ -12,6 +12,12 @@ internal val ProfileParser =
         DefaultActionParser { DeeplinkAction.Profile() },
     )
 
+internal val QuickSplitParser =
+    SegmentCheckParser(
+        DeeplinkAction.QuickSplit.SEGMENT,
+        DefaultActionParser { DeeplinkAction.QuickSplit() },
+    )
+
 internal val GroupIdParser =
     ActionParser { components, pathIndex ->
         if (pathIndex != components.getPath().size - 1) return@ActionParser null
@@ -55,6 +61,7 @@ internal val ExpenseDetailsParser =
 private val rootParsers =
     listOf(
         ProfileParser,
+        QuickSplitParser,
         GroupDetailsParser,
         ExpenseDetailsParser,
     )

@@ -28,6 +28,14 @@ sealed class DeeplinkAction : Action() {
         override fun getPath(): Array<String> = super.getPath() + SEGMENT
     }
 
+    class QuickSplit : DeeplinkAction() {
+        companion object {
+            const val SEGMENT = "quickSplit"
+        }
+
+        override fun getPath(): Array<String> = super.getPath() + SEGMENT
+    }
+
     sealed class Group : DeeplinkAction() {
         abstract val groupId: String
 

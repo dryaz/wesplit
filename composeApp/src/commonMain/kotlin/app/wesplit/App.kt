@@ -136,6 +136,15 @@ fun App(
                     }
 
                     is DeeplinkAction.Home -> {}
+                    is DeeplinkAction.QuickSplit ->
+                        secondPaneNavController.navigate(
+                            RightPane.QuickSplit.route,
+                            navOptions =
+                                navOptions {
+                                    launchSingleTop = true
+                                },
+                        )
+
                     is DeeplinkAction.Profile ->
                         firstPaneNavController.navigate(
                             LeftPane.Profile.route,
