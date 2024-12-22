@@ -3,6 +3,7 @@ package app.wesplit.quicksplit
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.participant
+import app.wesplit.utils.AnalyticsManagerMock
 import app.wesplit.utils.UserRepositoryMock
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
@@ -34,6 +35,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
             vm.state.value.shouldBeInstanceOf<QuickSplitViewModel.State.Data>()
             with(vm.state.value as QuickSplitViewModel.State.Data) {
@@ -54,6 +56,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(user),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
             vm.state.value.shouldBeInstanceOf<QuickSplitViewModel.State.Data>()
             with(vm.state.value as QuickSplitViewModel.State.Data) {
@@ -76,6 +79,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
             vm.update(
                 UpdateAction.UpdateExpenseParticipants(
@@ -106,6 +110,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
             val initialParticipants = setOf(participant1, participant2)
 
@@ -135,6 +140,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
             val initialParticipants = setOf(participant1)
             val updatedParticipants = setOf(participant1, participant2)
@@ -165,6 +171,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
             val initialParticipants = setOf(participant1, participant2)
             val updatedParticipants = setOf(participant1)
@@ -194,6 +201,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
@@ -223,6 +231,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.AddItem(shareItem1, setOf(participant)))
@@ -244,6 +253,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.UpdateAmountCurrency("EUR"))
@@ -266,6 +276,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
@@ -290,6 +301,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant1, participant2)))
@@ -315,6 +327,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
@@ -338,6 +351,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
@@ -361,6 +375,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.AddItem(shareItem, setOf(participant)))
@@ -389,6 +404,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.UpdateAmountValue(200.0))
@@ -418,6 +434,7 @@ class QuickSplitViewModelTest {
             val vm =
                 QuickSplitViewModel(
                     userRepository = UserRepositoryMock(),
+                    analyticsManager = AnalyticsManagerMock(),
                 )
 
             vm.update(UpdateAction.UpdateAmountValue(200.0))

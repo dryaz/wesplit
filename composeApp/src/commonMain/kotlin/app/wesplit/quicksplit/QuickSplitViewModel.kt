@@ -2,6 +2,7 @@ package app.wesplit.quicksplit
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.user.UserRepository
@@ -16,6 +17,13 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+
+private const val QS_UPDATE_CURRENCY_EVENT = "qs_up_cur"
+private const val QS_REMOVE_ITEM_EVENT = "qs_rm_item"
+
+private const val QS_UPDATE_SHARE_PART = "qs_update_shares"
+private const val QS_UPDATE_SHARE_PART_PPL = "ppl"
+private const val QS_UPDATE_SHARE_PART_VAL = "val"
 
 // TODO: Show sheet/screen at the end with split by person
 //  List of participants, each item could expand and show all items, multipliers and sum user ows.
@@ -45,6 +53,7 @@ sealed interface UpdateAction {
 
 class QuickSplitViewModel(
     private val userRepository: UserRepository,
+    private val analyticsManager: AnalyticsManager,
 ) : ViewModel(), KoinComponent {
     val state: StateFlow<State>
         get() = _state
@@ -84,6 +93,13 @@ class QuickSplitViewModel(
                 }
 
                 is UpdateAction.UpdateShareParticipants -> {
+                    analyticsManager.track(
+                        QS_UPDATE_SHARE_PART,
+                        mapOf(
+                            QS_UPDATE_SHARE_PART_PPL to action.participants.size.toString(),
+                            QS_UPDATE_SHARE_PART_VAL to action.shareDx.toString(),
+                        ),
+                    )
                     dataState.copy(
                         items =
                             dataState.items.mapValues { (shareItem, participantMap) ->
@@ -113,15 +129,18 @@ class QuickSplitViewModel(
                 }
 
                 is UpdateAction.RemoveItem -> {
+                    analyticsManager.track(QS_REMOVE_ITEM_EVENT)
                     dataState.copy(
                         items = dataState.items.filterKeys { it != action.item },
                     )
                 }
 
-                is UpdateAction.UpdateAmountCurrency ->
+                is UpdateAction.UpdateAmountCurrency -> {
+                    analyticsManager.track(QS_UPDATE_CURRENCY_EVENT)
                     dataState.copy(
                         amount = dataState.amount.copy(currencyCode = action.currencyCode),
                     )
+                }
 
                 is UpdateAction.UpdateAmountValue ->
                     dataState.copy(

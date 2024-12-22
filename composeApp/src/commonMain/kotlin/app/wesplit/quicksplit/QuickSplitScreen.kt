@@ -52,6 +52,7 @@ import app.wesplit.domain.model.currency.format
 import app.wesplit.domain.model.group.Participant
 import app.wesplit.participant.ParticipantListItem
 import app.wesplit.participant.ParticipantPicker
+import app.wesplit.quicksplit.QuickSplitViewModel.State.Data.ShareItem
 import app.wesplit.ui.AdaptiveTopAppBar
 import app.wesplit.ui.atoms.AmountField
 import app.wesplit.ui.atoms.SwipeToDeleteItem
@@ -84,10 +85,15 @@ import split.composeapp.generated.resources.quick_split_total_participants
 import split.composeapp.generated.resources.quick_split_turn
 import split.composeapp.generated.resources.remove_share
 import split.composeapp.generated.resources.select_payer_cd
+import split.composeapp.generated.resources.settle_balances
 import split.composeapp.generated.resources.undistributed
 
 sealed interface QuickSplitAction {
     data object Back : QuickSplitAction
+
+    data class Settle(
+        val shares: Map<ShareItem, Map<Participant, Int>>,
+    ) : QuickSplitAction
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
@@ -126,6 +132,7 @@ fun QuickSplitScreen(
             is QuickSplitViewModel.State.Data ->
                 QuickSplitView(
                     modifier = Modifier.fillMaxSize(1f).padding(paddings),
+                    onQuickSplitAction = onAction,
                     data = quickSplitState,
                 ) { action ->
                     viewModel.update(action)
@@ -140,6 +147,7 @@ fun QuickSplitScreen(
 private fun QuickSplitView(
     modifier: Modifier = Modifier,
     data: QuickSplitViewModel.State.Data,
+    onQuickSplitAction: (QuickSplitAction) -> Unit,
     onUpdated: (UpdateAction) -> Unit,
 ) {
     Column(
@@ -148,7 +156,7 @@ private fun QuickSplitView(
     ) {
         ExpenseDetails(data, onUpdated)
         Spacer(modifier = Modifier.height(16.dp))
-        SharesDetails(data, onUpdated)
+        SharesDetails(data, onQuickSplitAction, onUpdated)
         Spacer(modifier = Modifier.height(64.dp))
     }
 }
@@ -156,6 +164,7 @@ private fun QuickSplitView(
 @Composable
 private fun SharesDetails(
     data: QuickSplitViewModel.State.Data,
+    onQuickSplitAction: (QuickSplitAction) -> Unit,
     onUpdated: (UpdateAction) -> Unit,
 ) {
     Card(
@@ -346,6 +355,45 @@ private fun SharesDetails(
                     )
                 }
             }
+        }
+
+        AnimatedVisibility(
+            visible = data.items.isNotEmpty(),
+        ) {
+            ListItem(
+                modifier =
+                    Modifier.fillMaxWidth().then(
+                        if (data.undistributedValue == 0.0) {
+                            Modifier.clickable {
+                                onQuickSplitAction(QuickSplitAction.Settle(data.items))
+                            }
+                        } else {
+                            Modifier
+                        },
+                    ),
+                colors =
+                    ListItemDefaults.colors(
+                        containerColor =
+                            if (data.undistributedValue == 0.0) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.outlineVariant
+                            },
+                        headlineColor =
+                            if (data.undistributedValue == 0.0) {
+                                MaterialTheme.colorScheme.onPrimary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                    ),
+                headlineContent = {
+                    Text(
+                        modifier = Modifier.fillMaxSize(1f),
+                        text = stringResource(Res.string.settle_balances),
+                        textAlign = TextAlign.Center,
+                    )
+                },
+            )
         }
 
         PayerChooser(

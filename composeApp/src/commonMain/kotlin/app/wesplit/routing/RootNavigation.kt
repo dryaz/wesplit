@@ -69,6 +69,8 @@ import app.wesplit.paywall.PaywallRoute
 import app.wesplit.paywall.PaywallViewModel
 import app.wesplit.quicksplit.QuickSplitAction
 import app.wesplit.quicksplit.QuickSplitScreen
+import app.wesplit.quicksplit.QuickSplitSettleAction
+import app.wesplit.quicksplit.QuickSplitSettleScreen
 import app.wesplit.quicksplit.QuickSplitViewModel
 import app.wesplit.settle.SettleAction
 import app.wesplit.settle.SettleScreen
@@ -108,6 +110,10 @@ private const val AI_GROUP_IMAGE_PAYWALL_SOURCE = "ai_group_image"
 
 private const val ADD_EXPENSE_FROM_GROUP_INFO_EVENT = "expense_from_group"
 
+private const val QS_SETTLE = "qs_settle"
+private const val QS_SETTLE_ITEMS = "items"
+private const val QS_SETTLE_PART = "ppl"
+
 sealed class PaneNavigation(
     val route: String,
 ) {
@@ -130,6 +136,8 @@ sealed class RightPane(
     data object Paywall : RightPane("paywall")
 
     data object QuickSplit : RightPane("quickSplit")
+
+    data object QuickSplitSettle : RightPane("quickSplit/settle")
 
     data object Group : RightPane("group/{${Param.GROUP_ID.paramName}}?${Param.TOKEN.paramName}={${Param.TOKEN.paramName}}") {
         enum class Param(
@@ -399,6 +407,14 @@ private fun Navigation(
             }
         }
 
+    val quickSplitViewModel: QuickSplitViewModel =
+        viewModel {
+            QuickSplitViewModel(
+                userRepository = userRepository,
+                analyticsManager = analyticsManager,
+            )
+        }
+
     DoublePaneNavigation(
         secondNavhostEmpty = secondNavControllerEmpty,
         menuItems = menuItems,
@@ -564,19 +580,38 @@ private fun Navigation(
                     NoGroupScreen()
                 }
 
-                composable(route = RightPane.QuickSplit.route) {
-                    val quickSplitViewModel: QuickSplitViewModel =
-                        viewModel {
-                            QuickSplitViewModel(
-                                userRepository = userRepository,
-                            )
+                composable(route = RightPane.QuickSplitSettle.route) {
+                    QuickSplitSettleScreen(
+                        viewModel = quickSplitViewModel,
+                    ) { action ->
+                        when (action) {
+                            QuickSplitSettleAction.Back -> secondPaneNavController.popBackStack()
                         }
+                    }
+                }
 
+                composable(route = RightPane.QuickSplit.route) {
                     QuickSplitScreen(
                         viewModel = quickSplitViewModel,
                     ) { action ->
                         when (action) {
                             QuickSplitAction.Back -> secondPaneNavController.popBackStack()
+                            is QuickSplitAction.Settle -> {
+                                analyticsManager.track(
+                                    QS_SETTLE,
+                                    mapOf(
+                                        QS_SETTLE_ITEMS to action.shares.keys.size.toString(),
+                                        QS_SETTLE_PART to action.shares.values.flatMap { it.keys }.toSet().size.toString(),
+                                    ),
+                                )
+                                secondPaneNavController.navigate(
+                                    RightPane.QuickSplitSettle.destination(),
+                                    navOptions =
+                                        navOptions {
+                                            launchSingleTop = true
+                                        },
+                                )
+                            }
                         }
                     }
                 }
