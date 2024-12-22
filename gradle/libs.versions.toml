@@ -1,7 +1,7 @@
 [versions]
 koalaplotCore = "0.7.0"
-versionName = "3.4.3"
-android-versionCode = "73"
+versionName = "4.0.0"
+android-versionCode = "74"
 
 filekitCompose = "0.8.7"
 inAppReview = "3.1.21"
