@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.group.Participant
+import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.domain.model.user.participant
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import kotlin.uuid.Uuid
 
 private const val QS_UPDATE_CURRENCY_EVENT = "qs_up_cur"
 private const val QS_REMOVE_ITEM_EVENT = "qs_rm_item"
+private const val QS_RESET = "qs_reset"
 
 private const val QS_UPDATE_SHARE_PART = "qs_update_shares"
 private const val QS_UPDATE_SHARE_PART_PPL = "ppl"
@@ -181,6 +183,17 @@ class QuickSplitViewModel(
             newDataState.copy(
                 undistributedValue = recalculatedUndistributedValue,
                 items = cleanedItems,
+            )
+        }
+    }
+
+    fun reset() {
+        analyticsManager.track(QS_RESET)
+        val currentUser = _state.value.dataState().participants.find { it.isMe() }
+        _state.update {
+            State.Data(
+                participants = currentUser?.let { setOf(it) } ?: emptySet(),
+                selectedParticipants = currentUser?.let { setOf(it) } ?: emptySet(),
             )
         }
     }

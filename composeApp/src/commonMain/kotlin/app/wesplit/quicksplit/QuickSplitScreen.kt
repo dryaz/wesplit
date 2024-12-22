@@ -26,6 +26,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +67,7 @@ import app.wesplit.ui.molecules.QuickAddValue
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Clear
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Edit
 import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowDown
 import org.jetbrains.compose.resources.painterResource
@@ -74,6 +76,7 @@ import org.jetbrains.compose.resources.vectorResource
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_share
 import split.composeapp.generated.resources.all_participants
+import split.composeapp.generated.resources.delete_expense
 import split.composeapp.generated.resources.edit_group
 import split.composeapp.generated.resources.ic_down
 import split.composeapp.generated.resources.ic_minus
@@ -111,6 +114,16 @@ fun QuickSplitScreen(
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         topBar = {
             AdaptiveTopAppBar(
+                actions = {
+                    IconButton(
+                        onClick = { viewModel.reset() },
+                    ) {
+                        Icon(
+                            AdaptiveIcons.Outlined.Delete,
+                            contentDescription = stringResource(Res.string.delete_expense),
+                        )
+                    }
+                },
                 title = {
                     Text(
                         when (state.value) {

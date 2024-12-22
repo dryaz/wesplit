@@ -30,7 +30,7 @@ fun AmountField(
         ),
     onValueChanged: (Double) -> Unit,
 ) {
-    var amount by remember {
+    var amount by remember(value) {
         mutableStateOf(if (value != 0.0) value.toString() else "")
     }
 
