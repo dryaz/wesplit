@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,8 +40,10 @@ import app.wesplit.domain.model.currency.currencySymbol
 import app.wesplit.filterDoubleInput
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Clear
+import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import org.jetbrains.compose.resources.stringResource
 import split.composeapp.generated.resources.Res
+import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.amount
 import split.composeapp.generated.resources.cancel
 import split.composeapp.generated.resources.expense_title
@@ -78,10 +81,16 @@ enum class QuickAddErrorState {
     AMOUNT,
 }
 
+enum class QuickAddFieldControl {
+    CLEAR,
+    ADD,
+}
+
 @Composable
 fun QuickAdd(
     modifier: Modifier = Modifier,
     state: QuickAddState,
+    fieldControl: QuickAddFieldControl = QuickAddFieldControl.CLEAR,
     showCurrency: Boolean = true,
     textFieldColors: TextFieldColors =
         TextFieldDefaults.colors(
@@ -95,6 +104,7 @@ fun QuickAdd(
             modifier = modifier,
             state = state.value,
             error = state.error,
+            fieldControl = fieldControl,
             showCurrency = showCurrency,
             textFieldColors = textFieldColors,
             onAction = onAction,
@@ -186,6 +196,7 @@ private fun QuickAddPaywall(
 private fun QuickAddControl(
     modifier: Modifier = Modifier,
     state: QuickAddValue,
+    fieldControl: QuickAddFieldControl,
     showCurrency: Boolean = true,
     error: QuickAddErrorState = QuickAddErrorState.NONE,
     textFieldColors: TextFieldColors,
@@ -305,16 +316,31 @@ private fun QuickAddControl(
             modifier = Modifier.padding(start = 8.dp),
             visible = doubleAmount > 0.0 || title.length > 0,
         ) {
-            IconButton(
-                modifier = Modifier.minimumInteractiveComponentSize(),
-                onClick = {
-                    onAction(QuickAddAction.Change(null))
-                },
-            ) {
-                Icon(
-                    AdaptiveIcons.Outlined.Clear,
-                    contentDescription = stringResource(Res.string.cancel),
-                )
+            when (fieldControl) {
+                QuickAddFieldControl.CLEAR ->
+                    IconButton(
+                        modifier = Modifier.minimumInteractiveComponentSize(),
+                        onClick = {
+                            onAction(QuickAddAction.Change(null))
+                        },
+                    ) {
+                        Icon(
+                            AdaptiveIcons.Outlined.Clear,
+                            contentDescription = stringResource(Res.string.cancel),
+                        )
+                    }
+
+                QuickAddFieldControl.ADD ->
+                    FilledTonalButton(
+                        onClick = {
+                            onAction(QuickAddAction.Commit)
+                        },
+                    ) {
+                        Icon(
+                            AdaptiveIcons.Outlined.Done,
+                            contentDescription = stringResource(Res.string.add_expense_to_group),
+                        )
+                    }
             }
         }
     }

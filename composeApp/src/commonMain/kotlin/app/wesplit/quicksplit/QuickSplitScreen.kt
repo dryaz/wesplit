@@ -62,6 +62,7 @@ import app.wesplit.ui.molecules.ParticipantAvatars
 import app.wesplit.ui.molecules.QuickAdd
 import app.wesplit.ui.molecules.QuickAddAction
 import app.wesplit.ui.molecules.QuickAddErrorState
+import app.wesplit.ui.molecules.QuickAddFieldControl
 import app.wesplit.ui.molecules.QuickAddState
 import app.wesplit.ui.molecules.QuickAddValue
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -289,6 +290,7 @@ private fun SharesDetails(
                     value = quickAddData,
                     error = quickAddError,
                 ),
+            fieldControl = QuickAddFieldControl.ADD,
             textFieldColors =
                 TextFieldDefaults.colors(
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -376,7 +378,7 @@ private fun SharesDetails(
             ListItem(
                 modifier =
                     Modifier.fillMaxWidth().then(
-                        if (data.undistributedValue == 0.0) {
+                        if (data.isSettleEnabled()) {
                             Modifier.clickable {
                                 onQuickSplitAction(QuickSplitAction.Settle(data.items))
                             }
@@ -387,13 +389,13 @@ private fun SharesDetails(
                 colors =
                     ListItemDefaults.colors(
                         containerColor =
-                            if (data.undistributedValue == 0.0) {
+                            if (data.isSettleEnabled()) {
                                 MaterialTheme.colorScheme.primary
                             } else {
                                 MaterialTheme.colorScheme.outlineVariant
                             },
                         headlineColor =
-                            if (data.undistributedValue == 0.0) {
+                            if (data.isSettleEnabled()) {
                                 MaterialTheme.colorScheme.onPrimary
                             } else {
                                 MaterialTheme.colorScheme.onSurface

@@ -8,6 +8,7 @@ import app.wesplit.domain.model.group.Participant
 import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.domain.model.user.participant
+import app.wesplit.quicksplit.QuickSplitViewModel.State
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -220,3 +221,5 @@ class QuickSplitViewModel(
 
     private fun State.dataState() = (this as? State.Data) ?: State.Data()
 }
+
+fun State.Data.isSettleEnabled() = undistributedValue == 0.0 && items.none { it.value.isEmpty() }
