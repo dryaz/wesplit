@@ -39,6 +39,8 @@ data class Group(
     val tokens: List<String> = emptyList(),
     @SerialName("publicToken")
     val publicToken: String,
+    @SerialName("lastExpenseAt")
+    val lastExpenseAt: BaseTimestamp? = null,
 )
 
 fun Group.uiTitle() =

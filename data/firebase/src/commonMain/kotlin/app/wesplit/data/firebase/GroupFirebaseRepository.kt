@@ -37,6 +37,7 @@ val GROUP_COLLECTION = "groups"
 private const val TOKENS_FIELD = "tokens"
 private const val PUBLIC_TOKEN_FIELD = "publicToken"
 private const val PARTICIPANTS_FIELD = "participants"
+private const val LAST_EXPENSE_FIELD = "lastExpenseAt"
 
 private const val GROUP_CREATE_EVENT = "group_create"
 private const val GROUP_UPDATE_EVENT = "group_update"
@@ -61,10 +62,13 @@ class GroupFirebaseRepository(
                 Account.Restricted, // TODO: In case of restriction to group -> return this gropu in list
                 -> flow { emptyList<List<Group>>() }
 
+                // TODO: Uncomment after a while when all gropus should have lastExpenseAt at least as null
                 is Account.Authorized ->
                     Firebase.firestore.collection(GROUP_COLLECTION).where {
                         TOKENS_FIELD contains (Firebase.auth.currentUser?.uid ?: "")
-                    }.snapshots.map {
+                    }
+//                        .orderBy(LAST_EXPENSE_FIELD, Direction.DESCENDING)
+                        .snapshots.map {
                         withContext(coroutineDispatcher) {
                             it.documents.map {
                                 it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
