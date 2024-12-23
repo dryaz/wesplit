@@ -374,7 +374,7 @@ async function sendNotifications(expense, groupId) {
     const message = {
       notification: {
         title: title,
-        body: `Your share: ${share.amount.currency} ${share.amount.value}`,
+        body: `Your share: ${share.amount.currency} ${share.amount.value.toFixed(2)}`,
       },
       android: {
         notification: {
