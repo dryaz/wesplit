@@ -122,14 +122,17 @@ private fun QuickSplitSettleView(
                         participant = participant,
                         addAlertEnabled = false,
                         action = {
-                            Row {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
                                 Text(
                                     text = "${Amount(value = itemList.sumOf { it.priceValue }, currencyCode = currencyCode).format()}",
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.secondary,
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Icon(
+                                    modifier = Modifier.size(12.dp),
                                     imageVector =
                                         if (itemListShown) {
                                             AdaptiveIcons.Outlined.KeyboardArrowUp
