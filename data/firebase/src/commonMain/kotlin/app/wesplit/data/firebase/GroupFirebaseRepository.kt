@@ -69,14 +69,14 @@ class GroupFirebaseRepository(
                     }
 //                        .orderBy(LAST_EXPENSE_FIELD, Direction.DESCENDING)
                         .snapshots.map {
-                        withContext(coroutineDispatcher) {
-                            it.documents.map {
-                                it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
-                                    id = it.id,
-                                )
+                            withContext(coroutineDispatcher) {
+                                it.documents.map {
+                                    it.data(Group.serializer(), ServerTimestampBehavior.ESTIMATE).copy(
+                                        id = it.id,
+                                    )
+                                }
                             }
                         }
-                    }
             }
         }.catch {
             analyticsManager.log(it)

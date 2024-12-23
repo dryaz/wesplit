@@ -106,7 +106,7 @@ private fun QuickSplitSettleView(
     currencyCode: String,
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(1f).verticalScroll(rememberScrollState()),
+        modifier = Modifier.fillMaxSize(1f).padding(top = 16.dp).verticalScroll(rememberScrollState()),
     ) {
         Card(
             modifier = modifier.fillMaxWidth(1f).padding(horizontal = 16.dp),
