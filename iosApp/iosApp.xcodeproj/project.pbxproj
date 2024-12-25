@@ -28,6 +28,7 @@
 		0DDD9D482CBFD5EE005C49AF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DDD9D472CBFD5EE005C49AF /* StoreKit.framework */; };
 		0DDD9D502CBFE165005C49AF /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0DDD9D472CBFD5EE005C49AF /* StoreKit.framework */; };
 		2152FB042600AC8F00CF470E /* iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2152FB032600AC8F00CF470E /* iOSApp.swift */; };
+		84E1132F2D1CB81000A2CF7D /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84E1132E2D1CB81000A2CF7D /* AdSupport.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,8 @@
 		2152FB032600AC8F00CF470E /* iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iOSApp.swift; sourceTree = "<group>"; };
 		7555FF7B242A565900829871 /* Wesplit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wesplit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FF8C242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		84E1132C2D1CB5E000A2CF7D /* AppTrackingTransparency.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppTrackingTransparency.framework; path = System/Library/Frameworks/AppTrackingTransparency.framework; sourceTree = SDKROOT; };
+		84E1132E2D1CB81000A2CF7D /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		AB3632DC29227652001CCB65 /* Config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,6 +66,7 @@
 				0D540FB12C73DB4E00892BE6 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				0D03606D2CAD2E4F0048E904 /* AuthenticationServices.framework in Frameworks */,
 				0D540FB72C73DB4E00892BE6 /* FirebaseDynamicLinks in Frameworks */,
+				84E1132F2D1CB81000A2CF7D /* AdSupport.framework in Frameworks */,
 				0D540FBD2C73DB4E00892BE6 /* FirebasePerformance in Frameworks */,
 				0D0DA24B2CC594F000ABCFDB /* FirebaseStorage in Frameworks */,
 				0D4CC3D92CA3068F00819A19 /* FirebaseAppCheck in Frameworks */,
@@ -86,6 +90,8 @@
 		42799AB246E5F90AF97AA0EF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				84E1132E2D1CB81000A2CF7D /* AdSupport.framework */,
+				84E1132C2D1CB5E000A2CF7D /* AppTrackingTransparency.framework */,
 				0DDD9D472CBFD5EE005C49AF /* StoreKit.framework */,
 				0D03606B2CAD2E4A0048E904 /* AuthenticationServices.framework */,
 			);

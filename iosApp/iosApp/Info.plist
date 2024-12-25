@@ -69,5 +69,7 @@
 	<string>Firebase uses location when in use to improve user experience </string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Firebase messaging uses it to promptly deliver push when user allowes to</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>We use your data for personalized ads and service improvement</string>
 </dict>
 </plist>
