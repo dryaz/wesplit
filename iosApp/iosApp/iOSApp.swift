@@ -3,6 +3,8 @@ import FirebaseMessaging
 import GoogleSignIn
 import FirebaseCore
 import ComposeApp
+import AppTrackingTransparency
+import AdSupport
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -40,6 +42,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       deeplinkHandler.handleDeeplink(url: urlString)
     }
     return true
+  }
+
+  func applicationDidBecomeActive(_ application: UIApplication) {
+    if #available(iOS 14, *) {
+      ATTrackingManager.requestTrackingAuthorization { status in
+        switch status {
+          case .authorized:
+            print("enable tracking")
+          case .denied:
+            print("disable tracking")
+          default:
+            print("disable tracking")
+        }
+      }
+    }
   }
 
   func application(
