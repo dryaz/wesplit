@@ -1,5 +1,4 @@
 const functions = require("firebase-functions/v2");
-const { SecretManagerServiceClient } = require("@google-cloud/secret-manager");
 const express = require("express");
 const bodyParser = require("body-parser");
 const { Telegraf, Markup, composer, Scenes, session } = require("telegraf"); // Import Markup for inline keyboards
@@ -10,6 +9,12 @@ const getSecret = require("../services/secrets");
 const startCommand = require("./commands/start");
 const groupsCommand = require("./commands/groups");
 const addExpenseCommand = require("./commands/addExpense");
+
+const getOrCreateUserAction = require("./actions/getCreateUser");
+const getLinkedGroupAction = require("./actions/getLinkedGroup");
+const createGroupAction = require("./actions/createGroup");
+const linkGroupAction = require("./actions/linkGroup");
+const infoAction = require("./actions/info");
 
 const addExpenseScene = require("./scenes/addExpense"); // Import the scene
 
@@ -38,72 +43,45 @@ app.post("/", async (req, res) => {
       // bot.use(stage.middleware());
 
       bot.command("groups", groupsCommand);
+      bot.command("linkedGroup", getLinkedGroupAction);
       bot.command("add", addExpenseCommand);
+      bot.command("user", getOrCreateUserAction);
 
-      bot.action("add_expense_confirm", async (ctx) => {
-        console.log(ctx.update);
-        try {
-          await ctx.answerCbQuery();
-          await ctx.telegram.sendMessage(ctx.from.id, "Entering Add Expense Scene...");
-          ctx.scene.enter("addExpense");
-        } catch (error) {
-          console.error("Error entering addExpense scene:", error);
-        }
-      });
+      // Debug Action
+      bot.command("info", infoAction);
+
+      bot.action("create_new_group", createGroupAction);
+      bot.action("link_existing_group", linkGroupAction);
+
+      // bot.action("add_expense_confirm", async (ctx) => {
+      //   console.log(ctx.update);
+      //   try {
+      //     await ctx.answerCbQuery();
+      //     await ctx.telegram.sendMessage(ctx.from.id, "Entering Add Expense Scene...");
+      //     ctx.scene.enter("addExpense");
+      //   } catch (error) {
+      //     console.error("Error entering addExpense scene:", error);
+      //   }
+      // });
 
       // Inline Query Handler
-      bot.on("inline_query", (ctx) => {
-        const query = ctx.inlineQuery.query;
+      // bot.on("inline_query");
 
-        // Define inline results (buttons)
-        const results = [
-          {
-            type: "article",
-            id: "1",
-            title: query,
-            input_message_content: {
-              message_text: "You clicked the inline button!",
-            },
-            reply_markup: Markup.inlineKeyboard([
-              [
-                Markup.button.switchToCurrentChat(
-                  "Add Expense", // Button text
-                  "/add@WeSplitAppBot " // Text pre-filled in the input box,
-                ),
-              ],
-            ]).reply_markup,
-            description: "Connect to Wesplit to manager expenses",
-          },
-          {
-            type: "article",
-            id: "2",
-            title: "Open Wesplit app",
-            input_message_content: {
-              message_text: "Check this awesome group details in Wepslit",
-            },
-            reply_markup: Markup.inlineKeyboard([[Markup.button.url("Open Wesplit", "https://web.wesplit.app")]]).reply_markup,
-            description: "See detailed info about group",
-          },
-        ];
-
-        ctx.answerInlineQuery(results);
-      });
-
-      const buttons = Markup.inlineKeyboard([[Markup.button.callback("Link a Wesplit Group ", "button_click")]]);
+      // const buttons = Markup.inlineKeyboard([[Markup.button.callback("Link a Wesplit Group ", "button_click")]]);
 
       // Handle button clicks
-      bot.action("button_click", (ctx) => {
-        ctx.answerCbQuery(); // Acknowledge the button click
-        // Extract the group ID (chat ID) from the context
-        const groupId = ctx.chat?.id;
+      // bot.action("button_click", (ctx) => {
+      //   ctx.answerCbQuery(); // Acknowledge the button click
+      //   // Extract the group ID (chat ID) from the context
+      //   const groupId = ctx.chat?.id;
 
-        // Use the group ID as needed
-        if (groupId) {
-          ctx.reply(`Group ID is: ${groupId} | User ID is: ${ctx.from.id}`);
-        } else {
-          ctx.reply("This action is not in a group context.");
-        }
-      });
+      //   // Use the group ID as needed
+      //   if (groupId) {
+      //     ctx.reply(`Group ID is: ${groupId} | User ID is: ${ctx.from.id}`);
+      //   } else {
+      //     ctx.reply("This action is not in a group context.");
+      //   }
+      // });
 
       // Handle mentions of the bot in text messages
       // bot.on("text", (ctx) => {
