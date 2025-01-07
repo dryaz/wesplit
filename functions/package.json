@@ -21,7 +21,8 @@
     "google-auth-library": "^9.14.2",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
-    "jwk-to-pem": "^2.0.6"
+    "jwk-to-pem": "^2.0.6",
+    "telegraf": "^4.16.3"
   },
   "devDependencies": {
     "firebase-functions-test": "^3.1.0"
