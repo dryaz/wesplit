@@ -36,7 +36,7 @@ class SettleSuggestionUseCase {
                         SettleSuggestion(
                             payer = debitors[i].first,
                             recipient = creditors[j].first,
-                            amount = creditors[i].second,
+                            amount = creditors[j].second,
                         ),
                     )
 
