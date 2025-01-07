@@ -1,4 +1,8 @@
 // TODO: Export functions one by one from legacy when work on adjustments
 const { telegramBot } = require("./tg/tgMain");
+const { recalculateBalancesV2 } = require("./expense/balances");
 
-exports.telegramBot = telegramBot;
+module.exports = {
+  telegramBot,
+  recalculateBalancesV2,
+};

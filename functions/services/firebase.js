@@ -1,9 +1,14 @@
-const { Firestore } = require("@google-cloud/firestore");
+const admin = require("firebase-admin");
 
-// Create a single Firestore instance
-const firestore = new Firestore();
+// Initialize Firebase Admin if not already initialized
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
-// Export both Firestore and Auth
+// Get Firestore instance from Admin SDK
+const firestore = admin.firestore();
+
 module.exports = {
+  admin,
   firestore,
 };
