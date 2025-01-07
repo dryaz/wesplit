@@ -10,7 +10,6 @@ module.exports = async (ctx) => {
   if (groupCache.has(telegramChatId)) {
     console.log("Returning group from cache");
     const cachedGroup = groupCache.get(telegramChatId);
-    await ctx.reply(`Group found in cache: ${cachedGroup.title || "Unnamed Group"}`);
     return cachedGroup;
   }
 
@@ -29,7 +28,6 @@ module.exports = async (ctx) => {
       groupCache.set(telegramChatId, group);
       console.log("Group cached:", group);
 
-      await ctx.reply(`Group found: ${group.title || "Unnamed Group"}`);
       return group;
     } else {
       // No group found, respond with buttons

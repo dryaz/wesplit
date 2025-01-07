@@ -16,6 +16,8 @@ const createGroupAction = require("./actions/createGroup");
 const linkGroupAction = require("./actions/linkGroup");
 const infoAction = require("./actions/info");
 
+const inlineAction = require("./actions/inline/main");
+
 const addExpenseScene = require("./scenes/addExpense"); // Import the scene
 
 const stage = new Scenes.Stage([addExpenseScene]);
@@ -47,6 +49,9 @@ app.post("/", async (req, res) => {
       bot.command("add", addExpenseCommand);
       bot.command("user", getOrCreateUserAction);
 
+      // Inline Query Handler
+      bot.on("inline_query", inlineAction);
+
       // Debug Action
       bot.command("info", infoAction);
 
@@ -63,9 +68,6 @@ app.post("/", async (req, res) => {
       //     console.error("Error entering addExpense scene:", error);
       //   }
       // });
-
-      // Inline Query Handler
-      // bot.on("inline_query");
 
       // const buttons = Markup.inlineKeyboard([[Markup.button.callback("Link a Wesplit Group ", "button_click")]]);
 
