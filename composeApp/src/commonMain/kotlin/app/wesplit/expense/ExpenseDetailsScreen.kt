@@ -112,6 +112,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
+import split.composeapp.generated.resources.all_participants
 import split.composeapp.generated.resources.already_settled
 import split.composeapp.generated.resources.amounts
 import split.composeapp.generated.resources.at_date
@@ -578,6 +579,57 @@ private fun SharesDetailsParticipantList(
     splitType: SplitType,
     onUpdated: (UpdateAction) -> Unit,
 ) {
+    if (splitType == SplitType.EQUAL) {
+        val allParticipating =
+            data.allParticipants().all {
+                data.splitOptions.splitValues[splitType]!![it] as Boolean == true
+            }
+
+        ListItem(
+            modifier =
+                Modifier.clickable {
+                    data.allParticipants().forEach {
+                        onUpdated(
+                            UpdateAction.Split.Equal(
+                                participant = it,
+                                value = !allParticipating,
+                            ),
+                        )
+                    }
+                },
+            colors =
+                ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ),
+            trailingContent = {
+                Checkbox(
+                    checked =
+                        data.allParticipants().all {
+                            data.splitOptions.splitValues[splitType]!![it] as Boolean == true
+                        },
+                    enabled = data.expense.allowedToChange(),
+                    onCheckedChange = { isChecked ->
+                        data.allParticipants().forEach {
+                            onUpdated(
+                                UpdateAction.Split.Equal(
+                                    participant = it,
+                                    value = isChecked,
+                                ),
+                            )
+                        }
+                    },
+                )
+            },
+            headlineContent = {
+                Text(
+                    text = stringResource(Res.string.all_participants),
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            },
+        )
+
+        HorizontalDivider()
+    }
     data.allParticipants().forEach { participant ->
         when (splitType) {
             SplitType.EQUAL -> EqualSplit(data, splitType, participant, onUpdated)

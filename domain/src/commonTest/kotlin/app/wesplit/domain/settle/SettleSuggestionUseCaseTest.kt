@@ -20,70 +20,80 @@ class SettleSuggestionUseCaseTest {
         val p7 = Participant("7", "Charlie")
         val p8 = Participant("8", "Charlie")
 
-        val balance = Balance(
-            participantsBalance = setOf(
-                ParticipantBalance(
-                    participant = p1,
-                    amounts = setOf(
-                        Amount(-144310.32, "AMD"),
-                        Amount(1113.56, "GEL"),
+        val balance =
+            Balance(
+                participantsBalance =
+                    setOf(
+                        ParticipantBalance(
+                            participant = p1,
+                            amounts =
+                                setOf(
+                                    Amount(-144310.32, "AMD"),
+                                    Amount(1113.56, "GEL"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p2,
+                            amounts =
+                                setOf(
+                                    Amount(-144310.32, "AMD"),
+                                    Amount(-12.76, "GEL"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p3,
+                            amounts =
+                                setOf(
+                                    Amount(438752.66, "AMD"),
+                                    Amount(188.03, "GEL"),
+                                    Amount(-460.0, "USD"),
+                                    Amount(-13550.0, "RUB"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p4,
+                            amounts =
+                                setOf(
+                                    Amount(-538.75, "AMD"),
+                                    Amount(-165.09, "GEL"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p5,
+                            amounts =
+                                setOf(
+                                    Amount(-142477.0, "AMD"),
+                                    Amount(-126.76, "GEL"),
+                                    Amount(460.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p6,
+                            amounts =
+                                setOf(
+                                    Amount(-2372.07, "AMD"),
+                                    Amount(-312.76, "GEL"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p7,
+                            amounts =
+                                setOf(
+                                    Amount(-2372.07, "AMD"),
+                                    Amount(-311.76, "GEL"),
+                                    Amount(13550.0, "RUB"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p8,
+                            amounts =
+                                setOf(
+                                    Amount(-2372.07, "AMD"),
+                                    Amount(-372.43, "GEL"),
+                                ),
+                        ),
                     ),
-                ),
-                ParticipantBalance(
-                    participant = p2,
-                    amounts = setOf(
-                        Amount(-144310.32, "AMD"),
-                        Amount(-12.76, "GEL"),
-                    ),
-                ),
-                ParticipantBalance(
-                    participant = p3,
-                    amounts = setOf(
-                        Amount(438752.66, "AMD"),
-                        Amount(188.03, "GEL"),
-                        Amount(-460.0, "USD"),
-                        Amount(-13550.0, "RUB"),
-                    ),
-                ),
-                ParticipantBalance(
-                    participant = p4,
-                    amounts = setOf(
-                        Amount(-538.75, "AMD"),
-                        Amount(-165.09, "GEL"),
-                    ),
-                ),
-                ParticipantBalance(
-                    participant = p5,
-                    amounts = setOf(
-                        Amount(-142477.0, "AMD"),
-                        Amount(-126.76, "GEL"),
-                        Amount(460.0, "USD"),
-                    ),
-                ),
-                ParticipantBalance(
-                    participant = p6,
-                    amounts = setOf(
-                        Amount(-2372.07, "AMD"),
-                        Amount(-312.76, "GEL"),
-                    ),
-                ),
-                ParticipantBalance(
-                    participant = p7,
-                    amounts = setOf(
-                        Amount(-2372.07, "AMD"),
-                        Amount(-311.76, "GEL"),
-                        Amount(13550.0, "RUB"),
-                    ),
-                ),
-                ParticipantBalance(
-                    participant = p8,
-                    amounts = setOf(
-                        Amount(-2372.07, "AMD"),
-                        Amount(-372.43, "GEL"),
-                    ),
-                )
             )
-        )
 
         useCase.get(balance)
         // Expect NO crash
@@ -96,29 +106,34 @@ class SettleSuggestionUseCaseTest {
         val p2 = Participant("2", "Bob")
         val p3 = Participant("3", "Charlie")
 
-        val balance = Balance(
-            participantsBalance = setOf(
-                ParticipantBalance(
-                    participant = p1,
-                    amounts = setOf(
-                        Amount(-30.0, "USD") // Debitor
+        val balance =
+            Balance(
+                participantsBalance =
+                    setOf(
+                        ParticipantBalance(
+                            participant = p1,
+                            amounts =
+                                setOf(
+                                    Amount(-30.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p2,
+                            amounts =
+                                setOf(
+                                    Amount(-30.0, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p3,
+                            amounts =
+                                setOf(
+                                    Amount(30.0, "USD"),
+                                    Amount(30.0, "EUR"),
+                                ),
+                        ),
                     ),
-                ),
-                ParticipantBalance(
-                    participant = p2,
-                    amounts = setOf(
-                        Amount(-30.0, "EUR") // Debitor
-                    ),
-                ),
-                ParticipantBalance(
-                    participant = p3,
-                    amounts = setOf(
-                        Amount(30.0, "USD"), // Creditor
-                        Amount(30.0, "EUR")  // Creditor
-                    ),
-                ),
             )
-        )
 
         val suggestions = useCase.get(balance)
 
@@ -152,36 +167,36 @@ class SettleSuggestionUseCaseTest {
         val balance =
             Balance(
                 participantsBalance =
-                setOf(
-                    ParticipantBalance(
-                        participant = p1,
-                        amounts =
-                        setOf(
-                            Amount(-40.0, "USD"),
+                    setOf(
+                        ParticipantBalance(
+                            participant = p1,
+                            amounts =
+                                setOf(
+                                    Amount(-40.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p2,
+                            amounts =
+                                setOf(
+                                    Amount(-20.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p3,
+                            amounts =
+                                setOf(
+                                    Amount(30.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p4,
+                            amounts =
+                                setOf(
+                                    Amount(30.0, "USD"),
+                                ),
                         ),
                     ),
-                    ParticipantBalance(
-                        participant = p2,
-                        amounts =
-                        setOf(
-                            Amount(-20.0, "USD"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p3,
-                        amounts =
-                        setOf(
-                            Amount(30.0, "USD"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p4,
-                        amounts =
-                        setOf(
-                            Amount(30.0, "USD"),
-                        ),
-                    ),
-                ),
             )
 
         val suggestions = useCase.get(balance)
@@ -220,29 +235,29 @@ class SettleSuggestionUseCaseTest {
         val balance =
             Balance(
                 participantsBalance =
-                setOf(
-                    ParticipantBalance(
-                        participant = p1,
-                        amounts =
-                        setOf(
-                            Amount(-30.0, "USD"),
+                    setOf(
+                        ParticipantBalance(
+                            participant = p1,
+                            amounts =
+                                setOf(
+                                    Amount(-30.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p2,
+                            amounts =
+                                setOf(
+                                    Amount(-20.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p3,
+                            amounts =
+                                setOf(
+                                    Amount(50.0, "USD"),
+                                ),
                         ),
                     ),
-                    ParticipantBalance(
-                        participant = p2,
-                        amounts =
-                        setOf(
-                            Amount(-20.0, "USD"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p3,
-                        amounts =
-                        setOf(
-                            Amount(50.0, "USD"),
-                        ),
-                    ),
-                ),
             )
 
         val suggestions = useCase.get(balance)
@@ -277,29 +292,29 @@ class SettleSuggestionUseCaseTest {
         val balance =
             Balance(
                 participantsBalance =
-                setOf(
-                    ParticipantBalance(
-                        participant = p2,
-                        amounts =
-                        setOf(
-                            Amount(-30.0, "USD"),
+                    setOf(
+                        ParticipantBalance(
+                            participant = p2,
+                            amounts =
+                                setOf(
+                                    Amount(-30.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p1,
+                            amounts =
+                                setOf(
+                                    Amount(-20.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p3,
+                            amounts =
+                                setOf(
+                                    Amount(50.0, "USD"),
+                                ),
                         ),
                     ),
-                    ParticipantBalance(
-                        participant = p1,
-                        amounts =
-                        setOf(
-                            Amount(-20.0, "USD"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p3,
-                        amounts =
-                        setOf(
-                            Amount(50.0, "USD"),
-                        ),
-                    ),
-                ),
             )
 
         val suggestions = useCase.get(balance)
@@ -317,7 +332,6 @@ class SettleSuggestionUseCaseTest {
         }
     }
 
-
     @Test
     fun messed_i_j_case_2() {
         val useCase = SettleSuggestionUseCase()
@@ -327,30 +341,30 @@ class SettleSuggestionUseCaseTest {
         val balance =
             Balance(
                 participantsBalance =
-                setOf(
-                    ParticipantBalance(
-                        participant = p1,
-                        amounts =
-                        setOf(
-                            Amount(-20.0, "USD"),
+                    setOf(
+                        ParticipantBalance(
+                            participant = p1,
+                            amounts =
+                                setOf(
+                                    Amount(-20.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p2,
+                            amounts =
+                                setOf(
+                                    Amount(-30.0, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p3,
+                            amounts =
+                                setOf(
+                                    Amount(20.0, "USD"),
+                                    Amount(30.0, "EUR"),
+                                ),
                         ),
                     ),
-                    ParticipantBalance(
-                        participant = p2,
-                        amounts =
-                        setOf(
-                            Amount(-30.0, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p3,
-                        amounts =
-                        setOf(
-                            Amount(20.0, "USD"),
-                            Amount(30.0, "EUR"),
-                        ),
-                    ),
-                ),
             )
 
         val suggestions = useCase.get(balance)
@@ -377,30 +391,30 @@ class SettleSuggestionUseCaseTest {
         val balance =
             Balance(
                 participantsBalance =
-                setOf(
-                    ParticipantBalance(
-                        participant = p1,
-                        amounts =
-                        setOf(
-                            Amount(20.0, "USD"),
+                    setOf(
+                        ParticipantBalance(
+                            participant = p1,
+                            amounts =
+                                setOf(
+                                    Amount(20.0, "USD"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p2,
+                            amounts =
+                                setOf(
+                                    Amount(30.0, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p3,
+                            amounts =
+                                setOf(
+                                    Amount(-20.0, "USD"),
+                                    Amount(-30.0, "EUR"),
+                                ),
                         ),
                     ),
-                    ParticipantBalance(
-                        participant = p2,
-                        amounts =
-                        setOf(
-                            Amount(30.0, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p3,
-                        amounts =
-                        setOf(
-                            Amount(-20.0, "USD"),
-                            Amount(-30.0, "EUR"),
-                        ),
-                    ),
-                ),
             )
 
         val suggestions = useCase.get(balance)
