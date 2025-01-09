@@ -4,9 +4,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
@@ -75,6 +77,7 @@ import dev.gitlive.firebase.perf.performance
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Add
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
+import io.github.alexzhirkevich.cupertino.adaptive.icons.KeyboardArrowLeft
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Settings
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Share
 import kotlinx.coroutines.NonCancellable
@@ -85,6 +88,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
+import split.composeapp.generated.resources.back
 import split.composeapp.generated.resources.balances
 import split.composeapp.generated.resources.edit_group
 import split.composeapp.generated.resources.error
@@ -600,6 +604,18 @@ private fun GroupHeader(
     Row(
         modifier = Modifier.padding(16.dp).fillMaxWidth(1f),
     ) {
+        IconButton(
+            modifier = Modifier,
+            onClick = {
+                onAction.invoke(GroupInfoAction.Back)
+            },
+        ) {
+            Icon(
+                AdaptiveIcons.Outlined.KeyboardArrowLeft,
+                contentDescription = stringResource(Res.string.back),
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
         GroupHead(
             modifier = Modifier.weight(1f),
             group = group,

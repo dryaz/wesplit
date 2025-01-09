@@ -1,8 +1,10 @@
 package app.wesplit
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
@@ -78,6 +80,7 @@ import split.composeapp.generated.resources.system_theme
 @Composable
 fun DoublePaneNavigation(
     secondNavhostEmpty: Boolean,
+    showFirstPane: Boolean,
     menuItems: List<NavigationMenuItem>,
     selectedMenuItem: NavigationMenuItem,
     onMenuItemClick: (NavigationMenuItem) -> Unit,
@@ -236,8 +239,22 @@ fun DoublePaneNavigation(
                         .clip(RoundedCornerShape(20.dp)),
             ) {
                 val width = if (windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact) 220.dp else 320.dp
-                firstNavhost(Modifier.width(width).fillMaxHeight(1f))
-                VerticalDivider()
+
+                AnimatedVisibility(
+                    visible = showFirstPane,
+                    enter = expandHorizontally(),
+                    exit = shrinkHorizontally(),
+                ) {
+                    firstNavhost(Modifier.width(width).fillMaxHeight(1f))
+                }
+
+                AnimatedVisibility(
+                    visible = showFirstPane,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    VerticalDivider()
+                }
                 // TODO: Calculate weight based on current width, if width is that it will be collapsed -> weight already should be 1.
                 //  So it should be from 1 until 2 based on scnreen width. calculateWindowSizeClass() doesn't provide value :(
                 //  https://github.com/dryaz/wesplit/issues/15

@@ -253,6 +253,7 @@ fun RootNavigation(
     onSelectMenuItem: (NavigationMenuItem) -> Unit,
 ) {
     var secondNavControllerEmpty by remember { mutableStateOf(false) }
+    var showFirstPane by remember { mutableStateOf(true) }
     val analyticsManager: AnalyticsManager = koinInject()
 
     fun trackScreen(
@@ -299,6 +300,7 @@ fun RootNavigation(
                 ) {
                     trackScreen(destination, arguments)
                     secondNavControllerEmpty = controller.previousBackStackEntry == null
+                    showFirstPane = controller.currentBackStackEntry?.destination?.route != RightPane.Group.route
                 }
             },
         )
@@ -336,6 +338,7 @@ fun RootNavigation(
     ) {
         Navigation(
             secondNavControllerEmpty,
+            showFirstPane,
             selectedMenuItem,
             onSelectMenuItem,
             firstPaneNavController,
@@ -359,6 +362,7 @@ fun RootNavigation(
 @Composable
 private fun Navigation(
     secondNavControllerEmpty: Boolean,
+    showFirstPane: Boolean,
     selectedMenuItem: NavigationMenuItem,
     onSelectMenuItem: (NavigationMenuItem) -> Unit,
     firstPaneNavController: NavHostController,
@@ -417,6 +421,7 @@ private fun Navigation(
 
     DoublePaneNavigation(
         secondNavhostEmpty = secondNavControllerEmpty,
+        showFirstPane = showFirstPane,
         menuItems = menuItems,
         selectedMenuItem = selectedMenuItem,
         onMenuItemClick = { menuItem ->
