@@ -136,7 +136,9 @@ fun SettleScreen(
         },
     ) { padding ->
         Box(
-            modifier = Modifier.fillMaxSize(1f).widthIn(max = 500.dp).padding(top = padding.calculateTopPadding()),
+            modifier =
+                Modifier.fillMaxSize(1f).widthIn(max = 500.dp)
+                    .padding(top = padding.calculateTopPadding(), bottom = padding.calculateBottomPadding().plus(8.dp)),
             contentAlignment = Alignment.Center,
         ) {
             when (val state = uiState.value) {
