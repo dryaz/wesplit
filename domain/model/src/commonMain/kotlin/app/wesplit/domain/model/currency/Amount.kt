@@ -3,6 +3,7 @@ package app.wesplit.domain.model.currency
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 @Serializable
@@ -23,7 +24,7 @@ fun Amount.format(withCurrency: Boolean = true): String {
 
     // Split integer and decimal parts
     val integerPart = rounded.toLong()
-    val decimalPart = ((rounded - integerPart) * 100).toInt()
+    val decimalPart = ((rounded - integerPart.toDouble()) * 100).roundToInt()
 
     // Format integer part with thousand separators (dots)
     val integerStr = integerPart.toString().reversed().chunked(3).joinToString(".").reversed()

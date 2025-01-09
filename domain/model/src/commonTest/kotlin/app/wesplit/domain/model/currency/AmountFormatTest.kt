@@ -5,6 +5,21 @@ import kotlin.test.Test
 
 class AmountFormatTest {
     @Test
+    fun format_14_59999999_test() {
+        Amount(14.599999999, "USD").format() shouldBe "$14,60"
+    }
+
+    @Test
+    fun format_14_51111111_test() {
+        Amount(14.51111111, "USD").format() shouldBe "$14,51"
+    }
+
+    @Test
+    fun format_14_6_issue() {
+        Amount(14.6, "USD").format() shouldBe "$14,60"
+    }
+
+    @Test
     fun format_positive_with_currency() {
         Amount(5.321123, "USD").format() shouldBe "$5,32"
     }
