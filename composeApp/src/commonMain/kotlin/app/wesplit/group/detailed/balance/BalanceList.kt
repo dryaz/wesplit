@@ -53,6 +53,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.data_syncing
+import split.composeapp.generated.resources.detailed
 import split.composeapp.generated.resources.get_plus_instant_balances
 import split.composeapp.generated.resources.ic_flag
 import split.composeapp.generated.resources.ic_plus
@@ -60,7 +61,6 @@ import split.composeapp.generated.resources.invite_user
 import split.composeapp.generated.resources.offline_balances_shown
 import split.composeapp.generated.resources.plus_badge
 import split.composeapp.generated.resources.recalculating_backend
-import split.composeapp.generated.resources.settle_balances
 import split.composeapp.generated.resources.sync_in_progress
 import split.composeapp.generated.resources.undistributed
 
@@ -203,7 +203,7 @@ fun BalanceList(
                             headlineContent = {
                                 Text(
                                     modifier = Modifier.fillMaxSize(1f),
-                                    text = stringResource(Res.string.settle_balances),
+                                    text = stringResource(Res.string.detailed),
                                     textAlign = TextAlign.Center,
                                 )
                             },
@@ -324,5 +324,5 @@ private fun Undistributed(balance: Balance) {
 
 @Composable
 private fun SettledBalances() {
-    Text(stringResource(Res.string.settle_balances))
+    Text(stringResource(Res.string.detailed))
 }

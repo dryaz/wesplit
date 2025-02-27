@@ -323,4 +323,5 @@
     <string name="quick_add_empty">Еще нет записей расходов.\nДобавьте новые, чтобы разделить их.</string>
     <string name="add_share">Добавить выбранных участников в расход</string>
     <string name="remove_share">Удалить выбранных участников из расхода</string>
+    <string name="detailed">Подробнее</string>
 </resources>

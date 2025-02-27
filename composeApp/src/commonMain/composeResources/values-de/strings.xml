@@ -321,4 +321,5 @@ Möchten Sie die Gruppe wirklich verlassen?</string>
     <string name="quick_add_empty">Noch keine Ausgaben erfasst.\nFügen Sie welche hinzu, um sie aufzuteilen.</string>
     <string name="add_share">Fügen Sie die ausgewählten Teilnehmer zur Ausgabe hinzu</string>
     <string name="remove_share">Entfernen Sie die ausgewählten Teilnehmer aus der Ausgabe</string>
+    <string name="detailed">Mehr Details</string>
 </resources>
