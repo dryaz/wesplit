@@ -18,6 +18,7 @@ import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
 import app.wesplit.domain.model.user.UserRepository
+import app.wesplit.domain.model.user.isPlus
 import app.wesplit.domain.settle.SettleSuggestion
 import app.wesplit.domain.settle.SettleSuggestionUseCase
 import app.wesplit.routing.RightPane
@@ -89,7 +90,6 @@ class SettleViewModel(
             UiSetting(
                 selectedCurrency = "USD",
                 isRecalculateEnabled = false,
-                // TODO: True if PRO
                 isSuggestionsEnabled = false,
             ),
         )
@@ -224,9 +224,15 @@ class SettleViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun startInternalStatesUpdates() {
         viewModelScope.launch {
-            userRepository.get().filterNotNull().collectLatest {
-                it.lastUsedCurrency?.let { currency ->
-                    uiSetting.getAndUpdate { it.copy(selectedCurrency = currency) }
+            userRepository.get().filterNotNull().collectLatest { user ->
+                user.lastUsedCurrency?.let { currency ->
+                    uiSetting.getAndUpdate {
+                        it.copy(
+                            selectedCurrency = currency,
+                            isSuggestionsEnabled = user.isPlus(),
+                            isRecalculateEnabled = user.isPlus(),
+                        )
+                    }
                 }
             }
         }
