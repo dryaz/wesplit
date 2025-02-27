@@ -63,7 +63,6 @@ class GroupFirebaseRepository(
                 Account.Restricted, // TODO: In case of restriction to group -> return this gropu in list
                 -> flow { emptyList<List<Group>>() }
 
-                // TODO: Uncomment after a while when all gropus should have lastExpenseAt at least as null
                 is Account.Authorized ->
                     Firebase.firestore.collection(GROUP_COLLECTION).where {
                         TOKENS_FIELD contains (Firebase.auth.currentUser?.uid ?: "")
