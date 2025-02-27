@@ -105,7 +105,10 @@ import io.github.alexzhirkevich.cupertino.adaptive.icons.Create
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Delete
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Done
 import io.github.alexzhirkevich.cupertino.adaptive.icons.Lock
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format
+import kotlinx.datetime.format.char
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -115,7 +118,6 @@ import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.all_participants
 import split.composeapp.generated.resources.already_settled
 import split.composeapp.generated.resources.amounts
-import split.composeapp.generated.resources.at_date
 import split.composeapp.generated.resources.cancel
 import split.composeapp.generated.resources.confirm_delete_expense_message
 import split.composeapp.generated.resources.confirm_no_wait
@@ -348,9 +350,18 @@ fun SettledDisclaimer(
                 if (data.expense.lastUpdated is Timestamp.ServerTimestamp) {
                     "Happy splitting!"
                 } else {
-                    stringResource(
-                        Res.string.at_date,
-                        data.expense.lastUpdated.toInstant().toLocalDateTime(TimeZone.currentSystemDefault()).toString(),
+                    data.expense.lastUpdated.toInstant().toLocalDateTime(TimeZone.currentSystemDefault()).format(
+                        LocalDateTime.Format {
+                            dayOfMonth()
+                            char('-')
+                            monthNumber()
+                            char('-')
+                            year()
+                            char(' ')
+                            hour()
+                            char(':')
+                            minute()
+                        },
                     )
                 }
             Text(
