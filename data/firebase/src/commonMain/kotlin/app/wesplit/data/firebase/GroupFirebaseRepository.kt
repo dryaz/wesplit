@@ -11,6 +11,7 @@ import app.wesplit.domain.model.user.User
 import app.wesplit.domain.model.user.UserRepository
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
+import dev.gitlive.firebase.firestore.Direction
 import dev.gitlive.firebase.firestore.FieldValue
 import dev.gitlive.firebase.firestore.FirebaseFirestoreException
 import dev.gitlive.firebase.firestore.FirestoreExceptionCode
@@ -67,7 +68,7 @@ class GroupFirebaseRepository(
                     Firebase.firestore.collection(GROUP_COLLECTION).where {
                         TOKENS_FIELD contains (Firebase.auth.currentUser?.uid ?: "")
                     }
-//                        .orderBy(LAST_EXPENSE_FIELD, Direction.DESCENDING)
+                        .orderBy(LAST_EXPENSE_FIELD, Direction.DESCENDING)
                         .snapshots.map {
                             withContext(coroutineDispatcher) {
                                 it.documents.map {
