@@ -17,6 +17,8 @@ import app.wesplit.domain.model.expense.ExpenseRepository
 import app.wesplit.domain.model.group.Balance
 import app.wesplit.domain.model.group.Group
 import app.wesplit.domain.model.group.GroupRepository
+import app.wesplit.domain.model.group.ParticipantBalance
+import app.wesplit.domain.model.group.isMe
 import app.wesplit.domain.model.user.UserRepository
 import app.wesplit.domain.model.user.isPlus
 import app.wesplit.domain.settle.SettleSuggestion
@@ -138,7 +140,10 @@ class SettleViewModel(
                                             .participants
                                             .firstOrNull { it == partBalance.participant } ?: partBalance.participant,
                                 )
-                            }.toSet(),
+                            }.sortedWith(
+                                compareByDescending<ParticipantBalance> { it.participant.isMe() }
+                                    .thenBy { it.participant.name },
+                            ).toSet(),
                     )
                 }
 

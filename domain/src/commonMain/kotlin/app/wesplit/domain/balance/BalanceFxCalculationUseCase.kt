@@ -3,6 +3,8 @@ package app.wesplit.domain.balance
 import app.wesplit.domain.model.currency.Amount
 import app.wesplit.domain.model.currency.FxRates
 import app.wesplit.domain.model.group.Balance
+import app.wesplit.domain.model.group.ParticipantBalance
+import app.wesplit.domain.model.group.isMe
 import org.koin.core.annotation.Single
 
 @Single
@@ -13,21 +15,20 @@ class BalanceFxCalculationUseCase {
         selectedCurrency: String,
     ): Balance {
         return balance.copy(
-            participantsBalance =
-                balance.participantsBalance.map {
-                    it.copy(
-                        amounts =
-                            it.amounts.recalculateAmounts(
-                                fxRates = fxRates,
-                                targetCurrency = selectedCurrency,
-                            ).toSet(),
-                    )
-                }.toSet(),
-            undistributed =
-                balance.undistributed.recalculateAmounts(
-                    fxRates = fxRates,
-                    targetCurrency = selectedCurrency,
-                ).toSet(),
+            participantsBalance = balance.participantsBalance.map {
+                it.copy(
+                    amounts = it.amounts.recalculateAmounts(
+                        fxRates = fxRates,
+                        targetCurrency = selectedCurrency,
+                    ).toSet(),
+                )
+            }.sortedWith(
+                compareByDescending<ParticipantBalance> { it.participant.isMe() }.thenBy { it.participant.name },
+            ).toSet(),
+            undistributed = balance.undistributed.recalculateAmounts(
+                fxRates = fxRates,
+                targetCurrency = selectedCurrency,
+            ).toSet(),
         )
     }
 
