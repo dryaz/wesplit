@@ -15,20 +15,23 @@ class BalanceFxCalculationUseCase {
         selectedCurrency: String,
     ): Balance {
         return balance.copy(
-            participantsBalance = balance.participantsBalance.map {
-                it.copy(
-                    amounts = it.amounts.recalculateAmounts(
-                        fxRates = fxRates,
-                        targetCurrency = selectedCurrency,
-                    ).toSet(),
-                )
-            }.sortedWith(
-                compareByDescending<ParticipantBalance> { it.participant.isMe() }.thenBy { it.participant.name },
-            ).toSet(),
-            undistributed = balance.undistributed.recalculateAmounts(
-                fxRates = fxRates,
-                targetCurrency = selectedCurrency,
-            ).toSet(),
+            participantsBalance =
+                balance.participantsBalance.map {
+                    it.copy(
+                        amounts =
+                            it.amounts.recalculateAmounts(
+                                fxRates = fxRates,
+                                targetCurrency = selectedCurrency,
+                            ).toSet(),
+                    )
+                }.sortedWith(
+                    compareByDescending<ParticipantBalance> { it.participant.isMe() }.thenBy { it.participant.name },
+                ).toSet(),
+            undistributed =
+                balance.undistributed.recalculateAmounts(
+                    fxRates = fxRates,
+                    targetCurrency = selectedCurrency,
+                ).toSet(),
         )
     }
 

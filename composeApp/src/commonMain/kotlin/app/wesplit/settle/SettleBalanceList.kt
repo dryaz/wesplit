@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -39,6 +41,8 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.forgive_and_forget
 import split.composeapp.generated.resources.gets_back
 import split.composeapp.generated.resources.ic_flag
+import split.composeapp.generated.resources.ic_money_track
+import split.composeapp.generated.resources.new_expense
 import split.composeapp.generated.resources.settle_balances
 import split.composeapp.generated.resources.should_pay_to
 import split.composeapp.generated.resources.undistributed
@@ -151,11 +155,19 @@ private fun SuggestedPayouts(balance: List<SettleSuggestion>) {
                         )
                     },
                     action = {
-                        Text(
-                            text = "${suggestion.amount.format()}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.secondary,
-                        )
+                        FilledTonalButton(
+                            onClick = {},
+                        ) {
+                            Text(
+                                text = "${suggestion.amount.format()}",
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                painter = painterResource(Res.drawable.ic_money_track),
+                                contentDescription = stringResource(Res.string.new_expense),
+                            )
+                        }
                     },
                 )
             }
