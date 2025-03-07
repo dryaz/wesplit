@@ -6,7 +6,8 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "test": "jest --runInBand"
   },
   "engines": {
     "node": "18"
@@ -16,8 +17,7 @@
     "@apple/app-store-server-library": "^1.4.0",
     "@google-cloud/secret-manager": "^5.6.0",
     "axios": "^1.7.7",
-    "firebase-admin": "^12.6.0",
-    "firebase-functions": "^5.0.0",
+    "firebase-functions": "^6.3.2",
     "google-auth-library": "^9.14.2",
     "googleapis": "^144.0.0",
     "jsonwebtoken": "^9.0.2",
@@ -25,7 +25,10 @@
     "telegraf": "^4.16.3"
   },
   "devDependencies": {
-    "firebase-functions-test": "^3.1.0"
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase-admin": "^13.2.0",
+    "firebase-functions-test": "^3.4.0",
+    "jest": "^29.7.0"
   },
   "private": true
 }
