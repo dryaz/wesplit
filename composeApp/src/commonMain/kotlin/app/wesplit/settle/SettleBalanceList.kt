@@ -156,6 +156,21 @@ private fun SuggestedPayouts(balance: List<SettleSuggestion>) {
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.secondary,
                         )
+                        // TODO: Single settlemnet VS person
+//                        FilledTonalButton(
+//                            onClick = {},
+//                            enabled = false,
+//                        ) {
+//                            Text(
+//                                text = "${suggestion.amount.format()}",
+//                            )
+//                            Spacer(modifier = Modifier.width(8.dp))
+//                            Icon(
+//                                modifier = Modifier.size(20.dp),
+//                                painter = painterResource(Res.drawable.ic_money_track),
+//                                contentDescription = stringResource(Res.string.new_expense),
+//                            )
+//                        }
                     },
                 )
             }

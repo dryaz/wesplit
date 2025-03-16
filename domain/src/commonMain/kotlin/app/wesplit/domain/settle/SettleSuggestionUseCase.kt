@@ -57,43 +57,33 @@ class SettleSuggestionUseCase {
 
         // Iterate over remaining debtors
         while (i >= 0) {
-            val (debtor, debtAmount) = debitors[i]
-
-            // Find a matching creditor with the same currency
+            val (debtor, initialDebt) = debitors[i]
+            var remainingDebt = initialDebt.value // Use a mutable variable for the remaining debt
             var j = creditors.size - 1
-            while (j >= 0) {
+            while (j >= 0 && remainingDebt < 0) {
                 val (creditor, creditAmount) = creditors[j]
-
-                // Only settle if the currencies match
-                if (debtAmount.currencyCode == creditAmount.currencyCode) {
-                    // Determine the amount to settle
-                    val settlementAmount = minOf(-debtAmount.value, creditAmount.value)
-
-                    // Add a suggestion
+                if (initialDebt.currencyCode == creditAmount.currencyCode) {
+                    val settlementAmount = minOf(-remainingDebt, creditAmount.value)
                     suggestions.add(
                         SettleSuggestion(
                             payer = debtor,
                             recipient = creditor,
-                            amount = Amount(settlementAmount, debtAmount.currencyCode),
+                            amount = Amount(settlementAmount, initialDebt.currencyCode),
                         ),
                     )
-
-                    // Update the balances
-                    debitors[i] = debtor to Amount(debtAmount.value + settlementAmount, debtAmount.currencyCode)
+                    remainingDebt += settlementAmount // update the mutable remaining debt
                     creditors[j] = creditor to Amount(creditAmount.value - settlementAmount, creditAmount.currencyCode)
-
-                    // If creditor is fully settled, remove it
                     if (creditors[j].second.value == 0.0) {
                         creditors.removeAt(j)
                     }
-
-                    // If debtor is fully settled, break out of the inner loop
-                    if (debitors[i].second.value == 0.0) {
-                        debitors.removeAt(i)
-                        break
-                    }
                 }
                 j--
+            }
+            // Update or remove debtor based on remaining debt
+            if (remainingDebt == 0.0) {
+                debitors.removeAt(i)
+            } else {
+                debitors[i] = debtor to Amount(remainingDebt, initialDebt.currencyCode)
             }
             i--
         }
