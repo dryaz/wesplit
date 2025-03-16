@@ -9,7 +9,6 @@ import kotlin.math.absoluteValue
 import kotlin.test.Test
 
 class SettleSuggestionUseCaseTest {
-
     @Test
     fun reproduce_mark_bug_fxed_perons_balance_should_match() {
         val useCase = SettleSuggestionUseCase()
@@ -33,114 +32,134 @@ class SettleSuggestionUseCaseTest {
         val balance =
             Balance(
                 participantsBalance =
-                setOf(
-                    ParticipantBalance(
-                        participant = p1,
-                        amounts = setOf(
-                            Amount(17.80, "EUR"),
+                    setOf(
+                        ParticipantBalance(
+                            participant = p1,
+                            amounts =
+                                setOf(
+                                    Amount(17.80, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p2,
+                            amounts =
+                                setOf(
+                                    Amount(1430.81, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p3,
+                            amounts =
+                                setOf(
+                                    Amount(-217.98, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p4,
+                            amounts =
+                                setOf(
+                                    Amount(-450.30, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p5,
+                            amounts =
+                                setOf(
+                                    Amount(-465.77, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p6,
+                            amounts =
+                                setOf(
+                                    Amount(1073.39, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p7,
+                            amounts =
+                                setOf(
+                                    Amount(-94.65, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p8,
+                            amounts =
+                                setOf(
+                                    Amount(-171.89, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p9,
+                            amounts =
+                                setOf(
+                                    Amount(477.98, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p10,
+                            amounts =
+                                setOf(
+                                    Amount(-337.69, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p11,
+                            amounts =
+                                setOf(
+                                    Amount(-362.42, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p12,
+                            amounts =
+                                setOf(
+                                    Amount(-179.85, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p13,
+                            amounts =
+                                setOf(
+                                    Amount(-179.85, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p14,
+                            amounts =
+                                setOf(
+                                    Amount(-179.85, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p15,
+                            amounts =
+                                setOf(
+                                    Amount(-179.85, "EUR"),
+                                ),
+                        ),
+                        ParticipantBalance(
+                            participant = p16,
+                            amounts =
+                                setOf(
+                                    Amount(-179.85, "EUR"),
+                                ),
                         ),
                     ),
-                    ParticipantBalance(
-                        participant = p2,
-                        amounts = setOf(
-                            Amount(1430.81, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p3,
-                        amounts = setOf(
-                            Amount(-217.98, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p4,
-                        amounts = setOf(
-                            Amount(-450.30, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p5,
-                        amounts = setOf(
-                            Amount(-465.77, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p6,
-                        amounts = setOf(
-                            Amount(1073.39, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p7,
-                        amounts = setOf(
-                            Amount(-94.65, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p8,
-                        amounts = setOf(
-                            Amount(-171.89, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p9,
-                        amounts = setOf(
-                            Amount(477.98, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p10,
-                        amounts = setOf(
-                            Amount(-337.69, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p11,
-                        amounts = setOf(
-                            Amount(-362.42, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p12,
-                        amounts = setOf(
-                            Amount(-179.85, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p13,
-                        amounts = setOf(
-                            Amount(-179.85, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p14,
-                        amounts = setOf(
-                            Amount(-179.85, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p15,
-                        amounts = setOf(
-                            Amount(-179.85, "EUR"),
-                        ),
-                    ),
-                    ParticipantBalance(
-                        participant = p16,
-                        amounts = setOf(
-                            Amount(-179.85, "EUR"),
-                        ),
-                    ),
-                ),
             )
 
-        val result = useCase.get(balance)
-            .filterNot { it.payer == null }
-            .groupingBy { it.payer!! }
-            .fold(0.0) { acc, suggestion -> acc + suggestion.amount.value }
+        val result =
+            useCase.get(balance)
+                .filterNot { it.payer == null }
+                .groupingBy { it.payer!! }
+                .fold(0.0) { acc, suggestion -> acc + suggestion.amount.value }
 
         result.forEach { computed ->
             println("Check balance for ${computed.key.name}")
-            computed.value.absoluteValue shouldBe balance.participantsBalance.first { it.participant == computed.key}.amounts.first().value.absoluteValue
+            computed.value.absoluteValue shouldBe
+                balance.participantsBalance.first {
+                    it.participant == computed.key
+                }.amounts.first().value.absoluteValue
         }
     }
 
