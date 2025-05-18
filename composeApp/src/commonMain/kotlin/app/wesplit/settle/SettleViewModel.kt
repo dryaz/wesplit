@@ -92,7 +92,7 @@ class SettleViewModel(
             UiSetting(
                 selectedCurrency = "USD",
                 isRecalculateEnabled = false,
-                isSuggestionsEnabled = true,
+                isSuggestionsEnabled = false,
             ),
         )
 
@@ -198,8 +198,10 @@ class SettleViewModel(
     }
 
     fun toggleSuggestions(isEnabled: Boolean) {
-        uiSetting.getAndUpdate {
-            it.copy(isSuggestionsEnabled = isEnabled)
+        plusProtectedCall(SUGGESTIONS_PAYWALL_SOURCE) {
+            uiSetting.getAndUpdate {
+                it.copy(isSuggestionsEnabled = isEnabled)
+            }
         }
     }
 
@@ -232,6 +234,7 @@ class SettleViewModel(
                     uiSetting.getAndUpdate {
                         it.copy(
                             selectedCurrency = currency,
+                            isSuggestionsEnabled = user.isPlus(),
                             isRecalculateEnabled = user.isPlus(),
                         )
                     }

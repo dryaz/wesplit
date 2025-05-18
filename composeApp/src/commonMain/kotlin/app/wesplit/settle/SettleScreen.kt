@@ -48,6 +48,7 @@ import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.group.Group
 import app.wesplit.theme.extraColorScheme
 import app.wesplit.ui.AdaptiveTopAppBar
+import app.wesplit.ui.PlusProtected
 import app.wesplit.ui.molecules.FxToggle
 import app.wesplit.ui.molecules.FxToggleAction
 import io.github.alexzhirkevich.cupertino.adaptive.icons.AdaptiveIcons
@@ -292,9 +293,11 @@ private fun SuggestionsBlock(
     ListItem(
         modifier = Modifier.clickable { protectCallback(!isSuggestionsEnabled) }.height(IntrinsicSize.Max),
         headlineContent = {
-            Text(
-                text = stringResource(Res.string.suggest_split),
-            )
+            PlusProtected {
+                Text(
+                    text = stringResource(Res.string.suggest_split),
+                )
+            }
         },
         supportingContent = {
             Text(
