@@ -1,3 +1,11 @@
+# Wesplit - IOU expense tracker
+https://wesplit.app/
+
+Deployed apps could be found
+- Web: https://web.wesplit.app/
+- Android: https://play.google.com/store/apps/details?id=app.wesplit
+- iOS: https://apps.apple.com/us/app/wesplit-iou-expense-tracker/id6714482007?uo=4
+
 This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop, Server.
 
 * `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
