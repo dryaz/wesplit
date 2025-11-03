@@ -15,38 +15,23 @@ class JsFileDownloadDelegate : FileDownloadDelegate {
         try {
             // Create a Blob with the CSV content
             val blob = Blob(arrayOf(content), BlobPropertyBag(type = mimeType))
-            val url = URL.createObjectURL(blob)
+            val blobUrl = URL.createObjectURL(blob)
 
-            // Try to use Web Share API if available
-            if (js("navigator.share") != null && js("navigator.canShare") != null) {
-                try {
-                    val file = js("new File([blob], fileName, { type: mimeType })")
-                    val shareData = js("{ files: [file], title: fileName }")
-                    
-                    // Check if can share files
-                    val canShare = js("navigator.canShare(shareData)")
-                    if (canShare as? Boolean == true) {
-                        js("navigator.share(shareData)")
-                        URL.revokeObjectURL(url)
-                        return url
-                    }
-                } catch (e: Exception) {
-                    console.log("Web Share API failed, falling back to download", e)
-                }
-            }
-
-            // Fallback: trigger download
+            // Trigger browser download
             val anchor = document.createElement("a") as HTMLAnchorElement
-            anchor.href = url
+            anchor.href = blobUrl
             anchor.download = fileName
+            anchor.style.display = "none"
             document.body?.appendChild(anchor)
             anchor.click()
-            document.body?.removeChild(anchor)
+            
+            // Clean up after a short delay to ensure download starts
+            window.setTimeout({
+                document.body?.removeChild(anchor)
+                URL.revokeObjectURL(blobUrl)
+            }, 100)
 
-            // Clean up the URL object
-            URL.revokeObjectURL(url)
-
-            return url
+            return fileName // Return filename as success indicator
         } catch (e: Exception) {
             console.error("Failed to download file", e)
             return null
