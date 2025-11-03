@@ -34,7 +34,7 @@ fun main() {
                 applicationId = "1:548791587175:web:4e6228a365ede6fdc05fc2",
                 apiKey = "AIzaSyDsaHeM7-_M0utMVZPQNSRsEu5Z5k9BjSw",
                 projectId = "wesplit-bill",
-                authDomain = "wesplit-bill.firebaseapp.com",
+                authDomain = "web.wesplit.app",
                 storageBucket = "wesplit-bill.appspot.com",
                 gcmSenderId = "548791587175",
                 gaTrackingId = "G-5EBQE3J64M",
