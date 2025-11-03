@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.collectLatest
 import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.currency.Amount
@@ -90,8 +91,12 @@ import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.add_expense_to_group
 import split.composeapp.generated.resources.back
 import split.composeapp.generated.resources.balances
+import split.composeapp.generated.resources.csv_export_failed
+import split.composeapp.generated.resources.csv_export_success
 import split.composeapp.generated.resources.edit_group
 import split.composeapp.generated.resources.error
+import split.composeapp.generated.resources.export_csv
+import split.composeapp.generated.resources.ic_file_csv
 import split.composeapp.generated.resources.ic_user_add
 import split.composeapp.generated.resources.join_group
 import split.composeapp.generated.resources.loading
@@ -125,6 +130,8 @@ sealed interface GroupInfoAction {
     data class Settle(val group: Group) : GroupInfoAction
 
     data class BannerClick(val banner: Banner) : GroupInfoAction
+
+    data class ExportCsv(val group: Group) : GroupInfoAction
 }
 
 private val addExpenseTutorialStep =
@@ -211,9 +218,37 @@ fun GroupInfoScreen(
     var quickAddError: QuickAddErrorState by remember { mutableStateOf(QuickAddErrorState.NONE) }
 
     var shareDialogVisibility by rememberSaveable { mutableStateOf(false) }
+    var csvDialogVisibility by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(shareDialogVisibility) {
         if (shareDialogVisibility) analyticsManager.track(SHARE_QR_EVENT)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collectLatest { event ->
+            when (event) {
+                is GroupInfoViewModel.Event.ShowCsvDialog -> {
+                    csvDialogVisibility = true
+                }
+
+                is GroupInfoViewModel.Event.ShowPaywall -> {
+                    onAction(GroupInfoAction.BannerClick(Banner.CSV_EXPORT))
+                }
+
+                is GroupInfoViewModel.Event.CsvExportSuccess -> {
+                    // Show success message - share dialog was already shown by the delegate
+                    scope.launch {
+                        snackbarHostState.showSnackbar(getString(Res.string.csv_export_success))
+                    }
+                }
+
+                is GroupInfoViewModel.Event.CsvExportError -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(getString(Res.string.csv_export_failed) + ": ${event.message}")
+                    }
+                }
+            }
+        }
     }
 
     val quickAddCommitCallback = {
@@ -243,10 +278,10 @@ fun GroupInfoScreen(
     val actionCallback: (GroupInfoAction) -> Unit =
         remember {
             {
-                if (it is GroupInfoAction.Share) {
-                    shareDialogVisibility = true
-                } else {
-                    onAction(it)
+                when (it) {
+                    is GroupInfoAction.Share -> shareDialogVisibility = true
+                    is GroupInfoAction.ExportCsv -> viewModel.requestCsvExport()
+                    else -> onAction(it)
                 }
             }
         }
@@ -324,6 +359,21 @@ fun GroupInfoScreen(
                     }
 
                     IconButton(
+                        onClick = {
+                            (data.value as? GroupInfoViewModel.State.GroupInfo)?.group?.let { group ->
+                                actionCallback.invoke(
+                                    GroupInfoAction.ExportCsv(group),
+                                )
+                            }
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_file_csv),
+                            contentDescription = stringResource(Res.string.export_csv),
+                        )
+                    }
+
+                    IconButton(
                         modifier = modifier,
                         onClick = {
                             // TODO: Proper state handling, not just 1 groupinfo handler
@@ -381,6 +431,15 @@ fun GroupInfoScreen(
                             onShare = {
                                 shareDialogVisibility = false
                                 onAction(GroupInfoAction.Share(state.group))
+                            },
+                        )
+                    }
+
+                    if (csvDialogVisibility) {
+                        CsvExportDialog(
+                            onDismiss = { csvDialogVisibility = false },
+                            onExport = { includeShares ->
+                                viewModel.exportCsv(includeShares)
                             },
                         )
                     }
@@ -632,6 +691,17 @@ private fun GroupHeader(
                     contentDescription = stringResource(Res.string.join_group),
                 )
             }
+        }
+
+        IconButton(
+            onClick = {
+                onAction.invoke(GroupInfoAction.ExportCsv(group))
+            },
+        ) {
+            Icon(
+                painter = painterResource(Res.drawable.ic_file_csv),
+                contentDescription = stringResource(Res.string.export_csv),
+            )
         }
 
         IconButton(

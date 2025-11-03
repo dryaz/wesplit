@@ -2,6 +2,7 @@ import androidx.compose.ui.window.ComposeUIViewController
 import app.IosPermissionDelegate
 import app.wesplit.App
 import app.wesplit.DeepLinkHandler
+import app.wesplit.FileDownloadDelegate
 import app.wesplit.PermissionsDelegate
 import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.AnalyticsManager
@@ -35,6 +36,7 @@ fun mainViewController(iosDiHelper: IosDiHelper): UIViewController {
                 single<BillingDelegate> { BillingIosDelegate(get()) }
                 single<LoginIosNativeDelegate> { iosDiHelper.loginDelegate }
                 single<LoginDelegate> { LoginIosDelegate(get()) }
+                single<FileDownloadDelegate> { IosFileDownloadDelegate() }
                 // TODO: Support contact list of iOS
                 single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 single<DiHolder> { DiHolder() }

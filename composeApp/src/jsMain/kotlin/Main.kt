@@ -4,6 +4,7 @@ import app.wesplit.App
 import app.wesplit.DeepLinkHandler
 import app.wesplit.DefaultPermissionDelegate
 import app.wesplit.DefaultShareDelegate
+import app.wesplit.FileDownloadDelegate
 import app.wesplit.PermissionsDelegate
 import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.AnalyticsManager
@@ -29,12 +30,23 @@ import org.koin.dsl.module
 fun main() {
     onWasmReady {
         // TODO: Move settings to config
+        // Auto-detect environment: use custom domain for production, Firebase domain for localhost
+        val isLocalhost = window.location.hostname == "localhost" || window.location.hostname == "127.0.0.1"
+        val authDomain = if (isLocalhost) {
+            "wesplit-bill.firebaseapp.com" // Default Firebase domain (allows localhost)
+        } else {
+            "web.wesplit.app" // Custom production domain
+        }
+        
+        console.log("Environment: ${if (isLocalhost) "Development (localhost)" else "Production"}")
+        console.log("Using authDomain: $authDomain")
+        
         val options: FirebaseOptions =
             FirebaseOptions(
                 applicationId = "1:548791587175:web:4e6228a365ede6fdc05fc2",
                 apiKey = "AIzaSyDsaHeM7-_M0utMVZPQNSRsEu5Z5k9BjSw",
                 projectId = "wesplit-bill",
-                authDomain = "web.wesplit.app",
+                authDomain = authDomain,
                 storageBucket = "wesplit-bill.appspot.com",
                 gcmSenderId = "548791587175",
                 gaTrackingId = "G-5EBQE3J64M",
@@ -68,6 +80,7 @@ fun main() {
 //                    single<AnalyticsManager> { DebugAnalyticsManager() }
                     single<ShortcutDelegate> { ShortcutDelegateNotSupport }
                     single<DeepLinkHandler> { deepLinkHandler }
+                    single<FileDownloadDelegate> { JsFileDownloadDelegate() }
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 },
             )

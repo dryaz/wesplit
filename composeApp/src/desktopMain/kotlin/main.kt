@@ -3,6 +3,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import app.wesplit.App
 import app.wesplit.DefaultPermissionDelegate
+import app.wesplit.FileDownloadDelegate
 import app.wesplit.PermissionsDelegate
 import app.wesplit.domain.model.AnalyticsManager
 import app.wesplit.domain.model.account.LoginDelegate
@@ -60,6 +61,7 @@ fun main() {
                     single<LoginDelegate> { LoginDesktopDelegate() }
                     single<PermissionsDelegate> { DefaultPermissionDelegate }
                     single<AnalyticsManager> { DesktopAnalyticsManager() }
+                    single<FileDownloadDelegate> { DesktopFileDownloadDelegate() }
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 },
             )

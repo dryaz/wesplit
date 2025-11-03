@@ -5,8 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
@@ -28,12 +31,14 @@ import androidx.compose.ui.unit.dp
 import app.wesplit.ShareData
 import app.wesplit.ShareDelegate
 import app.wesplit.domain.model.account.Login
+import app.wesplit.isDebugEnvironment
 import app.wesplit.ui.OrDivider
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import split.composeapp.generated.resources.Res
 import split.composeapp.generated.resources.andspaces
+import split.composeapp.generated.resources.debug_anonymous_login
 import split.composeapp.generated.resources.img_login
 import split.composeapp.generated.resources.join_agree
 import split.composeapp.generated.resources.login_button_cd
@@ -73,6 +78,22 @@ internal fun LoginSection(
         OrDivider()
         Spacer(modifier = Modifier.height(8.dp))
         AppleLoginButton { onLoginRequest(Login.Social(Login.Social.Type.APPLE)) }
+        
+        // Debug button for localhost/development
+        if (isDebugEnvironment()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { onLoginRequest(Login.Anonymous) },
+                modifier = Modifier.padding(horizontal = 16.dp).fillMaxWidth(0.8f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ),
+            ) {
+                Text(stringResource(Res.string.debug_anonymous_login))
+            }
+        }
+        
         Spacer(modifier = Modifier.height(32.dp))
         TermsAndPolicyText(modifier = Modifier.padding(horizontal = 32.dp).alpha(0.65f))
     }

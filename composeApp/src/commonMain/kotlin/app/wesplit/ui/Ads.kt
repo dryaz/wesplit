@@ -32,6 +32,8 @@ import split.composeapp.generated.resources.ic_cat_magic
 import split.composeapp.generated.resources.ic_eifell_ads
 import split.composeapp.generated.resources.ic_plus
 import split.composeapp.generated.resources.plus_badge
+import split.composeapp.generated.resources.csv_export_paywall
+import split.composeapp.generated.resources.export_csv_description
 import split.composeapp.generated.resources.plus_feature_cats_cta
 import split.composeapp.generated.resources.plus_feature_cats_title
 import split.composeapp.generated.resources.plus_feature_images_descr_short
@@ -44,6 +46,7 @@ enum class Banner {
     AI_CAT,
     IMG_GROUP,
     QUICK_ADD,
+    CSV_EXPORT,
 }
 
 @Composable
@@ -52,6 +55,7 @@ fun Banner.title() =
         Banner.AI_CAT -> stringResource(Res.string.plus_feature_cats_title)
         Banner.IMG_GROUP -> stringResource(Res.string.plus_feature_images_title)
         Banner.QUICK_ADD -> stringResource(Res.string.plus_feature_quick_add_title)
+        Banner.CSV_EXPORT -> stringResource(Res.string.csv_export_paywall)
     }
 
 @Composable
@@ -60,6 +64,7 @@ fun Banner.cta() =
         Banner.AI_CAT -> stringResource(Res.string.plus_feature_cats_cta)
         Banner.IMG_GROUP -> stringResource(Res.string.plus_feature_images_descr_short)
         Banner.QUICK_ADD -> stringResource(Res.string.plus_feature_quick_add_descr_short)
+        Banner.CSV_EXPORT -> stringResource(Res.string.export_csv_description)
     }
 
 @Composable
@@ -106,6 +111,20 @@ fun Banner.icon() =
                     Spacer(modifier = Modifier.height(6.dp))
                     Image(
                         modifier = Modifier.height(16.dp),
+                        painter = painterResource(Res.drawable.ic_plus),
+                        contentDescription = stringResource(Res.string.plus_badge),
+                    )
+                }
+            }
+
+        Banner.CSV_EXPORT ->
+            Box(
+                modifier = Modifier.fillMaxHeight(1f),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column {
+                    Icon(
+                        modifier = Modifier.width(56.dp),
                         painter = painterResource(Res.drawable.ic_plus),
                         contentDescription = stringResource(Res.string.plus_badge),
                     )

@@ -7,6 +7,9 @@ import dev.gitlive.firebase.auth.externals.GoogleAuthProvider
 import dev.gitlive.firebase.auth.externals.OAuthProvider
 import dev.gitlive.firebase.auth.externals.signInWithPopup
 import dev.gitlive.firebase.auth.js
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class LoginJsDelegate : LoginDelegate {
     override fun socialLogin(
@@ -18,6 +21,22 @@ class LoginJsDelegate : LoginDelegate {
             Login.Social.Type.APPLE -> signWithApple(onLogin)
         }
         // TODO: Gitlive yet not supported linkWithPopup for anon user, but worth to have it
+    }
+
+    override fun anonymousLogin(onLogin: (Result<FirebaseUser>) -> Unit) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                Firebase.auth.signInAnonymously()
+                val user = Firebase.auth.currentUser
+                if (user != null) {
+                    onLogin(Result.success(user))
+                } else {
+                    onLogin(Result.failure(NullPointerException("Anonymous login failed")))
+                }
+            } catch (e: Exception) {
+                onLogin(Result.failure(e))
+            }
+        }
     }
 
     private fun signWithGoogle(onLogin: (Result<FirebaseUser>) -> Unit) {

@@ -7,6 +7,8 @@ interface LoginDelegate {
         type: Login.Social.Type,
         onLogin: (Result<FirebaseUser>) -> Unit,
     )
+
+    fun anonymousLogin(onLogin: (Result<FirebaseUser>) -> Unit)
 }
 
 sealed interface Login {

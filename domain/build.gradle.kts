@@ -60,6 +60,7 @@ kotlin {
                 implementation(libs.koin.core)
                 implementation(libs.koin.annotations)
                 implementation(libs.kotlinx.datetime)
+                implementation(libs.firebase.common.firestore)
             }
         }
 

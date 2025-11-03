@@ -326,4 +326,14 @@ Are you sure you want to leave the group?</string>
     <string name="add_share">Add selected participants to the expense</string>
     <string name="remove_share">Remove selected participants from the expense</string>
     <string name="detailed">Detailed</string>
+    <string name="export_csv">Export to CSV</string>
+    <string name="export_csv_description">Export all transactions to CSV file</string>
+    <string name="csv_include_shares_title">Include share details?</string>
+    <string name="csv_include_shares_description">Do you want to include information about what each person owes in the CSV file?</string>
+    <string name="csv_with_shares">With shares</string>
+    <string name="csv_without_shares">Without shares</string>
+    <string name="csv_export_success">CSV exported successfully</string>
+    <string name="csv_export_failed">Failed to export CSV</string>
+    <string name="csv_export_paywall">Export to CSV</string>
+    <string name="debug_anonymous_login">Debug: Anonymous Login</string>
 </resources>

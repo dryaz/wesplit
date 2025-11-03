@@ -679,6 +679,8 @@ private fun Navigation(
                         ),
                 ) {
                     val groupRepository: GroupRepository = koinInject()
+                    val csvExportUseCase: app.wesplit.domain.export.CsvExportUseCase = koinInject()
+                    val fileDownloadDelegate: app.wesplit.FileDownloadDelegate = koinInject()
                     val groupId =
                         checkNotNull(
                             it.arguments?.getString(
@@ -701,6 +703,8 @@ private fun Navigation(
                                 expenseRepository,
                                 balanceLocalCalculationUseCase,
                                 featureRepository,
+                                csvExportUseCase,
+                                fileDownloadDelegate,
                             )
                         }
                     GroupInfoScreen(
@@ -773,6 +777,11 @@ private fun Navigation(
                             is GroupInfoAction.BannerClick -> onSubscriptionRequest(action.banner.name)
 
                             is GroupInfoAction.Invite -> TODO("We support only sharing of the group yet")
+
+                            is GroupInfoAction.ExportCsv -> {
+                                // CSV export is handled within GroupInfoScreen/ViewModel
+                                // No navigation needed here
+                            }
                         }
                     }
                 }

@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
 //                    single<AnalyticsManager> { DebugAnalyticsManager() }
                     single<ShareDelegate> { AndroidShareDelegate(get(), get()) }
                     single<DeepLinkHandler> { deepLinkHandler }
+                    single<FileDownloadDelegate> { AndroidFileDownloadDelegate(application) }
                     // TODO: Support user's contacts
                     single<ContactListDelegate> { UnsupportedContactListDelegate() }
                 },

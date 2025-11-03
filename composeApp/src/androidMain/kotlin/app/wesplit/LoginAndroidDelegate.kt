@@ -40,6 +40,23 @@ class LoginAndroidDelegate(
         }
     }
 
+    override fun anonymousLogin(onLogin: (Result<FirebaseUser>) -> Unit) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = Firebase.auth.signInAnonymously()
+                val user = result.user
+                if (user != null) {
+                    onLogin(Result.success(user))
+                } else {
+                    onLogin(Result.failure(NullPointerException("Anonymous login failed")))
+                }
+            } catch (e: Exception) {
+                analyticsManager.log(e)
+                onLogin(Result.failure(e))
+            }
+        }
+    }
+
     private fun signInWithApple(onLogin: (Result<FirebaseUser>) -> Unit) {
         val provider = OAuthProvider.newBuilder("apple.com")
         provider.setScopes(listOf("email", "name"))
