@@ -1,7 +1,8 @@
 if (config.devServer) {
   config.devServer.historyApiFallback = {
       rewrites: [
-          { from: /^\/[^.]+$/, to: '/index.html' }
+          { from: /^\/app-ads\.txt$/, to: '/app-ads.txt' },
+          { from: /^\/[^.]+$/, to: '/index.html' },
       ],
   };
 
